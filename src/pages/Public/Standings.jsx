@@ -11,19 +11,36 @@ export default function Standings() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: ag }, { data: teams }, { data: fixtures }, { data: results }] = await Promise.all([
-        supabase.from('age_groups').select('*, tournaments(name, slug)').eq('id', ageGroupId).single(),
+      // Load age group + its tournament + sibling age groups in one shot
+      const { data: ag } = await supabase
+        .from('age_groups')
+        .select('*, tournaments(id, name, slug)')
+        .eq('id', ageGroupId)
+        .single()
+
+      if (!ag) { setLoading(false); return }
+
+      const [{ data: siblings }, { data: teams }, { data: fixtures }] = await Promise.all([
+        supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
         supabase.from('teams').select('*').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
-        supabase.from('fixtures').select('*, stages!inner(age_group_id)').eq('stages.age_group_id', ageGroupId),
-        supabase.from('fixture_results').select('*'),
+        supabase.from('fixtures')
+          .select('id, home_team_id, away_team_id, status, stages!inner(age_group_id)')
+          .eq('stages.age_group_id', ageGroupId),
       ])
-      setData({ ag, teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
+
+      // Scope results to only this age group's fixture IDs
+      const fixtureIds = (fixtures ?? []).map(f => f.id)
+      const { data: results } = fixtureIds.length > 0
+        ? await supabase.from('fixture_results').select('*').in('fixture_id', fixtureIds)
+        : { data: [] }
+
+      setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
       setLoading(false)
     }
     load()
 
     const channel = supabase
-      .channel('standings-realtime')
+      .channel(`standings-${ageGroupId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, () => load())
       .subscribe()
 
@@ -33,46 +50,55 @@ export default function Standings() {
   if (loading) return <div className="loading">Ielādē...</div>
   if (!data?.ag) return <div className="loading">Vecuma grupa nav atrasta.</div>
 
-  const { ag, teams, fixtures, results } = data
+  const { ag, siblings, teams, fixtures, results } = data
   const standings = calculateStandings(teams, fixtures, results)
   const tournament = ag.tournaments
 
   return (
     <div>
-    <PublicNav tournament={tournament} activeAgeGroupId={ageGroupId} />
-    <div className="container" style={{ paddingTop: '2rem' }}>
-      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: '0 0 1rem' }}>{ag.name} — Tabula</h1>
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
+      <div className="container" style={{ paddingTop: '2rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>{ag.name} — Tabula</h1>
+          <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
+            Spēļu grafiks →
+          </Link>
+        </div>
 
-      <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>
-        Spēļu grafiks →
-      </Link>
-
-      <div style={{ overflowX: 'auto' }}>
-        <table className="table">
-          <thead>
-            <tr>
-              <th>#</th><th>Komanda</th><th>S</th><th>U</th><th>N</th><th>Z</th><th>GV</th><th>GS</th><th>GS±</th><th>P</th>
-            </tr>
-          </thead>
-          <tbody>
-            {standings.map((row, i) => (
-              <tr key={row.team.id}>
-                <td>{i + 1}</td>
-                <td><Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)' }}>{row.team.name}</Link></td>
-                <td>{row.played}</td>
-                <td>{row.won}</td>
-                <td>{row.drawn}</td>
-                <td>{row.lost}</td>
-                <td>{row.gf}</td>
-                <td>{row.ga}</td>
-                <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-                <td><strong>{row.points}</strong></td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
+        {standings.length === 0 ? (
+          <p style={{ color: 'var(--color-text-muted)' }}>Nav apstiprinātu komandu.</p>
+        ) : (
+          <div style={{ overflowX: 'auto' }}>
+            <table className="table">
+              <thead>
+                <tr>
+                  <th>#</th><th>Komanda</th><th>S</th><th>U</th><th>N</th><th>Z</th><th>GV</th><th>GS</th><th>GS±</th><th>P</th>
+                </tr>
+              </thead>
+              <tbody>
+                {standings.map((row, i) => (
+                  <tr key={row.team.id}>
+                    <td>{i + 1}</td>
+                    <td>
+                      <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)' }}>
+                        {row.team.name}
+                      </Link>
+                    </td>
+                    <td>{row.played}</td>
+                    <td>{row.won}</td>
+                    <td>{row.drawn}</td>
+                    <td>{row.lost}</td>
+                    <td>{row.gf}</td>
+                    <td>{row.ga}</td>
+                    <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                    <td><strong>{row.points}</strong></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
-    </div>
     </div>
   )
 }

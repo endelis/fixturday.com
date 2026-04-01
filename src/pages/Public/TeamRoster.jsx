@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import PublicNav from '../../components/PublicNav'
 
 export default function TeamRoster() {
   const { slug, ageGroup: ageGroupId, teamId } = useParams()
@@ -11,7 +12,7 @@ export default function TeamRoster() {
   useEffect(() => {
     async function load() {
       const [{ data: t }, { data: p }] = await Promise.all([
-        supabase.from('teams').select('*, age_groups(name)').eq('id', teamId).single(),
+        supabase.from('teams').select('*, age_groups(name, tournaments(name, slug))').eq('id', teamId).single(),
         supabase.from('team_players').select('*').eq('team_id', teamId).order('number'),
       ])
       setTeam(t)
@@ -24,7 +25,11 @@ export default function TeamRoster() {
   if (loading) return <div className="loading">Ielādē...</div>
   if (!team) return <div className="loading">Komanda nav atrasta.</div>
 
+  const tournament = team.age_groups?.tournaments
+
   return (
+    <div>
+    <PublicNav tournament={tournament} />
     <div className="container" style={{ paddingTop: '2rem' }}>
       <p><Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)' }}>← {team.age_groups?.name} tabula</Link></p>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: '0.5rem 0 0.25rem' }}>{team.name}</h1>
@@ -49,6 +54,7 @@ export default function TeamRoster() {
           </tbody>
         </table>
       )}
+    </div>
     </div>
   )
 }

@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { supabase } from '../../lib/supabase'
+import PublicNav from '../../components/PublicNav'
 
 export default function Register() {
   const { slug } = useParams()
@@ -45,13 +46,18 @@ export default function Register() {
   if (ageGroups.length === 0) return <div className="loading">Reģistrācija pašlaik nav atvērta.</div>
 
   if (submitted) return (
-    <div className="container" style={{ paddingTop: '4rem', textAlign: 'center' }}>
-      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'var(--color-accent)' }}>Pieteikums saņemts!</h2>
-      <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>Mēs sazināsimies ar jums tuvākajā laikā.</p>
+    <div>
+      <PublicNav tournament={tournament} />
+      <div className="container" style={{ paddingTop: '4rem', textAlign: 'center' }}>
+        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'var(--color-accent)' }}>Pieteikums saņemts!</h2>
+        <p style={{ marginTop: '1rem', color: 'var(--color-text-muted)' }}>Mēs sazināsimies ar jums tuvākajā laikā.</p>
+      </div>
     </div>
   )
 
   return (
+    <div>
+    <PublicNav tournament={tournament} />
     <div className="container" style={{ paddingTop: '2rem', maxWidth: '600px' }}>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '1.5rem' }}>
         Reģistrācija — {tournament.name}
@@ -92,6 +98,7 @@ export default function Register() {
           {isSubmitting ? 'Sūta...' : 'Reģistrēties'}
         </button>
       </form>
+    </div>
     </div>
   )
 }
