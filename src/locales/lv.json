@@ -1,0 +1,141 @@
+{
+  "nav": {
+    "tournaments": "Turnīri",
+    "admin": "Administrators",
+    "logout": "Iziet"
+  },
+  "tournament": {
+    "title": "Turnīri",
+    "new": "Jauns turnīrs",
+    "name": "Nosaukums",
+    "sport": "Sports",
+    "startDate": "Sākuma datums",
+    "endDate": "Beigu datums",
+    "description": "Apraksts",
+    "logo": "Logo URL",
+    "save": "Saglabāt",
+    "delete": "Dzēst",
+    "edit": "Rediģēt",
+    "active": "Aktīvs",
+    "inactive": "Neaktīvs"
+  },
+  "ageGroup": {
+    "title": "Vecuma grupas",
+    "new": "Jauna vecuma grupa",
+    "name": "Nosaukums",
+    "format": "Formāts",
+    "maxTeams": "Maks. komandas",
+    "registrationOpen": "Reģistrācija atvērta",
+    "regOpen": "Reģ. atvērta",
+    "regClosed_label": "Reģ. slēgta",
+    "openReg": "Atvērt reģistrāciju",
+    "closeReg": "Slēgt reģistrāciju",
+    "regOpened": "Reģistrācija atvērta",
+    "regClosed": "Reģistrācija slēgta",
+    "added": "Vecuma grupa pievienota",
+    "deleted": "Vecuma grupa dzēsta",
+    "formats": {
+      "round_robin": "Apļa turnīrs",
+      "knockout": "Izslēgšanas kārtas",
+      "group_knockout": "Grupu + izslēgšana"
+    }
+  },
+  "team": {
+    "title": "Komandas",
+    "new": "Jauna komanda",
+    "name": "Komandas nosaukums",
+    "club": "Klubs",
+    "contact": "Kontaktpersona",
+    "contactName": "Kontaktpersona",
+    "contactEmail": "E-pasts",
+    "contactPhone": "Tālrunis",
+    "status": "Statuss",
+    "players": "Spēlētāji",
+    "playerName": "Vārds Uzvārds",
+    "dob": "Dzimšanas datums",
+    "noPlayers": "Nav spēlētāju",
+    "addPlayer": "Spēlētājs",
+    "added": "Komanda pievienota",
+    "deleted": "Komanda dzēsta",
+    "confirmed": "Komanda apstiprināta",
+    "rejected": "Komanda noraidīta",
+    "playerAdded": "Spēlētājs pievienots",
+    "reject": "Noraidīt",
+    "confirmDelete": "Dzēst komandu un visus tās spēlētājus?",
+    "statuses": {
+      "pending": "Gaida apstiprinājumu",
+      "confirmed": "Apstiprināta",
+      "rejected": "Noraidīta"
+    }
+  },
+  "fixture": {
+    "title": "Spēles",
+    "round": "Kārta",
+    "kickoff": "Spēles laiks",
+    "pitch": "Laukums",
+    "status": "Statuss",
+    "statuses": {
+      "scheduled": "Ieplānota",
+      "live": "Tiešraidē",
+      "completed": "Pabeigta",
+      "postponed": "Atlikta"
+    },
+    "home": "Mājas",
+    "away": "Viesi",
+    "vs": "pret",
+    "score": "Rezultāts",
+    "generate": "Ģenerēt spēles"
+  },
+  "standings": {
+    "title": "Tabula",
+    "team": "Komanda",
+    "played": "S",
+    "won": "U",
+    "drawn": "N",
+    "lost": "Z",
+    "gf": "GV",
+    "ga": "GS",
+    "gd": "GS±",
+    "points": "P"
+  },
+  "venue": {
+    "title": "Spēļu vietas",
+    "new": "Jauna vieta",
+    "name": "Nosaukums",
+    "address": "Adrese",
+    "pitches": "Laukumi",
+    "newPitch": "Jauns laukums",
+    "pitchName": "Laukuma nosaukums",
+    "noPitches": "Nav laukumu",
+    "addVenue": "Pievienot vietu",
+    "added": "Vieta pievienota",
+    "deleted": "Vieta dzēsta",
+    "pitchAdded": "Laukums pievienots",
+    "pitchDeleted": "Laukums dzēsts",
+    "confirmDeleteVenue": "Dzēst vietu un visus tās laukumus?"
+  },
+  "auth": {
+    "email": "E-pasts",
+    "password": "Parole",
+    "login": "Pieslēgties",
+    "loginError": "Nepareizs e-pasts vai parole.",
+    "logout": "Iziet"
+  },
+  "common": {
+    "save": "Saglabāt",
+    "saved": "Saglabāts!",
+    "saving": "Saglabā...",
+    "cancel": "Atcelt",
+    "delete": "Dzēst",
+    "edit": "Rediģēt",
+    "add": "Pievienot",
+    "confirm": "Apstiprināt",
+    "close": "Aizvērt",
+    "loading": "Ielādē...",
+    "error": "Radās kļūda. Mēģiniet vēlreiz.",
+    "success": "Saglabāts!",
+    "confirmDelete": "Vai tiešām dzēst?",
+    "noData": "Nav datu",
+    "required": "Obligāts lauks."
+  }
+}
