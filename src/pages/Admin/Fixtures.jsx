@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { generateRoundRobin } from '../../utils/generators/roundRobin'
 import { generateKnockout } from '../../utils/generators/knockout'
+import { generateGroupStage } from '../../utils/generators/groupStage'
 import { format } from 'date-fns'
 import { toast } from '../../components/Toast'
 
@@ -50,9 +51,15 @@ export default function Fixtures() {
 
     if (stageError) { toast(`Kļūda: ${stageError.message}`, 'error'); setGenerating(false); return }
 
-    const rounds = ageGroup.format === 'knockout'
-      ? generateKnockout(teams).flatMap(r => r.fixtures)
-      : generateRoundRobin(teams).flat()
+    let rounds
+    if (ageGroup.format === 'knockout') {
+      rounds = generateKnockout(teams).flatMap(r => r.fixtures)
+    } else if (ageGroup.format === 'group_knockout') {
+      const { allFixtures } = generateGroupStage(teams)
+      rounds = allFixtures
+    } else {
+      rounds = generateRoundRobin(teams).flat()
+    }
 
     const fixtureRows = rounds
       .filter(f => f.home?.id && f.away?.id)

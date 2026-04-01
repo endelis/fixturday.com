@@ -20,6 +20,7 @@ import Venues from './pages/Admin/Venues'
 import Teams from './pages/Admin/Teams'
 import Fixtures from './pages/Admin/Fixtures'
 import Matchday from './pages/Admin/Matchday'
+import Print from './pages/Admin/Print'
 
 function RequireAuth({ children }) {
   const { session, loading } = useAuth()
@@ -51,6 +52,7 @@ export default function App() {
         <Route path="/admin/age-groups/:ageGroupId/teams" element={<RequireAuth><Teams /></RequireAuth>} />
         <Route path="/admin/age-groups/:ageGroupId/fixtures" element={<RequireAuth><Fixtures /></RequireAuth>} />
         <Route path="/admin/matchday" element={<RequireAuth><Matchday /></RequireAuth>} />
+        <Route path="/admin/tournaments/:id/print" element={<RequireAuth><Print /></RequireAuth>} />
       </Routes>
     </BrowserRouter>
   )

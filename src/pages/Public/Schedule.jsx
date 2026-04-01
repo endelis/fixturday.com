@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { lv } from 'date-fns/locale'
+import PublicNav from '../../components/PublicNav'
 
 export default function Schedule() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -54,9 +55,10 @@ export default function Schedule() {
   }, {})
 
   return (
+    <div>
+    <PublicNav tournament={ag?.tournaments} activeAgeGroupId={ageGroupId} />
     <div className="container" style={{ paddingTop: '2rem' }}>
-      <p><Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)' }}>← {ag?.name} tabula</Link></p>
-      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: '0.5rem 0 1.5rem' }}>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: '0 0 1.5rem' }}>
         {ag?.name} — Spēļu grafiks
       </h1>
 
@@ -97,6 +99,7 @@ export default function Schedule() {
       ))}
 
       {fixtures.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nav spēļu.</p>}
+    </div>
     </div>
   )
 }

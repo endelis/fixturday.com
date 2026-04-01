@@ -33,7 +33,11 @@ export default function Dashboard() {
         <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)' }}>
           Fixturday Admin
         </span>
-        <button className="btn-secondary btn-sm" onClick={handleSignOut}>Iziet</button>
+        <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+          <Link to="/admin/matchday" className="btn-primary btn-sm">⚽ Spēļu diena</Link>
+          <Link to="/" className="btn-secondary btn-sm" target="_blank">Skatīt publiski ↗</Link>
+          <button className="btn-secondary btn-sm" onClick={handleSignOut}>Iziet</button>
+        </div>
       </nav>
 
       <div className="container" style={{ paddingTop: '2rem' }}>
@@ -65,6 +69,7 @@ export default function Dashboard() {
                   <Link to={`/admin/tournaments/${t.id}`} className="btn-secondary btn-sm">Rediģēt</Link>
                   <Link to={`/admin/tournaments/${t.id}/age-groups`} className="btn-secondary btn-sm">Vecuma grupas</Link>
                   <Link to={`/admin/tournaments/${t.id}/venues`} className="btn-secondary btn-sm">Vietas</Link>
+                  <Link to={`/admin/tournaments/${t.id}/print`} className="btn-secondary btn-sm" target="_blank">🖨 Drukāt</Link>
                 </div>
               </div>
             ))}

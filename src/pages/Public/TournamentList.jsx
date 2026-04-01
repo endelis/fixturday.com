@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { lv } from 'date-fns/locale'
+import PublicNav from '../../components/PublicNav'
 
 export default function TournamentList() {
   const [tournaments, setTournaments] = useState([])
@@ -23,6 +24,8 @@ export default function TournamentList() {
   if (loading) return <div className="loading">Ielādē...</div>
 
   return (
+    <div>
+    <PublicNav />
     <div className="container" style={{ paddingTop: '2rem' }}>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', marginBottom: '1.5rem' }}>
         Turnīri
@@ -49,6 +52,7 @@ export default function TournamentList() {
           ))}
         </div>
       )}
+    </div>
     </div>
   )
 }

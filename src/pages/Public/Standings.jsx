@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
+import PublicNav from '../../components/PublicNav'
 
 export default function Standings() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -34,14 +35,16 @@ export default function Standings() {
 
   const { ag, teams, fixtures, results } = data
   const standings = calculateStandings(teams, fixtures, results)
+  const tournament = ag.tournaments
 
   return (
+    <div>
+    <PublicNav tournament={tournament} activeAgeGroupId={ageGroupId} />
     <div className="container" style={{ paddingTop: '2rem' }}>
-      <p><Link to={`/t/${slug}`} style={{ color: 'var(--color-accent)' }}>← {ag.tournaments?.name}</Link></p>
-      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: '0.5rem 0 1.5rem' }}>{ag.name} — Tabula</h1>
+      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: '0 0 1rem' }}>{ag.name} — Tabula</h1>
 
       <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm" style={{ marginBottom: '1.5rem', display: 'inline-block' }}>
-        Skatīt spēļu grafiku →
+        Spēļu grafiks →
       </Link>
 
       <div style={{ overflowX: 'auto' }}>
@@ -69,6 +72,7 @@ export default function Standings() {
           </tbody>
         </table>
       </div>
+    </div>
     </div>
   )
 }

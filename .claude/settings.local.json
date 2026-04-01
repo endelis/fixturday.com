@@ -6,7 +6,8 @@
       "Bash(echo \"EXIT:$?\")",
       "Bash(cd:*)",
       "Bash(npm install:*)",
-      "Bash(npm run:*)"
+      "Bash(npm run:*)",
+      "Bash(gh repo:*)"
     ]
   }
 }

@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
+import PublicNav from '../../components/PublicNav'
 
 export default function TournamentDetail() {
   const { slug } = useParams()
@@ -35,6 +36,8 @@ export default function TournamentDetail() {
   if (!tournament) return <div className="loading">Turnīrs nav atrasts.</div>
 
   return (
+    <div>
+    <PublicNav tournament={tournament} ageGroups={ageGroups} />
     <div className="container" style={{ paddingTop: '2rem' }}>
       <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', color: 'var(--color-accent)' }}>
         {tournament.name}
@@ -60,6 +63,7 @@ export default function TournamentDetail() {
           ))}
         </div>
       )}
+    </div>
     </div>
   )
 }
