@@ -1,22 +1,23 @@
 import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
-import { lv } from 'date-fns/locale'
 import { toast } from '../../components/Toast'
 
 export default function Matchday() {
+  const { t } = useTranslation()
   const [fixtures, setFixtures] = useState([])
   const [scores, setScores] = useState({})
   const [saving, setSaving] = useState({})
   const [loading, setLoading] = useState(true)
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
 
   async function load() {
-    const today = new Date()
-    const start = new Date(today.setHours(0, 0, 0, 0)).toISOString()
-    const end = new Date(today.setHours(23, 59, 59, 999)).toISOString()
+    const start = new Date(selectedDate + 'T00:00:00').toISOString()
+    const end   = new Date(selectedDate + 'T23:59:59').toISOString()
 
-    const { data: fx } = await supabase
+    const { data: fx, error } = await supabase
       .from('fixtures')
       .select(`
         *,
@@ -30,6 +31,8 @@ export default function Matchday() {
       .lte('kickoff_time', end)
       .order('kickoff_time')
 
+    if (error) { toast('Kļūda ielādējot spēles', 'error'); setLoading(false); return }
+
     const allFx = fx ?? []
     setFixtures(allFx)
 
@@ -42,7 +45,7 @@ export default function Matchday() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [selectedDate])
 
   async function saveScore(f) {
     setSaving(prev => ({ ...prev, [f.id]: true }))
@@ -62,6 +65,7 @@ export default function Matchday() {
   }
 
   async function setStatus(fixtureId, status) {
+    if (status === 'postponed' && !confirm(t('matchday.confirmPostpone'))) return
     const { error } = await supabase.from('fixtures').update({ status }).eq('id', fixtureId)
     if (error) { toast(`Kļūda: ${error.message}`, 'error'); return }
     load()
@@ -78,8 +82,14 @@ export default function Matchday() {
           ← Fixturday Admin
         </Link>
         <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-          {format(new Date(), 'd. MMMM yyyy', { locale: lv })}
+          {format(new Date(), 'dd/MM/yyyy')}
         </span>
+        <input
+          type="date"
+          value={selectedDate}
+          onChange={e => setSelectedDate(e.target.value)}
+          style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}
+        />
       </nav>
 
       <div className="container" style={{ paddingTop: '2rem' }}>
@@ -87,7 +97,10 @@ export default function Matchday() {
 
         {fixtures.length === 0 ? (
           <div className="card" style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
-            Šodien nav ieplānotu spēļu.
+            <p>{t('matchday.noFixtures')}</p>
+            <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>
+              {t('matchday.noFixturesHint')}
+            </p>
           </div>
         ) : (
           <div style={{ display: 'grid', gap: '1rem' }}>

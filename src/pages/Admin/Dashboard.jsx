@@ -11,14 +11,16 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    supabase
-      .from('tournaments')
-      .select('*')
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setTournaments(data ?? [])
-        setLoading(false)
-      })
+    async function load() {
+      const { data, error } = await supabase
+        .from('tournaments')
+        .select('*, teams(id, status)')
+        .order('created_at', { ascending: false })
+      if (error) { toast('Kļūda ielādējot turnīrus', 'error'); setLoading(false); return }
+      setTournaments(data ?? [])
+      setLoading(false)
+    }
+    load()
   }, [])
 
   async function handleSignOut() {
@@ -66,6 +68,14 @@ export default function Dashboard() {
                   <span className={`badge ${t.is_active ? 'badge-success' : 'badge-muted'}`}>
                     {t.is_active ? 'Aktīvs' : 'Neaktīvs'}
                   </span>
+                  {(() => {
+                    const pendingCount = (t.teams ?? []).filter(tm => tm.status === 'pending').length
+                    return pendingCount > 0 ? (
+                      <span className="badge badge-warning" style={{ cursor: 'pointer' }}>
+                        {pendingCount} gaida
+                      </span>
+                    ) : null
+                  })()}
                   <Link to={`/admin/tournaments/${t.id}`} className="btn-secondary btn-sm">Rediģēt</Link>
                   <Link to={`/admin/tournaments/${t.id}/age-groups`} className="btn-secondary btn-sm">Vecuma grupas</Link>
                   <Link to={`/admin/tournaments/${t.id}/venues`} className="btn-secondary btn-sm">Vietas</Link>

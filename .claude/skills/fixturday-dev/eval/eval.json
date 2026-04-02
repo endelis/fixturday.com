@@ -1,0 +1,162 @@
+[
+  {
+    "id": "eval-01",
+    "prompt": "Create a React component for the admin fixtures list page that shows all fixtures for an age group, allows the admin to enter scores, and updates Supabase.",
+    "expected_output_description": "Admin fixture list page component with score entry and Supabase mutation",
+    "assertions": [
+      {
+        "id": "a01",
+        "description": "Component does not contain any hardcoded Latvian or English UI strings — all visible text uses t() from useTranslation",
+        "binary": true
+      },
+      {
+        "id": "a02",
+        "description": "Every Supabase query destructures both data and error from the result",
+        "binary": true
+      },
+      {
+        "id": "a03",
+        "description": "Component checks auth (useAuth hook) and redirects if no user",
+        "binary": true
+      },
+      {
+        "id": "a04",
+        "description": "Score mutation is wrapped in try/catch with toast on success and error",
+        "binary": true
+      },
+      {
+        "id": "a05",
+        "description": "CSS is mobile-first (base styles for mobile, media queries for desktop)",
+        "binary": true
+      }
+    ]
+  },
+  {
+    "id": "eval-02",
+    "prompt": "Write the round-robin fixture generator utility function that takes an array of team objects and returns all fixtures across all rounds.",
+    "expected_output_description": "Pure function in src/utils/generators/roundRobin.js",
+    "assertions": [
+      {
+        "id": "a06",
+        "description": "Function contains no Supabase imports or database calls — it is a pure function",
+        "binary": true
+      },
+      {
+        "id": "a07",
+        "description": "Function handles odd number of teams by inserting a bye (null team)",
+        "binary": true
+      },
+      {
+        "id": "a08",
+        "description": "Return value is an array of objects with homeTeamId, awayTeamId, and round properties",
+        "binary": true
+      },
+      {
+        "id": "a09",
+        "description": "Function uses the circle method algorithm (rotate all teams except the first)",
+        "binary": true
+      },
+      {
+        "id": "a10",
+        "description": "Function includes a JSDoc comment explaining parameters and return type",
+        "binary": true
+      }
+    ]
+  },
+  {
+    "id": "eval-03",
+    "prompt": "Create the public-facing standings table component for a tournament age group that shows live rankings and updates in real time when scores are entered.",
+    "expected_output_description": "Public standings component with Supabase Realtime subscription",
+    "assertions": [
+      {
+        "id": "a11",
+        "description": "Component does not import useAuth or any admin-only hooks",
+        "binary": true
+      },
+      {
+        "id": "a12",
+        "description": "Component sets up a Supabase Realtime channel subscription in a useEffect",
+        "binary": true
+      },
+      {
+        "id": "a13",
+        "description": "useEffect cleanup function calls supabase.removeChannel()",
+        "binary": true
+      },
+      {
+        "id": "a14",
+        "description": "Standings are sorted: first by points, then by goal difference, then by goals for",
+        "binary": true
+      },
+      {
+        "id": "a15",
+        "description": "All visible text strings go through t() — no hardcoded column headers like 'Points' or 'Played'",
+        "binary": true
+      }
+    ]
+  },
+  {
+    "id": "eval-04",
+    "prompt": "Write the calculateStandings utility function that takes an array of fixtures and results and returns a sorted standings array.",
+    "expected_output_description": "Pure standings calculation function in src/utils/standings.js",
+    "assertions": [
+      {
+        "id": "a16",
+        "description": "Function is exported as a named export: export function calculateStandings",
+        "binary": true
+      },
+      {
+        "id": "a17",
+        "description": "Win = 3 points, Draw = 1 point, Loss = 0 points is explicitly implemented",
+        "binary": true
+      },
+      {
+        "id": "a18",
+        "description": "Return array objects include all required fields: teamId, played, won, drawn, lost, gf, ga, gd, points",
+        "binary": true
+      },
+      {
+        "id": "a19",
+        "description": "Function contains no Supabase imports or side effects — pure input/output",
+        "binary": true
+      },
+      {
+        "id": "a20",
+        "description": "Sorting handles tiebreaker: goal difference before goals for",
+        "binary": true
+      }
+    ]
+  },
+  {
+    "id": "eval-05",
+    "prompt": "Create the tournament registration form component that allows a team to register for an age group if registration is open. Include all contact fields and submit to Supabase.",
+    "expected_output_description": "Public team registration form using react-hook-form",
+    "assertions": [
+      {
+        "id": "a21",
+        "description": "Form uses react-hook-form (useForm hook) — not uncontrolled inputs or useState per field",
+        "binary": true
+      },
+      {
+        "id": "a22",
+        "description": "Form checks registration_open flag before rendering — shows a closed message if false",
+        "binary": true
+      },
+      {
+        "id": "a23",
+        "description": "Supabase insert sets status field to 'pending' — not 'confirmed' or omitted",
+        "binary": true
+      },
+      {
+        "id": "a24",
+        "description": "All form labels and validation messages go through t() — no hardcoded strings",
+        "binary": true
+      },
+      {
+        "id": "a25",
+        "description": "Form is mobile-first and the submit button is full-width on mobile",
+        "binary": true
+      }
+    ]
+  }
+]

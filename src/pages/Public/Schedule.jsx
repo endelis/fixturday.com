@@ -1,11 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
-import { lv } from 'date-fns/locale'
 import PublicNav from '../../components/PublicNav'
 
 export default function Schedule() {
+  const { t } = useTranslation()
   const { slug, ageGroup: ageGroupId } = useParams()
   const [ag, setAg] = useState(null)
   const [siblings, setSiblings] = useState([])
@@ -74,10 +75,51 @@ export default function Schedule() {
           <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">← Tabula</Link>
         </div>
 
+        {fixtures.filter(f => f.status === 'live').length > 0 && (
+          <div style={{ marginBottom: '2rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-success)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ display: 'inline-block', width: '0.6rem', height: '0.6rem', borderRadius: '50%', background: 'var(--color-success)', animation: 'pulse 1.5s infinite' }} />
+              {t('schedule.liveNow')}
+            </h2>
+            <div style={{ display: 'grid', gap: '0.5rem' }}>
+              {fixtures.filter(f => f.status === 'live').map(f => {
+                const result = f.fixture_results?.[0]
+                return (
+                  <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
+                    {f.kickoff_time && (
+                      <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
+                        {format(new Date(f.kickoff_time), 'HH:mm')}
+                      </span>
+                    )}
+                    <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem' }}>{f.home_team?.name ?? '?'}</span>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
+                      {result
+                        ? `${result.home_goals} : ${result.away_goals}`
+                        : <span className="live-badge">LIVE</span>}
+                    </span>
+                    <span style={{ flex: 1, minWidth: '6rem' }}>{f.away_team?.name ?? '?'}</span>
+                    {f.pitch && (
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
+                        {f.pitch.venues?.name} — {f.pitch.name}
+                      </span>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {Object.keys(grouped).length === 1 && grouped['nav-datuma'] && (
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
+            {t('schedule.noScheduleYet')}
+          </p>
+        )}
+
         {Object.keys(grouped).sort().map(day => (
           <div key={day} style={{ marginBottom: '2rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
-              {day === 'nav-datuma' ? 'Datums nav norādīts' : format(new Date(day), 'd. MMMM yyyy', { locale: lv })}
+              {day === 'nav-datuma' ? t('schedule.noDate') : format(new Date(day), 'dd/MM/yyyy')}
             </h2>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               {grouped[day].map(f => {

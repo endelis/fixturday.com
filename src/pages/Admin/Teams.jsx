@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
@@ -85,6 +86,18 @@ export default function Teams() {
     loadPlayers(teamId)
   }
 
+  async function bulkApprove() {
+    if (!confirm(t('team.confirmApproveAll'))) return
+    const pendingIds = teams.filter(t => t.status === 'pending').map(t => t.id)
+    const { error } = await supabase
+      .from('teams')
+      .update({ status: 'confirmed' })
+      .in('id', pendingIds)
+    if (error) { toast(t('common.error'), 'error'); return }
+    toast(t('team.allApproved'))
+    load()
+  }
+
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   return (
@@ -96,6 +109,11 @@ export default function Teams() {
         >
           ← {ageGroup?.tournaments?.name} / {ageGroup?.name}
         </Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link to={`/admin/age-groups/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
+            {t('fixture.title')}
+          </Link>
+        </div>
       </nav>
 
       <div className="container" style={{ paddingTop: '2rem' }}>
@@ -146,6 +164,14 @@ export default function Teams() {
                 </button>
               </div>
             </form>
+          </div>
+        )}
+
+        {teams.some(team => team.status === 'pending') && (
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '1rem' }}>
+            <button className="btn-primary btn-sm" onClick={bulkApprove}>
+              {t('team.approveAll')}
+            </button>
           </div>
         )}
 
@@ -204,7 +230,7 @@ export default function Teams() {
                         <tr key={p.id}>
                           <td>{p.number ?? '—'}</td>
                           <td>{p.name}</td>
-                          <td>{p.date_of_birth ?? '—'}</td>
+                          <td>{p.date_of_birth ? format(new Date(p.date_of_birth), 'dd/MM/yyyy') : '—'}</td>
                           <td>
                             <button className="btn-danger btn-sm" onClick={() => deletePlayer(p.id, team.id)}>×</button>
                           </td>

@@ -67,7 +67,7 @@ export default function Venues() {
   return (
     <div>
       <nav className="admin-nav">
-        <Link to="/admin/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
+        <Link to={`/admin/tournaments/${tournamentId}/age-groups`} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
           ← {tournament?.name}
         </Link>
         <div style={{ display: 'flex', gap: '0.5rem' }}>

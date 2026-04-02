@@ -2,7 +2,6 @@ import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
-import { lv } from 'date-fns/locale'
 
 export default function Print() {
   const { id: tournamentId } = useParams()
@@ -62,8 +61,8 @@ export default function Print() {
           <h1 style={{ fontFamily: 'Barlow Condensed, sans-serif', fontSize: '2rem', margin: 0 }}>{tournament.name}</h1>
           {tournament.start_date && (
             <p style={{ margin: '0.25rem 0 0', color: '#555', fontSize: '0.875rem' }}>
-              {format(new Date(tournament.start_date), 'd. MMMM yyyy', { locale: lv })}
-              {tournament.end_date && ` – ${format(new Date(tournament.end_date), 'd. MMMM yyyy', { locale: lv })}`}
+              {format(new Date(tournament.start_date), 'dd/MM/yyyy')}
+              {tournament.end_date && ` – ${format(new Date(tournament.end_date), 'dd/MM/yyyy')}`}
             </p>
           )}
         </div>

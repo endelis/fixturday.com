@@ -1,5 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
 
@@ -26,8 +27,9 @@ function slugify(text) {
 
 export default function TournamentNew() {
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
-    defaultValues: { sport: 'football', is_active: true }
+    defaultValues: { sport: 'football', is_active: true, first_game_time: '09:00', last_game_time: '18:00' }
   })
 
   const nameField = register('name', { required: 'Obligāts lauks.' })
@@ -93,6 +95,30 @@ export default function TournamentNew() {
           <div className="form-group">
             <label>Apraksts</label>
             <textarea {...register('description')} rows={3} />
+          </div>
+
+          <div>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
+              {t('tournament.schedulingDefaults')}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label>{t('tournament.firstGameTime')}</label>
+                <input type="time" {...register('first_game_time')} />
+              </div>
+              <div className="form-group">
+                <label>{t('tournament.lastGameTime')}</label>
+                <input type="time" {...register('last_game_time')} />
+              </div>
+              <div className="form-group">
+                <label>{t('tournament.lunchStart')}</label>
+                <input type="time" {...register('lunch_start')} />
+              </div>
+              <div className="form-group">
+                <label>{t('tournament.lunchEnd')}</label>
+                <input type="time" {...register('lunch_end')} />
+              </div>
+            </div>
           </div>
 
           <div className="form-group">

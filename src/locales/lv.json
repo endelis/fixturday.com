@@ -17,7 +17,18 @@
     "delete": "Dzēst",
     "edit": "Rediģēt",
     "active": "Aktīvs",
-    "inactive": "Neaktīvs"
+    "inactive": "Neaktīvs",
+    "schedulingDefaults": "Ieplānošanas noklusējumi",
+    "firstGameTime": "Pirmā spēle",
+    "lastGameTime": "Pēdējā spēle",
+    "lunchStart": "Pusdienu pārtraukums sākums",
+    "lunchEnd": "Pusdienu pārtraukums beigas",
+    "registerCTA": "Pieteikt komandu →",
+    "status": {
+      "ongoing": "Notiek",
+      "upcoming": "Drīzumā",
+      "finished": "Pabeigts"
+    }
   },
   "ageGroup": {
     "title": "Vecuma grupas",
@@ -34,6 +45,8 @@
     "regClosed": "Reģistrācija slēgta",
     "added": "Vecuma grupa pievienota",
     "deleted": "Vecuma grupa dzēsta",
+    "gameDuration": "Spēles ilgums (min.)",
+    "minutes": "min.",
     "formats": {
       "round_robin": "Apļa turnīrs",
       "knockout": "Izslēgšanas kārtas",
@@ -62,6 +75,9 @@
     "playerAdded": "Spēlētājs pievienots",
     "reject": "Noraidīt",
     "confirmDelete": "Dzēst komandu un visus tās spēlētājus?",
+    "approveAll": "Apstiprināt visas",
+    "confirmApproveAll": "Apstiprināt visas gaidošās komandas?",
+    "allApproved": "Visas komandas apstiprinātas!",
     "statuses": {
       "pending": "Gaida apstiprinājumu",
       "confirmed": "Apstiprināta",
@@ -84,7 +100,20 @@
     "away": "Viesi",
     "vs": "pret",
     "score": "Rezultāts",
-    "generate": "Ģenerēt spēles"
+    "generate": "Ģenerēt spēles",
+    "schedule": "Ieplānot spēles",
+    "schedulerTitle": "Spēļu ieplānošana",
+    "schedDate": "Datums",
+    "schedPitches": "Laukumu skaits",
+    "schedFirstGame": "Pirmā spēle",
+    "schedLastGame": "Pēdējā spēle",
+    "schedLunchToggle": "Pusdienu pārtraukums",
+    "schedLunchStart": "Pusdienu pārtraukums sākums",
+    "schedLunchEnd": "Pusdienu pārtraukums beigas",
+    "schedPreview": "Priekšskatīt",
+    "schedConfirm": "Apstiprināt",
+    "schedSaved": "Grafiks saglabāts!",
+    "schedWarnings": "Brīdinājumi"
   },
   "standings": {
     "title": "Tabula",
@@ -96,7 +125,10 @@
     "gf": "GV",
     "ga": "GS",
     "gd": "GS±",
-    "points": "P"
+    "points": "P",
+    "group": "Grupa",
+    "knockout": "Izslēgšanas kārtas",
+    "knockoutPending": "Izslēgšanas kārtas tiks publicētas pēc grupu posma beigām."
   },
   "venue": {
     "title": "Spēļu vietas",
@@ -119,7 +151,44 @@
     "password": "Parole",
     "login": "Pieslēgties",
     "loginError": "Nepareizs e-pasts vai parole.",
-    "logout": "Iziet"
+    "logout": "Iziet",
+    "adminPanel": "Administratora panelis",
+    "forgotPassword": "Aizmirsi paroli?",
+    "enterEmailFirst": "Ievadiet e-pasta adresi.",
+    "resetSent": "Paroles atjaunošanas saite nosūtīta uz e-pastu."
+  },
+  "register": {
+    "title": "Reģistrācija",
+    "ageGroup": "Vecuma grupa",
+    "teamName": "Komandas nosaukums",
+    "club": "Klubs",
+    "contactName": "Kontaktpersona",
+    "email": "E-pasts",
+    "phone": "Tālrunis",
+    "players": "Pievienot spēlētājus",
+    "playersOptional": "(neobligāts)",
+    "addPlayer": "+ Pievienot spēlētāju",
+    "playerName": "Vārds Uzvārds",
+    "playerDob": "Dzimšanas datums",
+    "playerJersey": "Krekla numurs",
+    "submit": "Reģistrēties",
+    "submitting": "Sūta...",
+    "successTitle": "Pieteikums saņemts!",
+    "successBody": "Mēs sazināsimies ar jums tuvākajā laikā.",
+    "backToTournament": "← Atpakaļ uz turnīru",
+    "closed": "Reģistrācija šobrīd nav pieejama. Sekojiet turnīra aktualitātēm.",
+    "notFound": "Turnīrs nav atrasts.",
+    "error": "Radās kļūda. Lūdzu mēģiniet vēlreiz."
+  },
+  "matchday": {
+    "noFixtures": "Nav ieplānotu spēļu šai dienai.",
+    "noFixturesHint": "Izvēlieties citu datumu vai pārbaudiet, vai spēlēm ir iestatīti kickoff laiki.",
+    "confirmPostpone": "Vai tiešām atlikt šo spēli?"
+  },
+  "schedule": {
+    "liveNow": "Notiek tagad",
+    "noDate": "Datums nav norādīts",
+    "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā."
   },
   "common": {
     "save": "Saglabāt",

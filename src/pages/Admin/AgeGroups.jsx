@@ -18,7 +18,7 @@ export default function AgeGroups() {
   async function load() {
     const [{ data: t_ }, { data: ag }] = await Promise.all([
       supabase.from('tournaments').select('*').eq('id', tournamentId).single(),
-      supabase.from('age_groups').select('*').eq('tournament_id', tournamentId).order('name'),
+      supabase.from('age_groups').select('*, teams(id, status)').eq('tournament_id', tournamentId).order('name'),
     ])
     setTournament(t_)
     setAgeGroups(ag ?? [])
@@ -32,6 +32,7 @@ export default function AgeGroups() {
     setValue('name', ag.name)
     setValue('format', ag.format)
     setValue('max_teams', ag.max_teams ?? '')
+    setValue('game_duration_minutes', ag.game_duration_minutes ?? 20)
     setValue('registration_open', ag.registration_open)
     setShowForm(true)
   }
@@ -47,6 +48,7 @@ export default function AgeGroups() {
       ...values,
       tournament_id: tournamentId,
       max_teams: values.max_teams ? Number(values.max_teams) : null,
+      game_duration_minutes: values.game_duration_minutes ? Number(values.game_duration_minutes) : 20,
     }
 
     if (editingId) {
@@ -110,7 +112,7 @@ export default function AgeGroups() {
               {editingId ? t('common.edit') : t('ageGroup.new')}
             </h2>
             <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem' }}>
                 <div className="form-group">
                   <label>{t('ageGroup.name')} *</label>
                   <input {...register('name', { required: t('common.required') })} placeholder="U10" />
@@ -127,6 +129,11 @@ export default function AgeGroups() {
                 <div className="form-group">
                   <label>{t('ageGroup.maxTeams')}</label>
                   <input type="number" {...register('max_teams')} min="2" />
+                </div>
+                <div className="form-group">
+                  <label>{t('ageGroup.gameDuration')} *</label>
+                  <input type="number" {...register('game_duration_minutes', { required: t('common.required'), min: 5, max: 90 })} defaultValue={20} min="5" max="90" />
+                  {errors.game_duration_minutes && <span className="error-message">{errors.game_duration_minutes.message}</span>}
                 </div>
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
@@ -161,6 +168,21 @@ export default function AgeGroups() {
                       · {t('ageGroup.maxTeams').toLowerCase()} {ag.max_teams}
                     </span>
                   )}
+                  {ag.game_duration_minutes && (
+                    <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                      · {ag.game_duration_minutes} {t('ageGroup.minutes')}
+                    </span>
+                  )}
+                  {(() => {
+                    const confirmed = (ag.teams ?? []).filter(t => t.status === 'confirmed').length
+                    const pending   = (ag.teams ?? []).filter(t => t.status === 'pending').length
+                    return (
+                      <span style={{ marginLeft: '0.5rem', color: confirmed >= 2 ? 'var(--color-success)' : 'var(--color-muted)', fontSize: '0.875rem' }}>
+                        · {confirmed} apstiprinātas
+                        {pending > 0 && <span style={{ color: 'var(--color-accent)', marginLeft: '0.25rem' }}>({pending} gaida)</span>}
+                      </span>
+                    )
+                  })()}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
                   <span className={`badge ${ag.registration_open ? 'badge-success' : 'badge-muted'}`}>

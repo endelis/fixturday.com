@@ -1,12 +1,14 @@
 import { useEffect, useState } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
 
 export default function TournamentEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
+  const { t } = useTranslation()
   const [loading, setLoading] = useState(true)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm()
@@ -40,6 +42,10 @@ export default function TournamentEdit() {
         <Link to="/admin/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
           ← Fixturday Admin
         </Link>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <Link to={`/admin/tournaments/${id}/age-groups`} className="btn-secondary btn-sm">Vecuma grupas</Link>
+          <Link to={`/admin/tournaments/${id}/venues`} className="btn-secondary btn-sm">Vietas</Link>
+        </div>
       </nav>
 
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '700px' }}>
@@ -86,6 +92,30 @@ export default function TournamentEdit() {
           <div className="form-group">
             <label>Apraksts</label>
             <textarea {...register('description')} rows={3} />
+          </div>
+
+          <div>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
+              {t('tournament.schedulingDefaults')}
+            </h3>
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div className="form-group">
+                <label>{t('tournament.firstGameTime')}</label>
+                <input type="time" {...register('first_game_time')} />
+              </div>
+              <div className="form-group">
+                <label>{t('tournament.lastGameTime')}</label>
+                <input type="time" {...register('last_game_time')} />
+              </div>
+              <div className="form-group">
+                <label>{t('tournament.lunchStart')}</label>
+                <input type="time" {...register('lunch_start')} />
+              </div>
+              <div className="form-group">
+                <label>{t('tournament.lunchEnd')}</label>
+                <input type="time" {...register('lunch_end')} />
+              </div>
+            </div>
           </div>
 
           <div className="form-group">

@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import PublicNav from '../../components/PublicNav'
 
 export default function TournamentDetail() {
   const { slug } = useParams()
+  const { t } = useTranslation()
   const [tournament, setTournament] = useState(null)
   const [ageGroups, setAgeGroups] = useState([])
   const [loading, setLoading] = useState(true)
@@ -47,6 +49,15 @@ export default function TournamentDetail() {
       <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginTop: '2rem', marginBottom: '1rem' }}>
         Vecuma grupas
       </h2>
+      {ageGroups.some(ag => ag.registration_open) && (
+        <Link
+          to={`/t/${tournament.slug}/register`}
+          className="btn-primary"
+          style={{ display: 'inline-block', marginBottom: '1.5rem', fontSize: '1rem' }}
+        >
+          {t('tournament.registerCTA')}
+        </Link>
+      )}
       {ageGroups.length === 0 ? (
         <p style={{ color: 'var(--color-text-muted)' }}>Nav vecuma grupu.</p>
       ) : (
