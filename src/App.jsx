@@ -22,6 +22,11 @@ import Fixtures from './pages/Admin/Fixtures'
 import Matchday from './pages/Admin/Matchday'
 import Print from './pages/Admin/Print'
 
+// Tournament workspace
+import TournamentLayout from './pages/Admin/Tournament/TournamentLayout'
+import TournamentOverview from './pages/Admin/Tournament/TournamentOverview'
+import TournamentStats from './pages/Admin/Tournament/TournamentStats'
+
 function RequireAuth({ children }) {
   const { session, loading } = useAuth()
   if (loading) return <div className="loading">Ielādē...</div>
@@ -42,17 +47,26 @@ export default function App() {
         <Route path="/t/:slug/:ageGroup/teams/:teamId" element={<TeamRoster />} />
         <Route path="/t/:slug/register" element={<Register />} />
 
-        {/* Admin routes */}
+        {/* Admin: top-level */}
         <Route path="/admin" element={<Login />} />
         <Route path="/admin/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/admin/tournaments/new" element={<RequireAuth><TournamentNew /></RequireAuth>} />
-        <Route path="/admin/tournaments/:id" element={<RequireAuth><TournamentEdit /></RequireAuth>} />
-        <Route path="/admin/tournaments/:id/age-groups" element={<RequireAuth><AgeGroups /></RequireAuth>} />
-        <Route path="/admin/tournaments/:id/venues" element={<RequireAuth><Venues /></RequireAuth>} />
-        <Route path="/admin/age-groups/:ageGroupId/teams" element={<RequireAuth><Teams /></RequireAuth>} />
-        <Route path="/admin/age-groups/:ageGroupId/fixtures" element={<RequireAuth><Fixtures /></RequireAuth>} />
         <Route path="/admin/matchday" element={<RequireAuth><Matchday /></RequireAuth>} />
         <Route path="/admin/tournaments/:id/print" element={<RequireAuth><Print /></RequireAuth>} />
+
+        {/* Age-group-scoped routes (outside tournament layout) */}
+        <Route path="/admin/age-groups/:ageGroupId/teams" element={<RequireAuth><Teams /></RequireAuth>} />
+        <Route path="/admin/age-groups/:ageGroupId/fixtures" element={<RequireAuth><Fixtures /></RequireAuth>} />
+
+        {/* Tournament workspace — nested routes with sidebar layout */}
+        <Route path="/admin/tournaments/:id" element={<TournamentLayout />}>
+          <Route index element={<Navigate to="overview" replace />} />
+          <Route path="overview" element={<TournamentOverview />} />
+          <Route path="age-groups" element={<AgeGroups />} />
+          <Route path="venues" element={<Venues />} />
+          <Route path="stats" element={<TournamentStats />} />
+          <Route path="settings" element={<TournamentEdit />} />
+        </Route>
       </Routes>
     </BrowserRouter>
   )

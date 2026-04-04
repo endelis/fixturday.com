@@ -202,6 +202,11 @@
     "notFound": "Turnīrs nav atrasts.",
     "error": "Radās kļūda. Lūdzu mēģiniet vēlreiz."
   },
+  "stats": {
+    "total": "Kopā spēles",
+    "completed": "Pabeigtas",
+    "pending": "Atlikušās"
+  },
   "matchday": {
     "noFixtures": "Nav ieplānotu spēļu šai dienai.",
     "noFixturesHint": "Izvēlieties citu datumu vai pārbaudiet, vai spēlēm ir iestatīti kickoff laiki.",
@@ -211,6 +216,43 @@
     "liveNow": "Notiek tagad",
     "noDate": "Datums nav norādīts",
     "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā."
+  },
+  "workspace": {
+    "navOverview": "Pārskats",
+    "navAgeGroups": "Vecuma grupas",
+    "navVenues": "Vietas",
+    "navStats": "Statistika",
+    "navSettings": "Iestatījumi",
+    "navMatchday": "Matchday",
+    "backToDashboard": "Visi turnīri",
+    "notFound": "Turnīrs nav atrasts.",
+    "statAgeGroups": "Vecuma grupas",
+    "statTeams": "Komandas",
+    "statFixtures": "Spēles",
+    "statCompleted": "Pabeigtas",
+    "setupStep1": "Pievienot vecuma grupu",
+    "setupStep2": "Pievienot spēļu vietu",
+    "setupStep3": "Pievienot komandas",
+    "setupStep4": "Ģenerēt spēles",
+    "quickLinks": "Ātrās saites"
+  },
+  "wizard": {
+    "title": "Iestatīšanas palīgs",
+    "subtitle": "Veiciet šos soļus, lai sagatavotu turnīru.",
+    "stepLabel": "Solis {{current}} no {{total}}",
+    "step1Title": "Vecuma grupas",
+    "step1Desc": "Pievienojiet vismaz vienu vecuma grupu.",
+    "step2Title": "Vietas & Laukumi",
+    "step2Desc": "Pievienojiet spēļu norises vietu ar laukumiem.",
+    "step3Title": "Komandas",
+    "step3Desc": "Pievienojiet komandas vai atveriet reģistrāciju.",
+    "step4Title": "Spēļu grafiks",
+    "step4Desc": "Ģenerējiet spēļu grafiku vecuma grupai.",
+    "open": "Atvērt",
+    "skip": "Izlaist",
+    "finish": "Pabeigt",
+    "dismiss": "Nerādīt vairāk",
+    "setupProgress": "Iestatīšanas progress"
   },
   "common": {
     "save": "Saglabāt",

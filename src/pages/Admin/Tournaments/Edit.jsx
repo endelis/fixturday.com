@@ -100,16 +100,6 @@ export default function TournamentEdit() {
 
   return (
     <div>
-      <nav className="admin-nav">
-        <Link to="/admin/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-          ← Fixturday Admin
-        </Link>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to={`/admin/tournaments/${id}/age-groups`} className="btn-secondary btn-sm">{t('ageGroup.title')}</Link>
-          <Link to={`/admin/tournaments/${id}/venues`} className="btn-secondary btn-sm">{t('venue.title')}</Link>
-        </div>
-      </nav>
-
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '700px' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('tournament.editTitle')}</h1>

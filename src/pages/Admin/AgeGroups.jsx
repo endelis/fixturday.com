@@ -87,15 +87,6 @@ export default function AgeGroups() {
 
   return (
     <div>
-      <nav className="admin-nav">
-        <Link to="/admin/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-          ← {tournament?.name}
-        </Link>
-        <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to={`/admin/tournaments/${tournamentId}/venues`} className="btn-secondary btn-sm">{t('venue.title')}</Link>
-        </div>
-      </nav>
-
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('ageGroup.title')}</h1>

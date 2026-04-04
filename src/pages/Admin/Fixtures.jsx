@@ -173,22 +173,22 @@ export default function Fixtures() {
 
   async function confirmSchedule() {
     if (!schedResult?.schedule?.length) return
-    console.log('[Scheduler] confirming', schedResult.schedule.length, 'slots')
     setSchedSaving(true)
     try {
-      for (const item of schedResult.schedule) {
-        const { error } = await supabase
+      const updates = schedResult.schedule.map(item =>
+        supabase
           .from('fixtures')
           .update({ kickoff_time: item.kickoff, pitch_id: pitches[item.pitchIndex]?.id || null })
           .eq('id', item.fixtureId)
-        if (error) throw error
-      }
+      )
+      const results = await Promise.all(updates)
+      const failed = results.find(r => r.error)
+      if (failed) throw failed.error
       toast(t('fixture.schedSaved'))
       setSchedulerOpen(false)
       setSchedResult(null)
       load()
     } catch (err) {
-      console.error('[Scheduler] confirm error:', err)
       toast(`${t('common.error')}: ${err.message}`, 'error')
     } finally {
       setSchedSaving(false)
