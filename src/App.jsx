@@ -18,7 +18,7 @@ import TournamentEdit from './pages/Admin/Tournaments/Edit'
 import AgeGroups from './pages/Admin/AgeGroups'
 import Venues from './pages/Admin/Venues'
 import Teams from './pages/Admin/Teams'
-import Fixtures from './pages/Admin/Fixtures'
+import Fixtures from './pages/Admin/Fixtures/index'
 import Matchday from './pages/Admin/Matchday'
 import Print from './pages/Admin/Print'
 
