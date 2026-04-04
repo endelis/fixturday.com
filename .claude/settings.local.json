@@ -7,7 +7,23 @@
       "Bash(cd:*)",
       "Bash(npm install:*)",
       "Bash(npm run:*)",
-      "Bash(gh repo:*)"
+      "Bash(gh repo:*)",
+      "Bash(mv ~/Downloads/SKILL.md ~/.claude/skills/fixturday-dev/SKILL.md)",
+      "Bash(mv ~/Downloads/eval.json ~/.claude/skills/fixturday-dev/eval/eval.json)",
+      "Bash(mv ~/Downloads/loop-prompt.md ~/.claude/skills/fixturday-dev/eval/loop-prompt.md)",
+      "Bash(mkdir -p C:/Users/liels/fixturday.com/.claude/skills/fixturday-dev/eval)",
+      "Bash(cp ~/.claude/skills/fixturday-dev/SKILL.md C:/Users/liels/fixturday.com/.claude/skills/fixturday-dev/)",
+      "Bash(cp ~/.claude/skills/fixturday-dev/eval/eval.json C:/Users/liels/fixturday.com/.claude/skills/fixturday-dev/eval/)",
+      "Bash(cp ~/.claude/skills/fixturday-dev/eval/loop-prompt.md C:/Users/liels/fixturday.com/.claude/skills/fixturday-dev/eval/)",
+      "Bash(git checkout:*)",
+      "Bash(git push:*)",
+      "Bash(node --input-type=module)",
+      "Bash(node -e \"import\\('./src/utils/scheduler.js'\\).then\\(m => { const r = m.generateSchedule\\({ fixtures: [{id:'a',homeTeamId:'1',awayTeamId:'2'},{id:'b',homeTeamId:'3',awayTeamId:'4'}], pitchCount:2, gameDuration:20, firstGameTime:'09:00', lastGameTime:'18:00', lunchStart:null, lunchEnd:null, date:'2026-04-17' }\\); console.log\\(JSON.stringify\\(r, null, 2\\)\\) }\\).catch\\(e => console.error\\(e.message\\)\\)\")",
+      "Bash(mkdir -p ~/fixturday.com/.claude/skills/fixturday-dev)",
+      "Bash(cp ~/.claude/skills/fixturday-dev/SKILL.md ~/fixturday.com/.claude/skills/fixturday-dev/SKILL.md)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git merge:*)"
     ]
   }
 }
