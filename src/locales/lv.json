@@ -210,12 +210,33 @@
   "matchday": {
     "noFixtures": "Nav ieplānotu spēļu šai dienai.",
     "noFixturesHint": "Izvēlieties citu datumu vai pārbaudiet, vai spēlēm ir iestatīti kickoff laiki.",
-    "confirmPostpone": "Vai tiešām atlikt šo spēli?"
+    "confirmPostpone": "Vai tiešām atlikt šo spēli?",
+    "filterAll": "Visas",
+    "filterPending": "Gaidāmas",
+    "filterCompleted": "Pabeigtas",
+    "saveAll": "Saglabāt visas",
+    "allSaved": "Visi rezultāti saglabāti!",
+    "statusPending": "Gaidāma",
+    "statusCompleted": "Pabeigta",
+    "statusPostponed": "Atlikta",
+    "postponeBtn": "Atlikt",
+    "updateBtn": "Atjaunināt",
+    "saveBtn": "Saglabāt"
   },
   "schedule": {
     "liveNow": "Notiek tagad",
     "noDate": "Datums nav norādīts",
     "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā."
+  },
+  "dashboard": {
+    "loadError": "Kļūda ielādējot turnīrus",
+    "noTournaments": "Nav turnīru.",
+    "createFirst": "Izveidot pirmo →",
+    "viewPublic": "Skatīt publiski ↗",
+    "print": "Drukāt",
+    "teamsLabel": "komandas",
+    "fixturesLabel": "spēles",
+    "pending": "gaida"
   },
   "workspace": {
     "navOverview": "Pārskats",
@@ -237,6 +258,7 @@
     "quickLinks": "Ātrās saites"
   },
   "wizard": {
+    "stepDone": "Solis pabeigts!",
     "title": "Iestatīšanas palīgs",
     "subtitle": "Veiciet šos soļus, lai sagatavotu turnīru.",
     "stepLabel": "Solis {{current}} no {{total}}",
@@ -269,6 +291,7 @@
     "success": "Saglabāts!",
     "confirmDelete": "Vai tiešām dzēst?",
     "noData": "Nav datu",
+    "lastUpdated": "Atjaunots: {{time}}",
     "required": "Obligāts lauks."
   }
 }

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, NavLink, Link, useParams, Navigate } from 'react-router-dom'
+import { Outlet, NavLink, Link, useParams, Navigate, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
@@ -23,23 +23,65 @@ export default function TournamentLayout() {
   const { id } = useParams()
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
+  const navigate = useNavigate()
   const [tournament, setTournament] = useState(null)
-  const [ageGroupCount, setAgeGroupCount] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
-  const [wizardStep, setWizardStep] = useState(0)
+  // stepsComplete[0..3]: age groups, venues, confirmed teams, fixtures
+  const [stepsComplete, setStepsComplete] = useState([false, false, false, false])
   const [wizardDismissed, setWizardDismissed] = useState(
     () => localStorage.getItem(`fixturday_wizard_dismissed_${id}`) === 'true'
   )
+  // wizardVisible: set after load, can be closed without dismissing permanently
+  const [wizardVisible, setWizardVisible] = useState(false)
+  const [wizardStep, setWizardStep] = useState(0)
 
   useEffect(() => {
     async function load() {
-      const [{ data: tourney }, { count }] = await Promise.all([
+      // Fetch tournament, age group count, and venues count in parallel
+      const [{ data: tourney }, { count: agCnt }, { count: venCnt }] = await Promise.all([
         supabase.from('tournaments').select('id, name, sport, is_active').eq('id', id).single(),
         supabase.from('age_groups').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
+        supabase.from('venues').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
       ])
       setTournament(tourney)
-      setAgeGroupCount(count ?? 0)
+
+      // Steps 3-4 require age group IDs — only fetch if age groups exist
+      let teamsCnt = 0, fixCnt = 0
+      if ((agCnt ?? 0) > 0) {
+        const { data: ags } = await supabase
+          .from('age_groups').select('id').eq('tournament_id', id)
+        const agIds = (ags ?? []).map(a => a.id)
+
+        const [{ count: tc }, { data: stages }] = await Promise.all([
+          supabase.from('teams').select('id', { count: 'exact', head: true })
+            .in('age_group_id', agIds).eq('status', 'confirmed'),
+          supabase.from('stages').select('id').in('age_group_id', agIds),
+        ])
+        teamsCnt = tc ?? 0
+
+        if ((stages ?? []).length > 0) {
+          const { count: fc } = await supabase.from('fixtures')
+            .select('id', { count: 'exact', head: true })
+            .in('stage_id', stages.map(s => s.id))
+          fixCnt = fc ?? 0
+        }
+      }
+
+      const done = [
+        (agCnt ?? 0) > 0,
+        (venCnt ?? 0) > 0,
+        teamsCnt > 0,
+        fixCnt > 0,
+      ]
+      setStepsComplete(done)
+
+      // Only show wizard after data is loaded and we know which steps are incomplete
+      const dismissed = localStorage.getItem(`fixturday_wizard_dismissed_${id}`) === 'true'
+      if (!dismissed && done.some(s => !s)) {
+        setWizardVisible(true)
+      }
+
       setLoading(false)
     }
     load()
@@ -49,19 +91,23 @@ export default function TournamentLayout() {
   if (!user) return <Navigate to="/admin" replace />
   if (!tournament) return <div className="loading">{t('workspace.notFound')}</div>
 
-  const showWizard = ageGroupCount === 0 && !wizardDismissed
-
   function dismissWizard() {
     localStorage.setItem(`fixturday_wizard_dismissed_${id}`, 'true')
     setWizardDismissed(true)
+    setWizardVisible(false)
   }
 
   function skipStep() {
     if (wizardStep < WIZARD_STEPS.length - 1) {
       setWizardStep(s => s + 1)
     } else {
-      dismissWizard()
+      setWizardVisible(false)
     }
+  }
+
+  function openWizardStep(path) {
+    setWizardVisible(false)
+    navigate(`/admin/tournaments/${id}/${path}`)
   }
 
   const navLinkStyle = ({ isActive }) => ({
@@ -106,7 +152,6 @@ export default function TournamentLayout() {
         }
       `}</style>
 
-      {/* Sidebar */}
       <aside className={`t-sidebar${sidebarOpen ? ' open' : ''}`}>
         <div style={{ padding: '1.25rem', borderBottom: '1px solid rgba(255,255,255,0.06)' }}>
           <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-accent)', lineHeight: 1.3 }}>
@@ -128,7 +173,7 @@ export default function TournamentLayout() {
               style={navLinkStyle}
               onClick={() => setSidebarOpen(false)}
             >
-              <span style={{ width: '1.25rem', textAlign: 'center', fontSize: '1rem' }}>{item.icon}</span>
+              <span style={{ width: '1.25rem', textAlign: 'center' }}>{item.icon}</span>
               {t(item.labelKey)}
             </NavLink>
           ))}
@@ -137,7 +182,7 @@ export default function TournamentLayout() {
             style={navLinkStyle({ isActive: false })}
             onClick={() => setSidebarOpen(false)}
           >
-            <span style={{ width: '1.25rem', textAlign: 'center', fontSize: '1rem' }}>⚽</span>
+            <span style={{ width: '1.25rem', textAlign: 'center' }}>⚽</span>
             {t('workspace.navMatchday')}
           </Link>
         </nav>
@@ -149,36 +194,25 @@ export default function TournamentLayout() {
         </div>
       </aside>
 
-      {/* Mobile overlay */}
-      <div
-        className={`t-overlay${sidebarOpen ? ' open' : ''}`}
-        onClick={() => setSidebarOpen(false)}
-      />
+      <div className={`t-overlay${sidebarOpen ? ' open' : ''}`} onClick={() => setSidebarOpen(false)} />
 
-      {/* Main */}
       <main className="t-main">
         <div style={{
           padding: '0.75rem 1.25rem',
           background: 'var(--color-surface)',
           borderBottom: '1px solid rgba(255,255,255,0.06)',
-          display: 'flex',
-          alignItems: 'center',
-          gap: '0.75rem',
+          display: 'flex', alignItems: 'center', gap: '0.75rem',
         }}>
-          <button
-            className="t-hamburger btn-secondary btn-sm"
-            onClick={() => setSidebarOpen(o => !o)}
-          >
+          <button className="t-hamburger btn-secondary btn-sm" onClick={() => setSidebarOpen(o => !o)}>
             ☰
           </button>
           <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>{tournament.name}</span>
         </div>
-
-        <Outlet context={{ tournament, ageGroupCount }} />
+        <Outlet context={{ tournament, stepsComplete }} />
       </main>
 
-      {/* Setup wizard overlay */}
-      {showWizard && (
+      {/* Setup wizard — only rendered after data loads, only when steps remain */}
+      {wizardVisible && (
         <div style={{
           position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -187,10 +221,8 @@ export default function TournamentLayout() {
           <div style={{
             background: 'var(--color-surface)',
             border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '12px',
-            padding: '2rem',
-            width: '100%',
-            maxWidth: '460px',
+            borderRadius: '12px', padding: '2rem',
+            width: '100%', maxWidth: '460px',
           }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '0.35rem' }}>
               {t('wizard.title')}
@@ -204,7 +236,11 @@ export default function TournamentLayout() {
               {WIZARD_STEPS.map((_, i) => (
                 <div key={i} style={{
                   flex: 1, height: '4px', borderRadius: '2px',
-                  background: i <= wizardStep ? 'var(--color-accent)' : 'rgba(255,255,255,0.15)',
+                  background: stepsComplete[i]
+                    ? 'var(--color-success)'
+                    : i === wizardStep
+                      ? 'var(--color-accent)'
+                      : 'rgba(255,255,255,0.15)',
                   transition: 'background 0.25s',
                 }} />
               ))}
@@ -215,21 +251,21 @@ export default function TournamentLayout() {
                 {t('wizard.stepLabel', { current: wizardStep + 1, total: WIZARD_STEPS.length })}
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', marginBottom: '0.4rem' }}>
-                {t(WIZARD_STEPS[wizardStep].titleKey)}
+                {stepsComplete[wizardStep] && '✓ '}{t(WIZARD_STEPS[wizardStep].titleKey)}
               </h3>
               <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>
-                {t(WIZARD_STEPS[wizardStep].descKey)}
+                {stepsComplete[wizardStep]
+                  ? t('wizard.stepDone')
+                  : t(WIZARD_STEPS[wizardStep].descKey)}
               </p>
             </div>
 
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <NavLink
-                to={`/admin/tournaments/${id}/${WIZARD_STEPS[wizardStep].path}`}
-                className="btn-primary"
-                onClick={() => setSidebarOpen(false)}
-              >
-                {t('wizard.open')}
-              </NavLink>
+              {!stepsComplete[wizardStep] && (
+                <button className="btn-primary" onClick={() => openWizardStep(WIZARD_STEPS[wizardStep].path)}>
+                  {t('wizard.open')}
+                </button>
+              )}
               <button className="btn-secondary" onClick={skipStep}>
                 {wizardStep < WIZARD_STEPS.length - 1 ? t('wizard.skip') : t('wizard.finish')}
               </button>

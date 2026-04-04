@@ -12,6 +12,7 @@ export default function Schedule() {
   const [siblings, setSiblings] = useState([])
   const [fixtures, setFixtures] = useState([])
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -44,6 +45,7 @@ export default function Schedule() {
         .order('kickoff_time', { ascending: true })
 
       setFixtures(fx ?? [])
+      setLastUpdated(new Date())
       setLoading(false)
     }
     load()
@@ -51,9 +53,15 @@ export default function Schedule() {
     const channel = supabase
       .channel(`schedule-${ageGroupId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, () => load())
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'fixtures' }, () => load())
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    const poll = setInterval(load, 30000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(poll)
+    }
   }, [ageGroupId])
 
   if (loading) return <div className="loading">Ielādē...</div>
@@ -72,7 +80,14 @@ export default function Schedule() {
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>
             {ag?.name} — Spēļu grafiks
           </h1>
-          <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">← Tabula</Link>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {lastUpdated && (
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
+                {t('common.lastUpdated', { time: format(lastUpdated, 'HH:mm') })}
+              </span>
+            )}
+            <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">← Tabula</Link>
+          </div>
         </div>
 
         {fixtures.filter(f => f.status === 'live').length > 0 && (

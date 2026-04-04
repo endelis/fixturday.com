@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
@@ -10,6 +11,7 @@ export default function Standings() {
   const { t } = useTranslation()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [lastUpdated, setLastUpdated] = useState(null)
 
   useEffect(() => {
     async function load() {
@@ -37,6 +39,7 @@ export default function Standings() {
         : { data: [] }
 
       setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
+      setLastUpdated(new Date())
       setLoading(false)
     }
     load()
@@ -46,7 +49,12 @@ export default function Standings() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, () => load())
       .subscribe()
 
-    return () => supabase.removeChannel(channel)
+    const poll = setInterval(load, 30000)
+
+    return () => {
+      supabase.removeChannel(channel)
+      clearInterval(poll)
+    }
   }, [ageGroupId])
 
   if (loading) return <div className="loading">Ielādē...</div>
@@ -67,9 +75,16 @@ export default function Standings() {
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>{ag.name} — Tabula</h1>
-          <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
-            Spēļu grafiks →
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            {lastUpdated && (
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
+                {t('common.lastUpdated', { time: format(lastUpdated, 'HH:mm') })}
+              </span>
+            )}
+            <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
+              Spēļu grafiks →
+            </Link>
+          </div>
         </div>
 
         {standings.length === 0 ? (
