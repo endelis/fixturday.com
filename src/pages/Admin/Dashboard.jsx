@@ -14,7 +14,7 @@ export default function Dashboard() {
     async function load() {
       const { data, error } = await supabase
         .from('tournaments')
-        .select('*, teams(id, status)')
+        .select('*, age_groups(id, teams(id, status))')
         .order('created_at', { ascending: false })
       if (error) { toast('Kļūda ielādējot turnīrus', 'error'); setLoading(false); return }
       setTournaments(data ?? [])
@@ -69,7 +69,7 @@ export default function Dashboard() {
                     {t.is_active ? 'Aktīvs' : 'Neaktīvs'}
                   </span>
                   {(() => {
-                    const pendingCount = (t.teams ?? []).filter(tm => tm.status === 'pending').length
+                    const pendingCount = (t.age_groups ?? []).flatMap(ag => ag.teams ?? []).filter(tm => tm.status === 'pending').length
                     return pendingCount > 0 ? (
                       <span className="badge badge-warning" style={{ cursor: 'pointer' }}>
                         {pendingCount} gaida
