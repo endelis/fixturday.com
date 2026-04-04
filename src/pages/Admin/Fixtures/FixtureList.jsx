@@ -27,9 +27,13 @@ export default function FixtureList({ byRound, pitches, teams, updateFixture }) 
               {byRound[round].map(f => (
                 <div key={f.id} className="card" style={{ padding: '0.75rem 1rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-                    <span style={{ flex: 1, textAlign: 'right', fontWeight: 600 }}>{f.home_team?.name}</span>
+                    <span style={{ flex: 1, textAlign: 'right', fontWeight: 600 }}>
+                      {f.home_team?.name ?? f.home_placeholder ?? '?'}
+                    </span>
                     <span style={{ color: 'var(--color-text-muted)' }}>pret</span>
-                    <span style={{ flex: 1, fontWeight: 600 }}>{f.away_team?.name}</span>
+                    <span style={{ flex: 1, fontWeight: 600 }}>
+                      {f.away_team?.name ?? f.away_placeholder ?? '?'}
+                    </span>
                     <input
                       type="datetime-local"
                       defaultValue={f.kickoff_time ? format(new Date(f.kickoff_time), "yyyy-MM-dd'T'HH:mm") : ''}

@@ -26,6 +26,8 @@ import Print from './pages/Admin/Print'
 import TournamentLayout from './pages/Admin/Tournament/TournamentLayout'
 import TournamentOverview from './pages/Admin/Tournament/TournamentOverview'
 import TournamentStats from './pages/Admin/Tournament/TournamentStats'
+import TournamentStandings from './pages/Admin/Tournament/TournamentStandings'
+import TournamentPlayoff from './pages/Admin/Tournament/TournamentPlayoff'
 
 function RequireAuth({ children }) {
   const { session, loading } = useAuth()
@@ -65,6 +67,8 @@ export default function App() {
           <Route path="age-groups" element={<AgeGroups />} />
           <Route path="venues" element={<Venues />} />
           <Route path="stats" element={<TournamentStats />} />
+          <Route path="standings" element={<TournamentStandings />} />
+          <Route path="playoff" element={<TournamentPlayoff />} />
           <Route path="settings" element={<TournamentEdit />} />
         </Route>
       </Routes>

@@ -14,6 +14,8 @@ const WIZARD_STEPS = [
 const NAV_ITEMS = [
   { path: 'overview',    icon: '◎', labelKey: 'workspace.navOverview' },
   { path: 'age-groups',  icon: '👥', labelKey: 'workspace.navAgeGroups' },
+  { path: 'standings',   icon: '📋', labelKey: 'workspace.navStandings' },
+  { path: 'playoff',     icon: '🏆', labelKey: 'workspace.navPlayoff' },
   { path: 'venues',      icon: '🏟', labelKey: 'workspace.navVenues' },
   { path: 'stats',       icon: '📊', labelKey: 'workspace.navStats' },
   { path: 'settings',    icon: '⚙',  labelKey: 'workspace.navSettings' },

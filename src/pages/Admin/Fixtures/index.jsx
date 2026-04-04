@@ -24,7 +24,7 @@ export default function Fixtures() {
       supabase.from('age_groups').select('*, tournaments(id, name, first_game_time, last_game_time, lunch_start, lunch_end)').eq('id', ageGroupId).single(),
       supabase.from('teams').select('*').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
       supabase.from('stages').select('*').eq('age_group_id', ageGroupId).order('sequence'),
-      supabase.from('fixtures').select('*, round_name, group_label, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), pitch:pitches(name), stages!inner(age_group_id, type)').eq('stages.age_group_id', ageGroupId).order('round'),
+      supabase.from('fixtures').select('*, round_name, group_label, home_placeholder, away_placeholder, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), pitch:pitches(name), stages!inner(age_group_id, type)').eq('stages.age_group_id', ageGroupId).order('round'),
     ])
     setAgeGroup(ag)
     setTeams(tm ?? [])
@@ -44,15 +44,37 @@ export default function Fixtures() {
     setGenerating(true)
 
     if (ageGroup.format === 'group_knockout') {
+      const groupsCount = ageGroup.groups_count ?? 2
+      const teamsAdvancing = ageGroup.teams_advancing ?? 2
+
       const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Grupu posms', type: 'group', sequence: stages.length + 1 }).select().single()
       if (gsError) { toast(`Kļūda: ${gsError.message}`, 'error'); setGenerating(false); return }
-      const { allFixtures } = generateGroupStage(teams)
-      const groupRows = allFixtures.filter(f => f.home?.id && f.away?.id).map(f => ({ stage_id: groupStage.id, home_team_id: f.home.id, away_team_id: f.away.id, round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled' }))
+
+      const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing)
+      const groupRows = groupFixtures.map(f => ({ stage_id: groupStage.id, home_team_id: f.homeTeamId, away_team_id: f.awayTeamId, round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled' }))
       const { error: gfError } = await supabase.from('fixtures').insert(groupRows)
       if (gfError) { toast(`Kļūda: ${gfError.message}`, 'error'); setGenerating(false); return }
-      const { error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Izslēgšanas kārtas', type: 'knockout', sequence: stages.length + 2 })
+
+      const { data: knockoutStage, error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Izslēgšanas kārtas', type: 'knockout', sequence: stages.length + 2 }).select().single()
       if (ksError) { toast(`Kļūda: ${ksError.message}`, 'error'); setGenerating(false); return }
-      toast(`${groupRows.length} spēles ģenerētas!`)
+
+      if (knockoutFixtures.length > 0) {
+        const knockoutRows = knockoutFixtures.map(f => ({
+          stage_id: knockoutStage.id,
+          home_team_id: null,
+          away_team_id: null,
+          round: f.round,
+          round_name: null,
+          group_label: null,
+          home_placeholder: f.home_placeholder,
+          away_placeholder: f.away_placeholder,
+          status: 'scheduled',
+        }))
+        const { error: kfError } = await supabase.from('fixtures').insert(knockoutRows)
+        if (kfError) { toast(`Kļūda: ${kfError.message}`, 'error'); setGenerating(false); return }
+      }
+
+      toast(`${groupRows.length} grupu spēles un ${knockoutFixtures.length} izslēgšanas spēles ģenerētas!`)
       setGenerating(false); load(); return
     }
 

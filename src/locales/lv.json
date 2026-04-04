@@ -68,6 +68,11 @@
     "added": "Vecuma grupa pievienota",
     "deleted": "Vecuma grupa dzēsta",
     "gameDuration": "Spēles ilgums (min.)",
+    "pitchGap": "Starplaiks starp spēlēm (min.)",
+    "teamRest": "Minimālais atpūtas laiks (min.)",
+    "groupsCount": "Grupu skaits",
+    "teamsAdvancing": "Komandas kas virzās tālāk",
+    "edit": "Rediģēt",
     "minutes": "min.",
     "formats": {
       "round_robin": "Apļa turnīrs",
@@ -153,7 +158,8 @@
     "points": "P",
     "group": "Grupa",
     "knockout": "Izslēgšanas kārtas",
-    "knockoutPending": "Izslēgšanas kārtas tiks publicētas pēc grupu posma beigām."
+    "knockoutPending": "Izslēgšanas kārtas tiks publicētas pēc grupu posma beigām.",
+    "print": "Drukāt"
   },
   "venue": {
     "title": "Spēļu vietas",
@@ -248,6 +254,8 @@
     "navVenues": "Vietas",
     "navStats": "Statistika",
     "navSettings": "Iestatījumi",
+    "navStandings": "Tabula",
+    "navPlayoff": "Playoff tabula",
     "navMatchday": "Rezultātu reģistrs",
     "backToDashboard": "Visi turnīri",
     "notFound": "Turnīrs nav atrasts.",
@@ -296,6 +304,7 @@
     "confirmDelete": "Vai tiešām dzēst?",
     "noData": "Nav datu",
     "lastUpdated": "Atjaunots: {{time}}",
-    "required": "Obligāts lauks."
+    "required": "Obligāts lauks.",
+    "download": "Lejupielādēt"
   }
 }

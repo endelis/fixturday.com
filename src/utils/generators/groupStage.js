@@ -1,28 +1,32 @@
 import { generateRoundRobin } from './roundRobin'
+import { nextPowerOf2, getRoundName } from './knockout'
 
 /**
- * generateGroupStage(teams, groupCount)
+ * generateGroupStage(teams, groupsCount, teamsAdvancing)
  *
  * Splits teams into groups and generates round-robin fixtures within each group.
- * Returns group phase fixtures + metadata needed to set up knockout later.
+ * Also generates placeholder knockout fixtures based on how many teams advance
+ * from each group.
  *
  * @param {Array<{id:*, name:string}>} teams - confirmed teams
- * @param {number} groupCount - number of groups (default: auto based on team count)
+ * @param {number} groupsCount - number of groups (default 2)
+ * @param {number} teamsAdvancing - teams advancing per group (default 2)
  * @returns {{
  *   groups: Array<{ name: string, teams: Array, fixtures: Array }>,
- *   allFixtures: Array<{ home, away, round, group: string }>
+ *   allFixtures: Array<{ home, away, round, group: string }>,
+ *   groupFixtures: Array<{ homeTeamId, awayTeamId, round, group, home_placeholder, away_placeholder }>,
+ *   knockoutFixtures: Array<{ homeTeamId, awayTeamId, round, group, home_placeholder, away_placeholder }>
  * }}
  *
  * Edge cases:
  *  - < 4 teams → falls back to single round-robin group
  *  - Uneven split → extra teams go to earlier groups (groups[0] gets the remainder)
  */
-export function generateGroupStage(teams, groupCount) {
-  if (!teams || teams.length < 2) return { groups: [], allFixtures: [] }
+export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2) {
+  if (!teams || teams.length < 2) return { groups: [], allFixtures: [], groupFixtures: [], knockoutFixtures: [] }
 
-  // Auto group count: aim for 4 teams per group
-  const count = groupCount ?? Math.max(2, Math.round(teams.length / 4))
-  const actualCount = Math.min(count, Math.floor(teams.length / 2))
+  // Clamp group count to a sensible value
+  const actualCount = Math.min(groupsCount, Math.floor(teams.length / 2))
 
   // Split teams into groups
   const shuffled = [...teams] // preserve original order (caller can shuffle if needed)
@@ -43,10 +47,74 @@ export function generateGroupStage(teams, groupCount) {
     groups.push({ name, teams: groupTeams, fixtures })
   }
 
+  const allFixtures = groups.flatMap(g => g.fixtures)
+
+  // Build normalized groupFixtures array
+  const groupFixtures = allFixtures
+    .filter(f => f.home?.id && f.away?.id)
+    .map(f => ({
+      homeTeamId: f.home.id,
+      awayTeamId: f.away.id,
+      round: f.round,
+      group: f.group ?? null,
+      home_placeholder: null,
+      away_placeholder: null,
+    }))
+
+  // Generate placeholder knockout fixtures
+  // Total playoff slots = groupsCount * teamsAdvancing, padded to next power of 2
+  const totalPlayoffTeams = actualCount * teamsAdvancing
+  const knockoutFixtures = generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams)
+
   return {
     groups,
-    allFixtures: groups.flatMap(g => g.fixtures),
+    allFixtures,
+    groupFixtures,
+    knockoutFixtures,
   }
+}
+
+/**
+ * Builds placeholder knockout fixtures.
+ * Slot order: 1st from gr A, 1st from gr B, ..., 2nd from gr A, 2nd from gr B, ...
+ * Then paired using standard seeding: slot[i] vs slot[total-1-i].
+ */
+function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams) {
+  if (totalPlayoffTeams < 2) return []
+
+  // Build an ordered list of placeholder labels
+  // e.g. for 2 groups, 2 advancing: [A1, B1, A2, B2]
+  const placeholders = []
+  for (let pos = 1; pos <= teamsAdvancing; pos++) {
+    for (let g = 0; g < groupsCount; g++) {
+      const groupLetter = String.fromCharCode(65 + g) // A, B, C ...
+      placeholders.push(`${groupLetter} ${pos}.`)
+    }
+  }
+
+  const totalSlots = nextPowerOf2(totalPlayoffTeams)
+  // Pad with nulls for BYE slots
+  while (placeholders.length < totalSlots) placeholders.push(null)
+
+  const fixtures = []
+  const half = totalSlots / 2
+  let round = 1
+
+  for (let i = 0; i < half; i++) {
+    const homePlaceholder = placeholders[i]
+    const awayPlaceholder = placeholders[totalSlots - 1 - i]
+
+    fixtures.push({
+      homeTeamId: null,
+      awayTeamId: null,
+      round,
+      group: null,
+      home_placeholder: homePlaceholder,
+      away_placeholder: awayPlaceholder,
+    })
+  }
+
+  return fixtures
 }
 
 /**

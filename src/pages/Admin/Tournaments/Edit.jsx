@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useParams, useNavigate, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
@@ -17,6 +17,7 @@ export default function TournamentEdit() {
   const [logoUploading, setLogoUploading] = useState(false)
   const [attachments, setAttachments] = useState([])
   const [attachUploading, setAttachUploading] = useState(false)
+  const fileInputRef = useRef(null)
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm()
 
   useEffect(() => {
@@ -210,37 +211,83 @@ export default function TournamentEdit() {
         </form>
 
         {/* Attachments — saved immediately to DB, outside the main form */}
-        <div style={{ marginTop: '2rem', borderTop: '1px solid var(--color-surface)', paddingTop: '1.5rem' }}>
+        <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
           <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', marginBottom: '1rem' }}>
             {t('tournament.attachments')}
           </h3>
 
           {attachments.length > 0 && (
-            <div style={{ display: 'grid', gap: '0.5rem', marginBottom: '1rem' }}>
+            <div style={{ display: 'grid', gap: '0.75rem', marginBottom: '1rem' }}>
               {attachments.map((att, i) => (
                 <div
                   key={i}
-                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'var(--color-surface)', padding: '0.5rem 0.75rem', borderRadius: '6px' }}
+                  className="card"
+                  style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}
                 >
-                  <a href={att.url} target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-text)', textDecoration: 'none' }}>
-                    {attachmentIcon(att.type)} {att.name}
-                  </a>
-                  <button className="btn-secondary btn-sm" onClick={() => handleAttachmentDelete(i)}>✕</button>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
+                    <span style={{ fontSize: '1.2rem', color: 'var(--color-accent)', flexShrink: 0 }}>
+                      {attachmentIcon(att.type)}
+                    </span>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
+                      {att.name}
+                    </span>
+                  </div>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexShrink: 0 }}>
+                    <a
+                      href={att.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}
+                    >
+                      ↓ {t('common.download', 'Lejupielādēt')}
+                    </a>
+                    <button
+                      onClick={() => handleAttachmentDelete(i)}
+                      style={{
+                        color: 'var(--color-danger)',
+                        background: 'none',
+                        border: '1px solid var(--color-danger)',
+                        borderRadius: '4px',
+                        cursor: 'pointer',
+                        fontSize: '0.78rem',
+                        padding: '0.2rem 0.5rem',
+                        lineHeight: 1.4,
+                      }}
+                    >
+                      {t('common.delete')}
+                    </button>
+                  </div>
                 </div>
               ))}
             </div>
           )}
 
-          <label className="btn-secondary btn-sm" style={{ cursor: 'pointer', display: 'inline-block' }}>
-            {attachUploading ? t('tournament.attachmentUploading') : t('tournament.attachmentAdd')}
-            <input
-              type="file"
-              accept=".pdf,.jpg,.jpeg,.png"
-              onChange={handleAttachmentUpload}
-              disabled={attachUploading}
-              style={{ display: 'none' }}
-            />
-          </label>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept=".pdf,.jpg,.jpeg,.png"
+            onChange={handleAttachmentUpload}
+            disabled={attachUploading}
+            style={{ display: 'none' }}
+          />
+          <button
+            type="button"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={attachUploading}
+            style={{
+              border: '1px solid var(--color-accent)',
+              color: 'var(--color-accent)',
+              background: 'none',
+              borderRadius: '6px',
+              padding: '0.5rem 1rem',
+              cursor: attachUploading ? 'not-allowed' : 'pointer',
+              fontSize: '0.875rem',
+              fontWeight: 500,
+              opacity: attachUploading ? 0.6 : 1,
+            }}
+          >
+            📎 {attachUploading ? t('tournament.attachmentUploading') : t('tournament.attachmentAdd')}
+          </button>
         </div>
       </div>
     </div>

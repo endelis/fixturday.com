@@ -13,7 +13,9 @@ export default function AgeGroups() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm()
+
+  const watchedFormat = watch('format', 'round_robin')
 
   async function load() {
     const [{ data: t_ }, { data: ag }] = await Promise.all([
@@ -28,11 +30,20 @@ export default function AgeGroups() {
   useEffect(() => { load() }, [tournamentId])
 
   function startEdit(ag) {
+    // Toggle: if already editing this card, close the form
+    if (editingId === ag.id && showForm) {
+      cancelForm()
+      return
+    }
     setEditingId(ag.id)
     setValue('name', ag.name)
     setValue('format', ag.format)
     setValue('max_teams', ag.max_teams ?? '')
     setValue('game_duration_minutes', ag.game_duration_minutes ?? 20)
+    setValue('pitch_gap_minutes', ag.pitch_gap_minutes ?? 5)
+    setValue('team_rest_minutes', ag.team_rest_minutes ?? 20)
+    setValue('groups_count', ag.groups_count ?? 2)
+    setValue('teams_advancing', ag.teams_advancing ?? 2)
     setValue('registration_open', ag.registration_open)
     setShowForm(true)
   }
@@ -43,12 +54,22 @@ export default function AgeGroups() {
     reset()
   }
 
+  function startNew() {
+    setEditingId(null)
+    reset()
+    setShowForm(true)
+  }
+
   async function onSubmit(values) {
     const payload = {
       ...values,
       tournament_id: tournamentId,
       max_teams: values.max_teams ? Number(values.max_teams) : null,
       game_duration_minutes: values.game_duration_minutes ? Number(values.game_duration_minutes) : 20,
+      pitch_gap_minutes: values.pitch_gap_minutes ? Number(values.pitch_gap_minutes) : 5,
+      team_rest_minutes: values.team_rest_minutes ? Number(values.team_rest_minutes) : 20,
+      groups_count: values.groups_count ? Number(values.groups_count) : 2,
+      teams_advancing: values.teams_advancing ? Number(values.teams_advancing) : 2,
     }
 
     if (editingId) {
@@ -91,55 +112,27 @@ export default function AgeGroups() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('ageGroup.title')}</h1>
           {!showForm && (
-            <button className="btn-primary" onClick={() => setShowForm(true)}>
+            <button className="btn-primary" onClick={startNew}>
               + {t('ageGroup.new')}
             </button>
           )}
         </div>
 
-        {showForm && (
+        {showForm && !editingId && (
           <div className="card" style={{ marginBottom: '1.5rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1rem' }}>
-              {editingId ? t('common.edit') : t('ageGroup.new')}
+              {t('ageGroup.new')}
             </h2>
-            <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label>{t('ageGroup.name')} *</label>
-                  <input {...register('name', { required: t('common.required') })} placeholder="U10" />
-                  {errors.name && <span className="error-message">{errors.name.message}</span>}
-                </div>
-                <div className="form-group">
-                  <label>{t('ageGroup.format')} *</label>
-                  <select {...register('format', { required: true })}>
-                    <option value="round_robin">{t('ageGroup.formats.round_robin')}</option>
-                    <option value="knockout">{t('ageGroup.formats.knockout')}</option>
-                    <option value="group_knockout">{t('ageGroup.formats.group_knockout')}</option>
-                  </select>
-                </div>
-                <div className="form-group">
-                  <label>{t('ageGroup.maxTeams')}</label>
-                  <input type="number" {...register('max_teams')} min="2" />
-                </div>
-                <div className="form-group">
-                  <label>{t('ageGroup.gameDuration')} *</label>
-                  <input type="number" {...register('game_duration_minutes', { required: t('common.required'), min: 5, max: 90 })} defaultValue={20} min="5" max="90" />
-                  {errors.game_duration_minutes && <span className="error-message">{errors.game_duration_minutes.message}</span>}
-                </div>
-              </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-                <input type="checkbox" id="reg_open" {...register('registration_open')} />
-                <label htmlFor="reg_open">{t('ageGroup.registrationOpen')}</label>
-              </div>
-              <div style={{ display: 'flex', gap: '0.75rem' }}>
-                <button type="submit" className="btn-primary" disabled={isSubmitting}>
-                  {isSubmitting ? t('common.saving') : t('common.save')}
-                </button>
-                <button type="button" className="btn-secondary" onClick={cancelForm}>
-                  {t('common.cancel')}
-                </button>
-              </div>
-            </form>
+            <AgeGroupForm
+              register={register}
+              handleSubmit={handleSubmit}
+              errors={errors}
+              isSubmitting={isSubmitting}
+              watchedFormat={watchedFormat}
+              onSubmit={onSubmit}
+              onCancel={cancelForm}
+              t={t}
+            />
           </div>
         )}
 
@@ -148,58 +141,173 @@ export default function AgeGroups() {
         ) : (
           <div style={{ display: 'grid', gap: '0.75rem' }}>
             {ageGroups.map(ag => (
-              <div key={ag.id} className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
-                <div>
-                  <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>{ag.name}</strong>
-                  <span style={{ marginLeft: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                    {t(`ageGroup.formats.${ag.format}`)}
-                  </span>
-                  {ag.max_teams && (
-                    <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                      · {t('ageGroup.maxTeams').toLowerCase()} {ag.max_teams}
+              <div key={ag.id}>
+                <div className="card" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div>
+                    <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>{ag.name}</strong>
+                    <span style={{ marginLeft: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                      {t(`ageGroup.formats.${ag.format}`)}
                     </span>
-                  )}
-                  {ag.game_duration_minutes && (
-                    <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                      · {ag.game_duration_minutes} {t('ageGroup.minutes')}
-                    </span>
-                  )}
-                  {(() => {
-                    const confirmed = (ag.teams ?? []).filter(t => t.status === 'confirmed').length
-                    const pending   = (ag.teams ?? []).filter(t => t.status === 'pending').length
-                    return (
-                      <span style={{ marginLeft: '0.5rem', color: confirmed >= 2 ? 'var(--color-success)' : 'var(--color-muted)', fontSize: '0.875rem' }}>
-                        · {confirmed} apstiprinātas
-                        {pending > 0 && <span style={{ color: 'var(--color-accent)', marginLeft: '0.25rem' }}>({pending} gaida)</span>}
+                    {ag.max_teams && (
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                        · {t('ageGroup.maxTeams').toLowerCase()} {ag.max_teams}
                       </span>
-                    )
-                  })()}
+                    )}
+                    {ag.game_duration_minutes && (
+                      <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                        · {ag.game_duration_minutes} {t('ageGroup.minutes')}
+                      </span>
+                    )}
+                    {(() => {
+                      const confirmed = (ag.teams ?? []).filter(t => t.status === 'confirmed').length
+                      const pending   = (ag.teams ?? []).filter(t => t.status === 'pending').length
+                      return (
+                        <span style={{ marginLeft: '0.5rem', color: confirmed >= 2 ? 'var(--color-success)' : 'var(--color-muted)', fontSize: '0.875rem' }}>
+                          · {confirmed} apstiprinātas
+                          {pending > 0 && <span style={{ color: 'var(--color-accent)', marginLeft: '0.25rem' }}>({pending} gaida)</span>}
+                        </span>
+                      )
+                    })()}
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                    <span className={`badge ${ag.registration_open ? 'badge-success' : 'badge-muted'}`}>
+                      {ag.registration_open ? t('ageGroup.regOpen') : t('ageGroup.regClosed_label')}
+                    </span>
+                    <button className="btn-secondary btn-sm" onClick={() => toggleRegistration(ag)}>
+                      {ag.registration_open ? t('ageGroup.closeReg') : t('ageGroup.openReg')}
+                    </button>
+                    <button
+                      className="btn-secondary btn-sm"
+                      onClick={() => startEdit(ag)}
+                      style={editingId === ag.id && showForm ? { background: 'var(--color-accent)', color: '#fff' } : {}}
+                    >
+                      {t('ageGroup.edit')}
+                    </button>
+                    <Link to={`/admin/age-groups/${ag.id}/teams`} className="btn-secondary btn-sm">
+                      {t('team.title')}
+                    </Link>
+                    <Link to={`/admin/age-groups/${ag.id}/fixtures`} className="btn-secondary btn-sm">
+                      {t('fixture.title')}
+                    </Link>
+                    <button className="btn-danger btn-sm" onClick={() => deleteAgeGroup(ag)}>
+                      {t('common.delete')}
+                    </button>
+                  </div>
                 </div>
-                <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
-                  <span className={`badge ${ag.registration_open ? 'badge-success' : 'badge-muted'}`}>
-                    {ag.registration_open ? t('ageGroup.regOpen') : t('ageGroup.regClosed_label')}
-                  </span>
-                  <button className="btn-secondary btn-sm" onClick={() => toggleRegistration(ag)}>
-                    {ag.registration_open ? t('ageGroup.closeReg') : t('ageGroup.openReg')}
-                  </button>
-                  <button className="btn-secondary btn-sm" onClick={() => startEdit(ag)}>
-                    {t('common.edit')}
-                  </button>
-                  <Link to={`/admin/age-groups/${ag.id}/teams`} className="btn-secondary btn-sm">
-                    {t('team.title')}
-                  </Link>
-                  <Link to={`/admin/age-groups/${ag.id}/fixtures`} className="btn-secondary btn-sm">
-                    {t('fixture.title')}
-                  </Link>
-                  <button className="btn-danger btn-sm" onClick={() => deleteAgeGroup(ag)}>
-                    {t('common.delete')}
-                  </button>
-                </div>
+
+                {editingId === ag.id && showForm && (
+                  <div className="card" style={{ marginTop: '0.5rem', borderTop: '2px solid var(--color-accent)' }}>
+                    <h2 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1rem' }}>
+                      {t('common.edit')} — {ag.name}
+                    </h2>
+                    <AgeGroupForm
+                      register={register}
+                      handleSubmit={handleSubmit}
+                      errors={errors}
+                      isSubmitting={isSubmitting}
+                      watchedFormat={watchedFormat}
+                      onSubmit={onSubmit}
+                      onCancel={cancelForm}
+                      t={t}
+                    />
+                  </div>
+                )}
               </div>
             ))}
           </div>
         )}
       </div>
     </div>
+  )
+}
+
+function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, onSubmit, onCancel, t }) {
+  const isGroupKnockout = watchedFormat === 'group_knockout'
+
+  return (
+    <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
+        <div className="form-group">
+          <label>{t('ageGroup.name')} *</label>
+          <input {...register('name', { required: t('common.required') })} placeholder="U10" />
+          {errors.name && <span className="error-message">{errors.name.message}</span>}
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.format')} *</label>
+          <select {...register('format', { required: true })}>
+            <option value="round_robin">{t('ageGroup.formats.round_robin')}</option>
+            <option value="knockout">{t('ageGroup.formats.knockout')}</option>
+            <option value="group_knockout">{t('ageGroup.formats.group_knockout')}</option>
+          </select>
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.maxTeams')}</label>
+          <input type="number" {...register('max_teams')} min="2" />
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.gameDuration')} *</label>
+          <input
+            type="number"
+            {...register('game_duration_minutes', { required: t('common.required'), min: 5, max: 90 })}
+            defaultValue={20}
+            min="5"
+            max="90"
+          />
+          {errors.game_duration_minutes && <span className="error-message">{errors.game_duration_minutes.message}</span>}
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.pitchGap')}</label>
+          <input
+            type="number"
+            {...register('pitch_gap_minutes')}
+            defaultValue={5}
+            min="0"
+          />
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.teamRest')}</label>
+          <input
+            type="number"
+            {...register('team_rest_minutes')}
+            defaultValue={20}
+            min="0"
+          />
+        </div>
+        {isGroupKnockout && (
+          <>
+            <div className="form-group">
+              <label>{t('ageGroup.groupsCount')}</label>
+              <input
+                type="number"
+                {...register('groups_count')}
+                defaultValue={2}
+                min="2"
+              />
+            </div>
+            <div className="form-group">
+              <label>{t('ageGroup.teamsAdvancing')}</label>
+              <input
+                type="number"
+                {...register('teams_advancing')}
+                defaultValue={2}
+                min="1"
+              />
+            </div>
+          </>
+        )}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+        <input type="checkbox" id="reg_open" {...register('registration_open')} />
+        <label htmlFor="reg_open">{t('ageGroup.registrationOpen')}</label>
+      </div>
+      <div style={{ display: 'flex', gap: '0.75rem' }}>
+        <button type="submit" className="btn-primary" disabled={isSubmitting}>
+          {isSubmitting ? t('common.saving') : t('common.save')}
+        </button>
+        <button type="button" className="btn-secondary" onClick={onCancel}>
+          {t('common.cancel')}
+        </button>
+      </div>
+    </form>
   )
 }
