@@ -135,7 +135,10 @@
     "schedPreview": "Priekšskatīt",
     "schedConfirm": "Apstiprināt",
     "schedSaved": "Grafiks saglabāts!",
-    "schedWarnings": "Brīdinājumi"
+    "schedWarnings": "Brīdinājumi",
+    "schedRegenerate": "Atkārtoti ģenerēt",
+    "schedColTime": "Laiks",
+    "schedColPitch": "Laukums"
   },
   "standings": {
     "title": "Tabula",
@@ -220,8 +223,9 @@
     "statusCompleted": "Pabeigta",
     "statusPostponed": "Atlikta",
     "postponeBtn": "Atlikt",
-    "updateBtn": "Atjaunināt",
-    "saveBtn": "Saglabāt"
+    "updateBtn": "Labot",
+    "saveBtn": "Saglabāt",
+    "title": "Rezultātu reģistrs"
   },
   "schedule": {
     "liveNow": "Notiek tagad",
@@ -244,7 +248,7 @@
     "navVenues": "Vietas",
     "navStats": "Statistika",
     "navSettings": "Iestatījumi",
-    "navMatchday": "Matchday",
+    "navMatchday": "Rezultātu reģistrs",
     "backToDashboard": "Visi turnīri",
     "notFound": "Turnīrs nav atrasts.",
     "statAgeGroups": "Vecuma grupas",

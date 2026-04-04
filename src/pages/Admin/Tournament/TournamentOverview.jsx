@@ -6,7 +6,7 @@ import { supabase } from '../../../lib/supabase'
 export default function TournamentOverview() {
   const { id } = useParams()
   const { t } = useTranslation()
-  const { tournament, ageGroupCount } = useOutletContext()
+  const { tournament, stepsComplete } = useOutletContext()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
@@ -18,6 +18,7 @@ export default function TournamentOverview() {
         .eq('tournament_id', id)
 
       const agIds = (ageGroups ?? []).map(ag => ag.id)
+      const ageGroupsCount = agIds.length
 
       const { count: venuesCount } = await supabase
         .from('venues')
@@ -25,7 +26,7 @@ export default function TournamentOverview() {
         .eq('tournament_id', id)
 
       if (agIds.length === 0) {
-        setStats({ teams: 0, fixtures: 0, completed: 0, venues: venuesCount ?? 0 })
+        setStats({ ageGroups: 0, teams: 0, fixtures: 0, completed: 0, venues: venuesCount ?? 0 })
         setLoading(false)
         return
       }
@@ -51,6 +52,7 @@ export default function TournamentOverview() {
       ])
 
       setStats({
+        ageGroups: ageGroupsCount,
         teams: teamsCount ?? 0,
         fixtures: fixturesCount ?? 0,
         completed: completedCount ?? 0,
@@ -61,11 +63,12 @@ export default function TournamentOverview() {
     loadStats()
   }, [id])
 
+  // Use stepsComplete from TournamentLayout outlet context
   const setupSteps = [
-    { labelKey: 'workspace.setupStep1', done: (ageGroupCount ?? 0) > 0, path: 'age-groups' },
-    { labelKey: 'workspace.setupStep2', done: (stats?.venues ?? 0) > 0, path: 'venues' },
-    { labelKey: 'workspace.setupStep3', done: (stats?.teams ?? 0) > 0, path: 'age-groups' },
-    { labelKey: 'workspace.setupStep4', done: (stats?.fixtures ?? 0) > 0, path: 'age-groups' },
+    { labelKey: 'workspace.setupStep1', done: stepsComplete[0], path: 'age-groups' },
+    { labelKey: 'workspace.setupStep2', done: stepsComplete[1], path: 'venues' },
+    { labelKey: 'workspace.setupStep3', done: stepsComplete[2], path: 'age-groups' },
+    { labelKey: 'workspace.setupStep4', done: stepsComplete[3], path: 'age-groups' },
   ]
   const setupDone = setupSteps.every(s => s.done)
 
@@ -82,10 +85,10 @@ export default function TournamentOverview() {
       {!loading && stats && (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: '1rem', marginBottom: '2rem' }}>
           {[
-            { labelKey: 'workspace.statAgeGroups', value: ageGroupCount ?? 0, path: 'age-groups' },
-            { labelKey: 'workspace.statTeams',     value: stats.teams,         path: 'age-groups' },
-            { labelKey: 'workspace.statFixtures',  value: stats.fixtures,      path: 'age-groups' },
-            { labelKey: 'workspace.statCompleted', value: stats.completed,     path: 'age-groups' },
+            { labelKey: 'workspace.statAgeGroups', value: stats.ageGroups, path: 'age-groups' },
+            { labelKey: 'workspace.statTeams',     value: stats.teams,     path: 'age-groups' },
+            { labelKey: 'workspace.statFixtures',  value: stats.fixtures,  path: 'age-groups' },
+            { labelKey: 'workspace.statCompleted', value: stats.completed, path: 'age-groups' },
           ].map(s => (
             <Link key={s.labelKey} to={`/admin/tournaments/${id}/${s.path}`} style={{ textDecoration: 'none' }}>
               <div className="card" style={{ textAlign: 'center', padding: '1.25rem 1rem' }}>

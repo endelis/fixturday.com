@@ -17,6 +17,7 @@ export default function Matchday() {
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [filterGroup, setFilterGroup] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
+  const [tournamentId, setTournamentId] = useState(null)
 
   async function load() {
     setLoading(true)
@@ -31,7 +32,7 @@ export default function Matchday() {
         away_team:teams!away_team_id(name),
         pitch:pitches(name, venues(name)),
         fixture_results(id, home_goals, away_goals),
-        stages(age_groups(name, tournaments(name)))
+        stages(age_groups(name, tournaments(id, name)))
       `)
       .gte('kickoff_time', start)
       .lte('kickoff_time', end)
@@ -41,6 +42,10 @@ export default function Matchday() {
 
     const allFx = fx ?? []
     setFixtures(allFx)
+
+    // Derive tournament ID for back button
+    const tId = allFx[0]?.stages?.age_groups?.tournaments?.id ?? null
+    setTournamentId(tId)
 
     const init = {}
     allFx.forEach(f => {
@@ -128,11 +133,13 @@ export default function Matchday() {
     return <span className="badge badge-muted">{t('matchday.statusPending')}</span>
   }
 
+  const backLink = tournamentId ? `/admin/tournaments/${tournamentId}/overview` : '/admin/dashboard'
+
   return (
     <div>
       <nav className="admin-nav">
-        <Link to="/admin/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-          ← Fixturday Admin
+        <Link to={backLink} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
+          ← {t('workspace.backToDashboard')}
         </Link>
         <input
           type="date"
@@ -144,7 +151,7 @@ export default function Matchday() {
 
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '4rem' }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', marginBottom: '1.25rem' }}>
-          ⚽ {t('workspace.navMatchday')} — {format(new Date(selectedDate + 'T12:00:00'), 'dd/MM/yyyy')}
+          {t('matchday.title')}
         </h1>
 
         {/* Filter bar */}
@@ -186,6 +193,7 @@ export default function Matchday() {
                   {byGroup[groupName].map(f => {
                     const score = scores[f.id] ?? { home: 0, away: 0 }
                     const isPostponed = f.status === 'postponed'
+                    const hasResult = !!f.fixture_results?.[0]
                     return (
                       <div key={f.id} className="card" style={{ opacity: isPostponed ? 0.5 : 1 }}>
                         {/* Top row: time, pitch, status */}
@@ -240,7 +248,7 @@ export default function Matchday() {
                               onClick={() => saveScore(f)}
                               disabled={saving[f.id]}
                             >
-                              {saving[f.id] ? '...' : f.fixture_results?.[0] ? t('matchday.updateBtn') : t('matchday.saveBtn')}
+                              {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
                             </button>
                           )}
                         </div>
@@ -259,7 +267,7 @@ export default function Matchday() {
                 disabled={savingAll}
                 style={{ minWidth: '160px' }}
               >
-                {savingAll ? '...' : t('matchday.saveAll')}
+                {savingAll ? t('common.saving') : t('matchday.saveAll')}
               </button>
             </div>
           </>

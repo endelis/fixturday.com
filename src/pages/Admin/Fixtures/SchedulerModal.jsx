@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { generateSchedule } from '../../../utils/scheduler'
@@ -13,15 +13,25 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   const { t } = useTranslation()
   const today = format(new Date(), 'yyyy-MM-dd')
 
-  const [schedDate, setSchedDate] = useState(() => today)
+  const [schedDate, setSchedDate] = useState(today)
   const [schedPitches, setSchedPitches] = useState(1)
-  const [schedFirst, setSchedFirst] = useState(() => ageGroup?.tournaments?.first_game_time?.slice(0, 5) ?? '09:00')
-  const [schedLast, setSchedLast] = useState(() => ageGroup?.tournaments?.last_game_time?.slice(0, 5) ?? '18:00')
+  const [schedFirst, setSchedFirst] = useState('09:00')
+  const [schedLast, setSchedLast] = useState('18:00')
   const [schedLunchEnabled, setSchedLunchEnabled] = useState(false)
-  const [schedLunchStart, setSchedLunchStart] = useState(() => ageGroup?.tournaments?.lunch_start?.slice(0, 5) ?? '')
-  const [schedLunchEnd, setSchedLunchEnd] = useState(() => ageGroup?.tournaments?.lunch_end?.slice(0, 5) ?? '')
+  const [schedLunchStart, setSchedLunchStart] = useState('')
+  const [schedLunchEnd, setSchedLunchEnd] = useState('')
   const [schedResult, setSchedResult] = useState(null)
   const [saving, setSaving] = useState(false)
+
+  // Sync tournament scheduling defaults when ageGroup data arrives
+  useEffect(() => {
+    if (!ageGroup?.tournaments) return
+    const { first_game_time, last_game_time, lunch_start, lunch_end } = ageGroup.tournaments
+    if (first_game_time) setSchedFirst(first_game_time.slice(0, 5))
+    if (last_game_time) setSchedLast(last_game_time.slice(0, 5))
+    if (lunch_start) setSchedLunchStart(lunch_start.slice(0, 5))
+    if (lunch_end) setSchedLunchEnd(lunch_end.slice(0, 5))
+  }, [ageGroup])
 
   if (!open) return null
 
@@ -130,11 +140,11 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
-                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Laiks</th>
-                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Laukums</th>
-                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Mājas</th>
-                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'center' }}>pret</th>
-                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>Viesi</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.schedColTime')}</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.schedColPitch')}</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.home')}</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'center' }}>{t('fixture.vs')}</th>
+                        <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.away')}</th>
                       </tr>
                     </thead>
                     <tbody>
@@ -142,13 +152,13 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                         const fx = fixtures.find(f => f.id === item.fixtureId)
                         const pitchLabel = pitches[item.pitchIndex]
                           ? `${pitches[item.pitchIndex].venue_name} — ${pitches[item.pitchIndex].name}`
-                          : `Laukums ${item.pitchIndex + 1}`
+                          : `${t('fixture.pitch')} ${item.pitchIndex + 1}`
                         return (
                           <tr key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
                             <td style={{ padding: '0.5rem 0.75rem' }}>{item.kickoff ? item.kickoff.slice(11, 16) : ''}</td>
                             <td style={{ padding: '0.5rem 0.75rem' }}>{pitchLabel}</td>
                             <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>{fx?.home_team?.name ?? ''}</td>
-                            <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>pret</td>
+                            <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>{t('fixture.vs')}</td>
                             <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>{fx?.away_team?.name ?? ''}</td>
                           </tr>
                         )
@@ -156,15 +166,20 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                     </tbody>
                   </table>
                 </div>
-                <button className="btn-primary" onClick={confirmSchedule} disabled={saving}>
-                  {saving ? 'Saglabā...' : t('fixture.schedConfirm')}
-                </button>
+                <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center' }}>
+                  <button className="btn-primary" onClick={confirmSchedule} disabled={saving}>
+                    {saving ? t('common.saving') : t('fixture.schedConfirm')}
+                  </button>
+                  <button className="btn-secondary" onClick={runPreview}>
+                    {t('fixture.schedRegenerate')}
+                  </button>
+                </div>
               </>
             )}
           </>
         )}
 
-        <div style={{ marginTop: '1rem', textAlign: 'right' }}>
+        <div style={{ marginTop: '1.25rem', textAlign: 'right' }}>
           <button onClick={onClose} style={{ background: 'none', border: '1px solid var(--color-border)', color: 'var(--color-text-muted)', padding: '0.4rem 1rem', borderRadius: 'var(--radius-sm)', cursor: 'pointer' }}>
             {t('common.close')}
           </button>
