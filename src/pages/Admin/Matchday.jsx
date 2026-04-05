@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
+import { formatTime } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
@@ -199,7 +200,7 @@ export default function Matchday() {
                         {/* Top row: time, pitch, status */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
                           <span style={{ fontSize: '0.875rem', color: 'var(--color-muted)' }}>
-                            {f.kickoff_time && format(new Date(f.kickoff_time), 'HH:mm')}
+                            {f.kickoff_time && formatTime(f.kickoff_time)}
                             {f.pitch && ` · ${f.pitch.venues?.name} — ${f.pitch.name}`}
                           </span>
                           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>

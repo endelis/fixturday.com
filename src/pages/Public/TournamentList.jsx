@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
-import { format } from 'date-fns'
+import { formatDate } from '../../utils/dateFormat'
 import { Search, Trophy, Calendar, MapPin, Users } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
 
@@ -247,9 +247,9 @@ export default function TournamentList() {
                           }}>
                             <Calendar size={13} style={{ flexShrink: 0 }} />
                             <span>
-                              {format(new Date(tournament.start_date), 'dd/MM/yyyy')}
+                              {formatDate(tournament.start_date)}
                               {tournament.end_date && (
-                                <> &mdash; {format(new Date(tournament.end_date), 'dd/MM/yyyy')}</>
+                                <> &mdash; {formatDate(tournament.end_date)}</>
                               )}
                             </span>
                           </div>

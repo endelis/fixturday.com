@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
+import { formatDate } from '../../utils/dateFormat'
 import { supabase } from '../../lib/supabase'
 import PublicNav from '../../components/PublicNav'
 
@@ -58,7 +58,7 @@ export default function TeamRoster() {
               <tr key={p.id}>
                 <td>{p.number ?? '—'}</td>
                 <td>{p.name}</td>
-                <td>{p.date_of_birth ? format(new Date(p.date_of_birth), 'dd/MM/yyyy') : '—'}</td>
+                <td>{p.date_of_birth ? formatDate(p.date_of_birth) : '—'}</td>
               </tr>
             ))}
           </tbody>

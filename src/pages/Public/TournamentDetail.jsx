@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
+import { formatDate, formatTime } from '../../utils/dateFormat'
 import {
   Calendar, MapPin, ChevronDown, FileText, Image as ImageIcon,
   Download, Users, Trophy,
@@ -252,7 +253,7 @@ function GrafiksTab({ fixtures, t }) {
                       color: 'var(--color-text)',
                       letterSpacing: '0.02em',
                     }}>
-                      {f.kickoff_time ? format(new Date(f.kickoff_time), 'HH:mm') : '—'}
+                      {f.kickoff_time ? formatTime(f.kickoff_time) : '—'}
                     </span>
 
                     {/* Home team */}
@@ -733,9 +734,9 @@ export default function TournamentDetail() {
                 }}>
                   <Calendar size={14} style={{ flexShrink: 0 }} />
                   <span>
-                    {format(new Date(tournament.start_date), 'dd/MM/yyyy')}
+                    {formatDate(tournament.start_date)}
                     {tournament.end_date && (
-                      <> &mdash; {format(new Date(tournament.end_date), 'dd/MM/yyyy')}</>
+                      <> &mdash; {formatDate(tournament.end_date)}</>
                     )}
                   </span>
                 </div>

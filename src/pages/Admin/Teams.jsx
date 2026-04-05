@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
+import { formatDate } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
@@ -234,7 +234,7 @@ export default function Teams() {
                         <tr key={p.id}>
                           <td>{p.number ?? '—'}</td>
                           <td>{p.name}</td>
-                          <td>{p.date_of_birth ? format(new Date(p.date_of_birth), 'dd/MM/yyyy') : '—'}</td>
+                          <td>{p.date_of_birth ? formatDate(p.date_of_birth) : '—'}</td>
                           <td>
                             <button className="btn-danger btn-sm" onClick={() => deletePlayer(p.id, team.id)}>×</button>
                           </td>

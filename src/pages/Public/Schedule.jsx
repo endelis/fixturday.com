@@ -3,6 +3,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
+import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
 
 export default function Schedule() {
@@ -83,7 +84,7 @@ export default function Schedule() {
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {lastUpdated && (
               <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
-                {t('common.lastUpdated', { time: format(lastUpdated, 'HH:mm') })}
+                {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
               </span>
             )}
             <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">{t('schedule.backToStandings')}</Link>
@@ -103,7 +104,7 @@ export default function Schedule() {
                   <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
                     {f.kickoff_time && (
                       <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
-                        {format(new Date(f.kickoff_time), 'HH:mm')}
+                        {formatTime(f.kickoff_time)}
                       </span>
                     )}
                     <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem' }}>{f.home_team?.name ?? '?'}</span>
@@ -134,7 +135,7 @@ export default function Schedule() {
         {Object.keys(grouped).sort().map(day => (
           <div key={day} style={{ marginBottom: '2rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
-              {day === 'nav-datuma' ? t('schedule.noDate') : format(new Date(day), 'dd/MM/yyyy')}
+              {day === 'nav-datuma' ? t('schedule.noDate') : formatDate(day)}
             </h2>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               {grouped[day].map(f => {
@@ -143,7 +144,7 @@ export default function Schedule() {
                   <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
                     {f.kickoff_time && (
                       <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
-                        {format(new Date(f.kickoff_time), 'HH:mm')}
+                        {formatTime(f.kickoff_time)}
                       </span>
                     )}
                     <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem' }}>{f.home_team?.name ?? '?'}</span>

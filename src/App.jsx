@@ -1,6 +1,6 @@
-import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
-import { useAuth } from './hooks/useAuth'
+import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { ToastContainer } from './components/Toast'
+import RequireAuth from './components/RequireAuth'
 
 // Public pages
 import Landing from './pages/Public/Landing'
@@ -32,13 +32,6 @@ import TournamentOverview from './pages/Admin/Tournament/TournamentOverview'
 import TournamentStats from './pages/Admin/Tournament/TournamentStats'
 import TournamentStandings from './pages/Admin/Tournament/TournamentStandings'
 import TournamentPlayoff from './pages/Admin/Tournament/TournamentPlayoff'
-
-function RequireAuth({ children }) {
-  const { session, loading } = useAuth()
-  if (loading) return <div className="loading">Ielādē...</div>
-  if (!session) return <Navigate to="/admin" replace />
-  return children
-}
 
 export default function App() {
   return (

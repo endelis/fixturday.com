@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
+import { formatDate, formatTime } from '../../utils/dateFormat'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
@@ -78,7 +78,7 @@ export default function Standings() {
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {lastUpdated && (
               <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
-                {t('common.lastUpdated', { time: format(lastUpdated, 'HH:mm') })}
+                {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
               </span>
             )}
             <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">

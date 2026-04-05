@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { format, parseISO } from 'date-fns'
+import { parseISO } from 'date-fns'
+import { formatDate } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
@@ -37,7 +38,7 @@ export default function Dashboard() {
   }
 
   function fmtDate(str) {
-    try { return str ? format(parseISO(str), 'dd/MM/yyyy') : null } catch { return null }
+    try { return str ? formatDate(parseISO(str)) : null } catch { return null }
   }
 
   return (
