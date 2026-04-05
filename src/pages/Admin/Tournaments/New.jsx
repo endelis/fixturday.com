@@ -53,7 +53,7 @@ export default function TournamentNew() {
   async function onSubmit(values) {
     const { data, error } = await supabase
       .from('tournaments')
-      .insert({ ...values, logo_url: null })
+      .insert({ ...values, logo_url: null, owner_id: user.id })
       .select()
       .single()
     if (error) { toast(`${t('common.error')}: ${error.message}`, 'error'); return }

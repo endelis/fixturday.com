@@ -3,15 +3,19 @@ import { useAuth } from './hooks/useAuth'
 import { ToastContainer } from './components/Toast'
 
 // Public pages
+import Landing from './pages/Public/Landing'
 import TournamentList from './pages/Public/TournamentList'
 import TournamentDetail from './pages/Public/TournamentDetail'
 import Standings from './pages/Public/Standings'
 import Schedule from './pages/Public/Schedule'
 import TeamRoster from './pages/Public/TeamRoster'
 import Register from './pages/Public/Register'
+import About from './pages/Public/About'
+import Contact from './pages/Public/Contact'
 
 // Admin pages
 import Login from './pages/Admin/Login'
+import AdminRegister from './pages/Admin/Register'
 import Dashboard from './pages/Admin/Dashboard'
 import TournamentNew from './pages/Admin/Tournaments/New'
 import TournamentEdit from './pages/Admin/Tournaments/Edit'
@@ -42,7 +46,10 @@ export default function App() {
       <ToastContainer />
       <Routes>
         {/* Public routes */}
-        <Route path="/" element={<TournamentList />} />
+        <Route path="/" element={<Landing />} />
+        <Route path="/turniri" element={<TournamentList />} />
+        <Route path="/par-mums" element={<About />} />
+        <Route path="/kontakti" element={<Contact />} />
         <Route path="/t/:slug" element={<TournamentDetail />} />
         <Route path="/t/:slug/:ageGroup" element={<Standings />} />
         <Route path="/t/:slug/:ageGroup/fixtures" element={<Schedule />} />
@@ -51,6 +58,7 @@ export default function App() {
 
         {/* Admin: top-level */}
         <Route path="/admin" element={<Login />} />
+        <Route path="/admin/register" element={<AdminRegister />} />
         <Route path="/admin/dashboard" element={<RequireAuth><Dashboard /></RequireAuth>} />
         <Route path="/admin/tournaments/new" element={<RequireAuth><TournamentNew /></RequireAuth>} />
         <Route path="/admin/matchday" element={<RequireAuth><Matchday /></RequireAuth>} />

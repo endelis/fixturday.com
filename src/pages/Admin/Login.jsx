@@ -90,6 +90,13 @@ export default function Login() {
               {t('auth.forgotPassword')}
             </button>
           </p>
+
+          <p style={{ textAlign: 'center', marginTop: '0.75rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            {t('auth.noAccount')}{' '}
+            <a href="/admin/register" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
+              {t('auth.registerBtn')}
+            </a>
+          </p>
         </form>
       </div>
     </div>

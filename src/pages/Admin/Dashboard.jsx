@@ -7,7 +7,7 @@ import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
 export default function Dashboard() {
-  const { signOut } = useAuth()
+  const { user, signOut } = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [tournaments, setTournaments] = useState([])
@@ -18,6 +18,7 @@ export default function Dashboard() {
       const { data, error } = await supabase
         .from('tournaments')
         .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
+        .eq('owner_id', user.id)
         .order('created_at', { ascending: false })
       if (error) { toast(t('dashboard.loadError'), 'error'); setLoading(false); return }
       setTournaments(data ?? [])
