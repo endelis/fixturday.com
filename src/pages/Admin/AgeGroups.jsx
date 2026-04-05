@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
 export default function AgeGroups() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [tournament, setTournament] = useState(null)
   const [ageGroups, setAgeGroups] = useState([])
   const [loading, setLoading] = useState(true)
@@ -104,6 +106,8 @@ export default function AgeGroups() {
     load()
   }
 
+  if (authLoading) return <div className="loading">{t('common.loading')}</div>
+  if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   return (
@@ -159,12 +163,12 @@ export default function AgeGroups() {
                       </span>
                     )}
                     {(() => {
-                      const confirmed = (ag.teams ?? []).filter(t => t.status === 'confirmed').length
-                      const pending   = (ag.teams ?? []).filter(t => t.status === 'pending').length
+                      const confirmed = (ag.teams ?? []).filter(tm => tm.status === 'confirmed').length
+                      const pending   = (ag.teams ?? []).filter(tm => tm.status === 'pending').length
                       return (
                         <span style={{ marginLeft: '0.5rem', color: confirmed >= 2 ? 'var(--color-success)' : 'var(--color-muted)', fontSize: '0.875rem' }}>
-                          · {confirmed} apstiprinātas
-                          {pending > 0 && <span style={{ color: 'var(--color-accent)', marginLeft: '0.25rem' }}>({pending} gaida)</span>}
+                          · {confirmed} {t('ageGroup.confirmedCount')}
+                          {pending > 0 && <span style={{ color: 'var(--color-accent)', marginLeft: '0.25rem' }}>({pending} {t('ageGroup.pendingCount')})</span>}
                         </span>
                       )
                     })()}

@@ -57,15 +57,15 @@ export default function Standings() {
     }
   }, [ageGroupId])
 
-  if (loading) return <div className="loading">Ielādē...</div>
-  if (!data?.ag) return <div className="loading">Vecuma grupa nav atrasta.</div>
+  if (loading) return <div className="loading">{t('common.loading')}</div>
+  if (!data?.ag) return <div className="loading">{t('standings.notFound')}</div>
 
   const { ag, siblings, teams, fixtures, results } = data
   const standings = calculateStandings(teams, fixtures, results)
   const tournament = ag.tournaments
 
   // Group-knockout: derive per-group data
-  const groupFixtures = fixtures.filter(f => f.stages?.type === 'group' && f.group_label)
+  const groupFixtures = fixtures.filter(f => f.stages?.type === 'group_stage' && f.group_label)
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
   const hasKnockoutFixtures = fixtures.some(f => f.stages?.type === 'knockout')
 
@@ -74,7 +74,7 @@ export default function Standings() {
       <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>{ag.name} — Tabula</h1>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>{ag.name} — {t('standings.title')}</h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {lastUpdated && (
               <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
@@ -82,13 +82,13 @@ export default function Standings() {
               </span>
             )}
             <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
-              Spēļu grafiks →
+              {t('standings.scheduleLink')}
             </Link>
           </div>
         </div>
 
         {standings.length === 0 ? (
-          <p style={{ color: 'var(--color-text-muted)' }}>Nav apstiprinātu komandu.</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.noTeams')}</p>
         ) : ag.format === 'group_knockout' && groupLabels.length > 0 ? (
           <>
             {groupLabels.map(label => {
@@ -111,7 +111,7 @@ export default function Standings() {
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>#</th><th>Komanda</th><th>S</th><th>U</th><th>N</th><th>Z</th><th>GV</th><th>GS</th><th>GS±</th><th>P</th>
+                          <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th>
                         </tr>
                       </thead>
                       <tbody>

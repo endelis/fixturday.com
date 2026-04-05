@@ -45,7 +45,7 @@ export default function TournamentStats() {
 
       const { data: results } = await supabase
         .from('fixture_results')
-        .select('fixture_id, home_score, away_score')
+        .select('fixture_id, home_goals, away_goals')
         .in('fixture_id', (fixtures ?? []).map(f => f.id))
 
       const stageByAg = {}
@@ -61,9 +61,17 @@ export default function TournamentStats() {
         const completed = agFixtures.filter(f => f.status === 'completed').length
         const pending = total - completed
 
+        // Build unique teams list from fixtures for this age group
+        const teamMap = {}
+        for (const f of agFixtures) {
+          if (f.home_team) teamMap[f.home_team.id] = f.home_team
+          if (f.away_team) teamMap[f.away_team.id] = f.away_team
+        }
+        const agTeams = Object.values(teamMap)
+
         let standings = []
         try {
-          standings = calculateStandings(agFixtures, agResults)
+          standings = calculateStandings(agTeams, agFixtures, agResults)
         } catch {
           standings = []
         }
@@ -127,10 +135,10 @@ export default function TournamentStats() {
                   </thead>
                   <tbody>
                     {ag.standings.map((row, i) => (
-                      <tr key={row.teamId} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                      <tr key={row.team.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '0.5rem 0.75rem' }}>
                           <span style={{ color: 'var(--color-muted)', marginRight: '0.5rem', fontSize: '0.8rem' }}>{i + 1}</span>
-                          {row.teamName}
+                          {row.team.name}
                         </td>
                         <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.played}</td>
                         <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.won}</td>

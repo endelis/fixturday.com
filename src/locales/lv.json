@@ -73,6 +73,8 @@
     "groupsCount": "Grupu skaits",
     "teamsAdvancing": "Komandas kas virzās tālāk",
     "edit": "Rediģēt",
+    "confirmedCount": "apstiprinātas",
+    "pendingCount": "gaida",
     "minutes": "min.",
     "formats": {
       "round_robin": "Apļa turnīrs",
@@ -95,6 +97,10 @@
     "dob": "Dzimšanas datums",
     "noPlayers": "Nav spēlētāju",
     "addPlayer": "Spēlētājs",
+    "notFound": "Komanda nav atrasta.",
+    "noRegistered": "Nav reģistrētu spēlētāju.",
+    "colNumber": "#",
+    "colName": "Vārds",
     "added": "Komanda pievienota",
     "deleted": "Komanda dzēsta",
     "confirmed": "Komanda apstiprināta",
@@ -143,10 +149,20 @@
     "schedWarnings": "Brīdinājumi",
     "schedRegenerate": "Atkārtoti ģenerēt",
     "schedColTime": "Laiks",
-    "schedColPitch": "Laukums"
+    "schedColPitch": "Laukums",
+    "needMoreTeams": "Nepieciešamas vismaz 2 apstiprinātas komandas.",
+    "generating": "Ģenerē...",
+    "generated": "Spēles ģenerētas!",
+    "noPitchesWarning": "Nav konfigurētu laukumu. Pievienojiet laukumus sadaļā Vietas.",
+    "pitchSelect": "Laukums...",
+    "noFixtures": "Nav spēļu.",
+    "confirmedTeams": "Apstiprinātas komandas:"
   },
   "standings": {
     "title": "Tabula",
+    "notFound": "Vecuma grupa nav atrasta.",
+    "noTeams": "Nav apstiprinātu komandu.",
+    "scheduleLink": "Spēļu grafiks →",
     "team": "Komanda",
     "played": "S",
     "won": "U",
@@ -236,7 +252,9 @@
   "schedule": {
     "liveNow": "Notiek tagad",
     "noDate": "Datums nav norādīts",
-    "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā."
+    "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā.",
+    "title": "Spēļu grafiks",
+    "backToStandings": "← Tabula"
   },
   "dashboard": {
     "loadError": "Kļūda ielādējot turnīrus",

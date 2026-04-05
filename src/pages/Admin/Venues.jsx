@@ -1,13 +1,15 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
 export default function Venues() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [tournament, setTournament] = useState(null)
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
@@ -62,6 +64,8 @@ export default function Venues() {
     load()
   }
 
+  if (authLoading) return <div className="loading">{t('common.loading')}</div>
+  if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   return (

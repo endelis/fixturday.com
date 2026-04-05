@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { generateRoundRobin } from '../../../utils/generators/roundRobin'
 import { generateKnockout } from '../../../utils/generators/knockout'
@@ -10,6 +12,8 @@ import SchedulerModal from './SchedulerModal'
 
 export default function Fixtures() {
   const { ageGroupId } = useParams()
+  const { t } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [ageGroup, setAgeGroup] = useState(null)
   const [teams, setTeams] = useState([])
   const [stages, setStages] = useState([])
@@ -40,23 +44,23 @@ export default function Fixtures() {
   useEffect(() => { load() }, [ageGroupId])
 
   async function generateFixtures() {
-    if (teams.length < 2) { toast('Nepieciešamas vismaz 2 apstiprinātas komandas.', 'warning'); return }
+    if (teams.length < 2) { toast(t('fixture.needMoreTeams'), 'warning'); return }
     setGenerating(true)
 
     if (ageGroup.format === 'group_knockout') {
       const groupsCount = ageGroup.groups_count ?? 2
       const teamsAdvancing = ageGroup.teams_advancing ?? 2
 
-      const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Grupu posms', type: 'group', sequence: stages.length + 1 }).select().single()
-      if (gsError) { toast(`Kļūda: ${gsError.message}`, 'error'); setGenerating(false); return }
+      const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Grupu posms', type: 'group_stage', sequence: stages.length + 1 }).select().single()
+      if (gsError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing)
       const groupRows = groupFixtures.map(f => ({ stage_id: groupStage.id, home_team_id: f.homeTeamId, away_team_id: f.awayTeamId, round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled' }))
       const { error: gfError } = await supabase.from('fixtures').insert(groupRows)
-      if (gfError) { toast(`Kļūda: ${gfError.message}`, 'error'); setGenerating(false); return }
+      if (gfError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       const { data: knockoutStage, error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Izslēgšanas kārtas', type: 'knockout', sequence: stages.length + 2 }).select().single()
-      if (ksError) { toast(`Kļūda: ${ksError.message}`, 'error'); setGenerating(false); return }
+      if (ksError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       if (knockoutFixtures.length > 0) {
         const knockoutRows = knockoutFixtures.map(f => ({
@@ -71,10 +75,10 @@ export default function Fixtures() {
           status: 'scheduled',
         }))
         const { error: kfError } = await supabase.from('fixtures').insert(knockoutRows)
-        if (kfError) { toast(`Kļūda: ${kfError.message}`, 'error'); setGenerating(false); return }
+        if (kfError) { toast(t('common.error'), 'error'); setGenerating(false); return }
       }
 
-      toast(`${groupRows.length} grupu spēles un ${knockoutFixtures.length} izslēgšanas spēles ģenerētas!`)
+      toast(t('fixture.generated'))
       setGenerating(false); load(); return
     }
 
@@ -82,7 +86,7 @@ export default function Fixtures() {
       ? { name: 'Izslēgšanas kārtas', type: 'knockout' }
       : { name: 'Apļa turnīrs', type: 'round_robin' }
     const { data: stage, error: stageError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, ...stageConfig, sequence: stages.length + 1 }).select().single()
-    if (stageError) { toast(`Kļūda: ${stageError.message}`, 'error'); setGenerating(false); return }
+    if (stageError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
     let rounds
     if (ageGroup.format === 'knockout') {
@@ -93,8 +97,8 @@ export default function Fixtures() {
     }
     const fixtureRows = rounds.filter(f => f.home?.id && f.away?.id).map(f => ({ stage_id: stage.id, home_team_id: f.home.id, away_team_id: f.away.id, round: f.round, round_name: f.round_name ?? null, status: 'scheduled' }))
     const { error: fxError } = await supabase.from('fixtures').insert(fixtureRows)
-    if (fxError) { toast(`Kļūda: ${fxError.message}`, 'error'); setGenerating(false); return }
-    toast(`${fixtureRows.length} spēles ģenerētas!`)
+    if (fxError) { toast(t('common.error'), 'error'); setGenerating(false); return }
+    toast(t('fixture.generated'))
     setGenerating(false); load()
   }
 
@@ -105,11 +109,13 @@ export default function Fixtures() {
   }
 
   function openScheduler() {
-    if (pitches.length === 0) { toast('Nav konfigurētu laukumu. Pievienojiet laukumus sadaļā Vietas.', 'warning'); return }
+    if (pitches.length === 0) { toast(t('fixture.noPitchesWarning'), 'warning'); return }
     setSchedulerOpen(true)
   }
 
-  if (loading) return <div className="loading">Ielādē...</div>
+  if (authLoading) return <div className="loading">{t('common.loading')}</div>
+  if (!user) return <Navigate to="/admin" replace />
+  if (loading) return <div className="loading">{t('common.loading')}</div>
 
   const byRound = fixtures.reduce((acc, f) => { const r = f.round ?? 0; (acc[r] = acc[r] ?? []).push(f); return acc }, {})
 
@@ -122,15 +128,15 @@ export default function Fixtures() {
       </nav>
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>Spēles — {ageGroup?.name}</h1>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('fixture.title')} — {ageGroup?.name}</h1>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {fixtures.length === 0 && (
               <button className="btn-primary" onClick={generateFixtures} disabled={generating}>
-                {generating ? 'Ģenerē...' : '⚡ Ģenerēt spēles'}
+                {generating ? t('fixture.generating') : `⚡ ${t('fixture.generate')}`}
               </button>
             )}
             {fixtures.length > 0 && (
-              <button className="btn-primary" onClick={openScheduler}>Ieplānot spēles</button>
+              <button className="btn-primary" onClick={openScheduler}>{t('fixture.schedule')}</button>
             )}
           </div>
         </div>

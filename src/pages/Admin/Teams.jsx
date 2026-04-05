@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
+import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
@@ -11,6 +12,7 @@ const STATUS_BADGES = { pending: 'badge-warning', confirmed: 'badge-success', re
 export default function Teams() {
   const { ageGroupId } = useParams()
   const { t } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [ageGroup, setAgeGroup] = useState(null)
   const [teams, setTeams] = useState([])
   const [players, setPlayers] = useState({})
@@ -98,6 +100,8 @@ export default function Teams() {
     load()
   }
 
+  if (authLoading) return <div className="loading">{t('common.loading')}</div>
+  if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   return (

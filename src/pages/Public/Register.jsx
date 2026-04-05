@@ -121,7 +121,7 @@ export default function Register() {
             team_id: team.id,
             name: p.name.trim(),
             dob: p.dob || null,
-            jersey_number: p.jersey ? Number(p.jersey) : null,
+            number: p.jersey ? Number(p.jersey) : null,
           }))
 
         if (playerRows.length > 0) {
@@ -134,7 +134,6 @@ export default function Register() {
 
       setSubmitted(true)
     } catch (err) {
-      console.error(err)
       setSubmitError(t('register.error'))
     }
   }

@@ -27,9 +27,12 @@ export default function Dashboard() {
   }, [])
 
   async function handleSignOut() {
-    const { error } = await signOut()
-    if (error) { toast(t('common.error'), 'error'); return }
-    navigate('/admin')
+    try {
+      await signOut()
+      navigate('/admin')
+    } catch {
+      toast(t('common.error'), 'error')
+    }
   }
 
   function fmtDate(str) {

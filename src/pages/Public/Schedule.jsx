@@ -64,7 +64,7 @@ export default function Schedule() {
     }
   }, [ageGroupId])
 
-  if (loading) return <div className="loading">Ielādē...</div>
+  if (loading) return <div className="loading">{t('common.loading')}</div>
 
   const grouped = fixtures.reduce((acc, f) => {
     const day = f.kickoff_time ? format(new Date(f.kickoff_time), 'yyyy-MM-dd') : 'nav-datuma'
@@ -78,7 +78,7 @@ export default function Schedule() {
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>
-            {ag?.name} — Spēļu grafiks
+            {ag?.name} — {t('schedule.title')}
           </h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {lastUpdated && (
@@ -86,7 +86,7 @@ export default function Schedule() {
                 {t('common.lastUpdated', { time: format(lastUpdated, 'HH:mm') })}
               </span>
             )}
-            <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">← Tabula</Link>
+            <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">{t('schedule.backToStandings')}</Link>
           </div>
         </div>
 
@@ -152,7 +152,7 @@ export default function Schedule() {
                         ? `${result.home_goals} : ${result.away_goals}`
                         : f.status === 'live'
                           ? <span className="live-badge">LIVE</span>
-                          : 'pret'}
+                          : t('fixture.vs')}
                     </span>
                     <span style={{ flex: 1, minWidth: '6rem' }}>{f.away_team?.name ?? '?'}</span>
                     {f.pitch && (
@@ -167,7 +167,7 @@ export default function Schedule() {
           </div>
         ))}
 
-        {fixtures.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>Nav spēļu.</p>}
+        {fixtures.length === 0 && <p style={{ color: 'var(--color-text-muted)' }}>{t('fixture.noFixtures')}</p>}
       </div>
     </div>
   )

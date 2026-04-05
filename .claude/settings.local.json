@@ -23,7 +23,8 @@
       "Bash(cp ~/.claude/skills/fixturday-dev/SKILL.md ~/fixturday.com/.claude/skills/fixturday-dev/SKILL.md)",
       "Bash(git add:*)",
       "Bash(git commit:*)",
-      "Bash(git merge:*)"
+      "Bash(git merge:*)",
+      "Bash(npx vite:*)"
     ]
   }
 }
