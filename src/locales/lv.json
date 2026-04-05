@@ -288,6 +288,21 @@
     "dismiss": "Nerādīt vairāk",
     "setupProgress": "Iestatīšanas progress"
   },
+  "public": {
+    "title": "Turnīri",
+    "tagline": "Turnīru platforma",
+    "searchPlaceholder": "Meklēt turnīru...",
+    "noResults": "Nav atrasto turnīru",
+    "noResultsHint": "Mēģiniet citu meklēšanas vārdu",
+    "teamsLabel": "komandas",
+    "tabInfo": "Informācija",
+    "tabSchedule": "Grafiks",
+    "tabStandings": "Tabula",
+    "tabTeams": "Komandas",
+    "rulesSection": "Nolikums",
+    "tagNow": "TAGAD",
+    "regBtn": "Reģistrēties"
+  },
   "common": {
     "save": "Saglabāt",
     "saved": "Saglabāts!",
