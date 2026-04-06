@@ -52,6 +52,9 @@
     "lunchEnd": "Beigas",
     "uploadLogo": "Augšupielādēt logo",
     "invalidDate": "Nekorekts datuma formāts (dd/mm/gggg)",
+    "invalidTime": "Nekorekts laika formāts (HH:mm)",
+    "organizerEmail": "Rīkotāja e-pasts",
+    "organizerPhone": "Rīkotāja tālrunis",
     "registerCTA": "Pieteikt komandu →",
     "status": {
       "ongoing": "Notiek",

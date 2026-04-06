@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
-import { format } from 'date-fns'
+import { format, parse, isValid } from 'date-fns'
 import { generateSchedule } from '../../../utils/scheduler'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
@@ -12,8 +12,16 @@ import { toast } from '../../../components/Toast'
 export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGroup, onSaved }) {
   const { t } = useTranslation()
   const today = format(new Date(), 'yyyy-MM-dd')
+  const todayDisplay = format(new Date(), 'dd/MM/yyyy')
 
   const [schedDate, setSchedDate] = useState(today)
+  const [schedDateDisplay, setSchedDateDisplay] = useState(todayDisplay)
+
+  function handleDateChange(val) {
+    setSchedDateDisplay(val)
+    const parsed = parse(val, 'dd/MM/yyyy', new Date())
+    if (isValid(parsed)) setSchedDate(format(parsed, 'yyyy-MM-dd'))
+  }
   const [schedPitches, setSchedPitches] = useState(1)
   const [schedFirst, setSchedFirst] = useState('09:00')
   const [schedLast, setSchedLast] = useState('18:00')
@@ -36,6 +44,9 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   if (!open) return null
 
   function runPreview() {
+    if (!isValid(parse(schedDateDisplay, 'dd/MM/yyyy', new Date()))) {
+      toast(t('tournament.invalidDate'), 'error'); return
+    }
     const result = generateSchedule({
       fixtures: fixtures.map(f => ({ id: f.id, homeTeamId: f.home_team_id, awayTeamId: f.away_team_id })),
       pitchCount: Number(schedPitches),
@@ -81,6 +92,11 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
       onClick={e => { if (e.target === e.currentTarget) onClose() }}
     >
       <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius-md)', padding: '2rem', width: '100%', maxWidth: '680px', maxHeight: '90vh', overflowY: 'auto' }}>
+        <style>{`
+          input[type="time"]::-webkit-datetime-edit-ampm-field { display: none; }
+          input[type="time"] { -webkit-appearance: none; }
+        `}</style>
+
         <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginBottom: '1.5rem' }}>
           {t('fixture.schedulerTitle')}
         </h2>
@@ -88,7 +104,12 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.25rem' }}>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('fixture.schedDate')}
-            <input type="date" value={schedDate} onChange={e => setSchedDate(e.target.value)} style={inputStyle} />
+            <input
+              placeholder="dd/mm/gggg"
+              value={schedDateDisplay}
+              onChange={e => handleDateChange(e.target.value)}
+              style={inputStyle}
+            />
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('fixture.schedPitches')}
@@ -96,11 +117,11 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('fixture.schedFirstGame')}
-            <input type="time" value={schedFirst} onChange={e => setSchedFirst(e.target.value)} style={inputStyle} />
+            <input type="time" step="60" value={schedFirst} onChange={e => setSchedFirst(e.target.value)} style={inputStyle} />
           </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('fixture.schedLastGame')}
-            <input type="time" value={schedLast} onChange={e => setSchedLast(e.target.value)} style={inputStyle} />
+            <input type="time" step="60" value={schedLast} onChange={e => setSchedLast(e.target.value)} style={inputStyle} />
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', gridColumn: '1 / -1', fontSize: '0.875rem', cursor: 'pointer' }}>
             <input type="checkbox" checked={schedLunchEnabled} onChange={e => setSchedLunchEnabled(e.target.checked)} />
@@ -110,11 +131,11 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
             <>
               <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
                 {t('fixture.schedLunchStart')}
-                <input type="time" value={schedLunchStart} onChange={e => setSchedLunchStart(e.target.value)} style={inputStyle} />
+                <input type="time" step="60" value={schedLunchStart} onChange={e => setSchedLunchStart(e.target.value)} style={inputStyle} />
               </label>
               <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
                 {t('fixture.schedLunchEnd')}
-                <input type="time" value={schedLunchEnd} onChange={e => setSchedLunchEnd(e.target.value)} style={inputStyle} />
+                <input type="time" step="60" value={schedLunchEnd} onChange={e => setSchedLunchEnd(e.target.value)} style={inputStyle} />
               </label>
             </>
           )}

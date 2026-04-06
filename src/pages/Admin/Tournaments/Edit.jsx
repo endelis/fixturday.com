@@ -196,6 +196,18 @@ export default function TournamentEdit() {
             <textarea {...register('description')} rows={4} />
           </div>
 
+          {/* Organizer contact */}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+            <div className="form-group">
+              <label>{t('tournament.organizerEmail')}</label>
+              <input type="email" {...register('organizer_email')} />
+            </div>
+            <div className="form-group">
+              <label>{t('tournament.organizerPhone')}</label>
+              <input type="tel" {...register('organizer_phone')} />
+            </div>
+          </div>
+
           {/* Rules */}
           <div className="form-group">
             <label>{t('tournament.rules')}</label>
@@ -210,11 +222,25 @@ export default function TournamentEdit() {
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
               <div className="form-group">
                 <label>{t('tournament.firstGameTime')}</label>
-                <input type="time" step="60" {...register('first_game_time')} />
+                <input
+                  type="text"
+                  placeholder="HH:mm"
+                  {...register('first_game_time', {
+                    validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
+                  })}
+                />
+                {errors.first_game_time && <span className="error-message">{errors.first_game_time.message}</span>}
               </div>
               <div className="form-group">
                 <label>{t('tournament.lastGameTime')}</label>
-                <input type="time" step="60" {...register('last_game_time')} />
+                <input
+                  type="text"
+                  placeholder="HH:mm"
+                  {...register('last_game_time', {
+                    validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
+                  })}
+                />
+                {errors.last_game_time && <span className="error-message">{errors.last_game_time.message}</span>}
               </div>
             </div>
 
@@ -234,11 +260,25 @@ export default function TournamentEdit() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.75rem' }}>
                 <div className="form-group">
                   <label>{t('tournament.lunchStart')}</label>
-                  <input type="time" step="60" {...register('lunch_start')} />
+                  <input
+                    type="text"
+                    placeholder="HH:mm"
+                    {...register('lunch_start', {
+                      validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
+                    })}
+                  />
+                  {errors.lunch_start && <span className="error-message">{errors.lunch_start.message}</span>}
                 </div>
                 <div className="form-group">
                   <label>{t('tournament.lunchEnd')}</label>
-                  <input type="time" step="60" {...register('lunch_end')} />
+                  <input
+                    type="text"
+                    placeholder="HH:mm"
+                    {...register('lunch_end', {
+                      validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
+                    })}
+                  />
+                  {errors.lunch_end && <span className="error-message">{errors.lunch_end.message}</span>}
                 </div>
               </div>
             )}
