@@ -599,5 +599,19 @@
     "cookiesLink": "Sīkdatņu politika",
     "acceptAll": "Pieņemt visas",
     "acceptFunctional": "Tikai funkcionālās"
+  },
+  "print": {
+    "preparing": "Sagatavo drukāšanai...",
+    "notFound": "Turnīrs nav atrasts.",
+    "printBtn": "Drukāt",
+    "printedOn": "Drukāts: ",
+    "standings": "Tabula",
+    "schedule": "Spēļu grafiks",
+    "colRound": "Kārta",
+    "colTime": "Laiks",
+    "colPitch": "Laukums",
+    "colHome": "Mājas",
+    "colResult": "Rezultāts",
+    "colAway": "Viesi"
   }
 }
