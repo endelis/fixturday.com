@@ -327,6 +327,8 @@
   "public": {
     "title": "Turnīri",
     "tagline": "Turnīru platforma",
+    "heroTitle": "Aktīvie turnīri",
+    "heroSubtitle": "Seko līdzi turnīriem visā Latvijā",
     "searchPlaceholder": "Meklēt turnīru...",
     "noResults": "Nav atrasto turnīru",
     "noResultsHint": "Mēģiniet citu meklēšanas vārdu",

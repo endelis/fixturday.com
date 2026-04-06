@@ -4,7 +4,8 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
-import { Mail, MapPin } from 'lucide-react'
+import Footer from '../../components/Footer'
+import { Mail, MapPin, Clock, CheckCircle } from 'lucide-react'
 
 export default function Contact() {
   const { t } = useTranslation()
@@ -24,104 +25,215 @@ export default function Contact() {
   }
 
   return (
-    <div style={{ background: 'var(--color-bg)', minHeight: '100vh', color: 'var(--color-text)' }}>
+    <div style={{ background: '#0a1628', color: '#e0e8f4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
 
-      {/* Hero */}
-      <div style={{
-        background: 'linear-gradient(180deg, #0d1b2e 0%, var(--color-bg) 100%)',
+      {/* ── Hero ──────────────────────────────────────────────── */}
+      <section style={{
         padding: '4.5rem 1.5rem 3rem',
         textAlign: 'center',
-        borderBottom: '1px solid var(--color-border)',
+        background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
       }}>
-        <h1 style={{
-          fontFamily: 'var(--font-heading)',
-          fontSize: 'clamp(2.5rem, 6vw, 3.5rem)',
-          fontWeight: 700,
-          color: 'var(--color-accent)',
-          marginBottom: '0.75rem',
-          letterSpacing: '0.02em',
-        }}>
-          {t('contact.title')}
-        </h1>
-        <p style={{ color: 'var(--color-text-muted)', fontSize: '1rem' }}>
-          {t('contact.subtitle')}
-        </p>
-      </div>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+          <div style={pill}>{t('nav.contact').toUpperCase()}</div>
+          <h1 style={h1}>{t('contact.title')}</h1>
+          <p style={subtitle}>{t('contact.subtitle')}</p>
+        </div>
+      </section>
 
-      <div className="container" style={{ paddingTop: '2.5rem', paddingBottom: '4rem', maxWidth: '600px' }}>
+      {/* ── Two-column layout ─────────────────────────────────── */}
+      <section style={{ flex: 1, padding: '3rem 1.5rem 4rem' }}>
+        <div style={{
+          maxWidth: '1000px',
+          margin: '0 auto',
+          display: 'grid',
+          gridTemplateColumns: '1fr',
+          gap: '2rem',
+        }}
+          className="contact-grid"
+        >
 
-        {submitted ? (
-          <div className="card" style={{ textAlign: 'center', padding: '2.5rem' }}>
-            <div style={{ fontSize: '2.5rem', marginBottom: '1rem' }}>✓</div>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.75rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
-              {t('contact.successTitle')}
+          {/* Left — contact info */}
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+            <h2 style={{
+              fontFamily: "'Barlow Condensed', sans-serif",
+              fontSize: '1.35rem', fontWeight: 700, color: '#ffffff',
+              marginBottom: '0.25rem',
+            }}>
+              Kontaktinformācija
             </h2>
-            <p style={{ color: 'var(--color-text-muted)' }}>{t('contact.successBody')}</p>
-            <button
-              className="btn-secondary"
-              style={{ marginTop: '1.5rem' }}
-              onClick={() => setSubmitted(false)}
-            >
-              {t('contact.sendAnother')}
-            </button>
-          </div>
-        ) : (
-          <div className="card" style={{ padding: '2rem' }}>
-            <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1.25rem' }}>
-              <div className="form-group">
-                <label>{t('contact.name')} *</label>
-                <input
-                  {...register('name', { required: t('common.required') })}
-                  placeholder={t('contact.namePlaceholder')}
-                />
-                {errors.name && <span className="error-message">{errors.name.message}</span>}
+
+            {[
+              {
+                icon: <Mail size={20} />,
+                label: 'E-pasts',
+                value: 'mail@endelis.co',
+                href: 'mailto:mail@endelis.co',
+              },
+              {
+                icon: <MapPin size={20} />,
+                label: 'Atrašanās vieta',
+                value: 'Latvija',
+                href: null,
+              },
+              {
+                icon: <Clock size={20} />,
+                label: 'Atbildes laiks',
+                value: 'Atbildam 24h laikā',
+                href: null,
+              },
+            ].map((item, i) => (
+              <div key={i} style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: '1rem',
+                background: '#0d1b2e',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '10px',
+                padding: '1rem 1.25rem',
+              }}>
+                <div style={{
+                  color: '#f0a500', flexShrink: 0,
+                  background: 'rgba(240,165,0,0.1)',
+                  borderRadius: '8px', padding: '0.5rem',
+                  display: 'flex', alignItems: 'center',
+                }}>
+                  {item.icon}
+                </div>
+                <div>
+                  <div style={{ fontSize: '0.75rem', color: '#8fa3bc', marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                    {item.label}
+                  </div>
+                  {item.href ? (
+                    <a href={item.href} style={{ color: '#e0e8f4', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
+                      {item.value}
+                    </a>
+                  ) : (
+                    <span style={{ color: '#e0e8f4', fontSize: '0.9375rem', fontWeight: 500 }}>{item.value}</span>
+                  )}
+                </div>
               </div>
-
-              <div className="form-group">
-                <label>{t('contact.email')} *</label>
-                <input
-                  type="email"
-                  {...register('email', { required: t('common.required') })}
-                  placeholder={t('contact.emailPlaceholder')}
-                />
-                {errors.email && <span className="error-message">{errors.email.message}</span>}
-              </div>
-
-              <div className="form-group">
-                <label>{t('contact.message')} *</label>
-                <textarea
-                  {...register('message', { required: t('common.required'), minLength: { value: 10, message: t('contact.messageTooShort') } })}
-                  rows={5}
-                  placeholder={t('contact.messagePlaceholder')}
-                />
-                {errors.message && <span className="error-message">{errors.message.message}</span>}
-              </div>
-
-              <button
-                type="submit"
-                className="btn-primary"
-                disabled={isSubmitting}
-                style={{ width: '100%' }}
-              >
-                {isSubmitting ? t('common.saving') : t('contact.submit')}
-              </button>
-            </form>
+            ))}
           </div>
-        )}
 
-        {/* Contact info */}
-        <div style={{ marginTop: '2rem', display: 'flex', gap: '1.5rem', flexWrap: 'wrap', justifyContent: 'center' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-            <Mail size={16} style={{ color: 'var(--color-accent)' }} />
-            <span>info@fixturday.com</span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-            <MapPin size={16} style={{ color: 'var(--color-accent)' }} />
-            <span>Latvija</span>
+          {/* Right — form */}
+          <div style={{
+            background: '#0d1b2e',
+            border: '1px solid rgba(255,255,255,0.07)',
+            borderRadius: '14px',
+            padding: '2rem',
+          }}>
+            {submitted ? (
+              <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                <CheckCircle size={48} style={{ color: '#22c55e', margin: '0 auto 1rem' }} />
+                <h2 style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '1.75rem', color: '#22c55e', marginBottom: '0.75rem',
+                }}>
+                  {t('contact.successTitle')}
+                </h2>
+                <p style={{ color: '#8fa3bc', marginBottom: '1.5rem' }}>{t('contact.successBody')}</p>
+                <button
+                  onClick={() => setSubmitted(false)}
+                  style={{
+                    border: '1px solid rgba(255,255,255,0.2)', color: '#e0e8f4',
+                    background: 'none', borderRadius: '8px', padding: '0.6rem 1.5rem',
+                    cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'var(--font-body)',
+                  }}
+                >
+                  {t('contact.sendAnother')}
+                </button>
+              </div>
+            ) : (
+              <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1.25rem' }}>
+                <div className="form-group">
+                  <label>{t('contact.name')} *</label>
+                  <input
+                    {...register('name', { required: t('common.required') })}
+                    placeholder={t('contact.namePlaceholder')}
+                  />
+                  {errors.name && <span className="error-message">{errors.name.message}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label>{t('contact.email')} *</label>
+                  <input
+                    type="email"
+                    {...register('email', { required: t('common.required') })}
+                    placeholder={t('contact.emailPlaceholder')}
+                  />
+                  {errors.email && <span className="error-message">{errors.email.message}</span>}
+                </div>
+
+                <div className="form-group">
+                  <label>{t('contact.message')} *</label>
+                  <textarea
+                    rows={5}
+                    placeholder={t('contact.messagePlaceholder')}
+                    {...register('message', {
+                      required: t('common.required'),
+                      minLength: { value: 10, message: t('contact.messageTooShort') },
+                    })}
+                  />
+                  {errors.message && <span className="error-message">{errors.message.message}</span>}
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={isSubmitting}
+                  style={{
+                    width: '100%',
+                    background: '#f0a500', color: '#0a1628',
+                    border: 'none', borderRadius: '8px',
+                    padding: '0.85rem 1.5rem',
+                    fontWeight: 700, fontSize: '0.9375rem',
+                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
+                    opacity: isSubmitting ? 0.7 : 1,
+                    fontFamily: 'var(--font-body)',
+                    minHeight: '44px',
+                    transition: 'opacity 150ms',
+                  }}
+                >
+                  {isSubmitting ? t('common.saving') : t('contact.submit')}
+                </button>
+              </form>
+            )}
           </div>
         </div>
-      </div>
+      </section>
+
+      <style>{`
+        @media (min-width: 768px) {
+          .contact-grid { grid-template-columns: 1fr 1.6fr !important; }
+        }
+      `}</style>
+
+      <Footer />
     </div>
   )
+}
+
+const pill = {
+  display: 'inline-block',
+  border: '1px solid rgba(240,165,0,0.35)',
+  borderRadius: '999px',
+  padding: '0.3rem 1rem',
+  fontSize: '0.75rem',
+  color: '#f0a500',
+  letterSpacing: '0.1em',
+  fontWeight: 600,
+  marginBottom: '1.25rem',
+}
+const h1 = {
+  fontFamily: "'Barlow Condensed', sans-serif",
+  fontSize: 'clamp(2rem, 5vw, 3rem)',
+  fontWeight: 700,
+  color: '#ffffff',
+  marginBottom: '0.75rem',
+}
+const subtitle = {
+  fontSize: 'clamp(0.9375rem, 2vw, 1rem)',
+  color: '#8fa3bc',
+  lineHeight: 1.6,
+  margin: 0,
 }

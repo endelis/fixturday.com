@@ -3,6 +3,7 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { Zap, BarChart2, Smartphone, CheckCircle } from 'lucide-react'
+import Footer from '../../components/Footer'
 
 export default function Landing() {
   const { t } = useTranslation()
@@ -313,26 +314,7 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* ── Footer ───────────────────────────────────────────────── */}
-      <footer style={{
-        background: '#060f1c', borderTop: '1px solid rgba(255,255,255,0.06)',
-        padding: '2.5rem 1.5rem',
-      }}>
-        <div style={{
-          maxWidth: '1100px', margin: '0 auto',
-          display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '1rem',
-        }}>
-          <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '22px', opacity: 0.85 }} />
-          <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <Link to="/turniri" style={footerLink}>{t('nav.tournaments')}</Link>
-            <Link to="/par-mums" style={footerLink}>{t('nav.about')}</Link>
-            <Link to="/kontakti" style={footerLink}>{t('nav.contact')}</Link>
-          </div>
-          <p style={{ color: '#3a506b', fontSize: '0.8rem', margin: 0 }}>
-            © 2026 Fixturday
-          </p>
-        </div>
-      </footer>
+      <Footer />
 
       <style>{`
         .landing-nav-links {
@@ -399,6 +381,3 @@ const sectionHeading = {
   textAlign: 'center', marginBottom: '2.5rem',
 }
 
-const footerLink = {
-  color: '#3a506b', textDecoration: 'none', fontSize: '0.875rem', transition: 'color 150ms',
-}

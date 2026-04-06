@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { formatDate } from '../../utils/dateFormat'
 import { Search, Trophy, Calendar, MapPin, Users } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
+import Footer from '../../components/Footer'
 
 // ── Status helpers ────────────────────────────────────────────
 function getTournamentStatus(tournament) {
@@ -94,36 +95,50 @@ export default function TournamentList() {
 
   // ── Render ────────────────────────────────────────────────
   return (
-    <div style={{ background: 'var(--color-bg)', minHeight: '100vh' }}>
+    <div style={{ background: '#0a1628', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
 
-      <div className="container" style={{ paddingTop: '2.5rem', paddingBottom: '4rem' }}>
-
-        {/* Page header */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'baseline',
-          justifyContent: 'space-between',
-          flexWrap: 'wrap',
-          gap: '0.5rem',
-          marginBottom: '1.5rem',
-        }}>
-          <h1 style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 'clamp(2rem, 5vw, 2.5rem)',
-            color: 'var(--color-accent)',
-            letterSpacing: '0.02em',
-            lineHeight: 1,
+      {/* ── Hero ──────────────────────────────────────────────────── */}
+      <section style={{
+        padding: '4.5rem 1.5rem 3rem',
+        textAlign: 'center',
+        background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
+      }}>
+        <div style={{ maxWidth: '560px', margin: '0 auto' }}>
+          <div style={{
+            display: 'inline-block',
+            border: '1px solid rgba(240,165,0,0.35)',
+            borderRadius: '999px',
+            padding: '0.3rem 1rem',
+            fontSize: '0.75rem',
+            color: '#f0a500',
+            letterSpacing: '0.1em',
+            fontWeight: 600,
+            marginBottom: '1.25rem',
           }}>
-            {t('public.title')}
+            {t('public.title').toUpperCase()}
+          </div>
+          <h1 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: 700,
+            color: '#ffffff',
+            marginBottom: '0.75rem',
+          }}>
+            {t('public.heroTitle')}
           </h1>
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>
-            {t('public.tagline')}
-          </span>
+          <p style={{
+            fontSize: 'clamp(0.9375rem, 2vw, 1rem)',
+            color: '#8fa3bc',
+            lineHeight: 1.6,
+            margin: '0 0 2rem',
+          }}>
+            {t('public.heroSubtitle')}
+          </p>
         </div>
 
-        {/* Search */}
-        <div style={{ position: 'relative', marginBottom: '2rem' }}>
+        {/* Search — inside hero */}
+        <div style={{ maxWidth: '560px', margin: '0 auto', position: 'relative' }}>
           <Search
             size={17}
             style={{
@@ -131,7 +146,7 @@ export default function TournamentList() {
               left: '0.9rem',
               top: '50%',
               transform: 'translateY(-50%)',
-              color: 'var(--color-text-muted)',
+              color: '#8fa3bc',
               pointerEvents: 'none',
             }}
           />
@@ -142,21 +157,24 @@ export default function TournamentList() {
             onChange={e => setSearch(e.target.value)}
             style={{
               width: '100%',
-              background: 'var(--color-surface)',
-              border: '1px solid var(--color-border)',
-              borderRadius: '8px',
-              color: 'var(--color-text)',
+              background: '#0d1b2e',
+              border: '1px solid rgba(255,255,255,0.1)',
+              borderRadius: '10px',
+              color: '#e0e8f4',
               fontFamily: 'var(--font-body)',
               fontSize: '1rem',
               padding: '0.75rem 1rem 0.75rem 2.6rem',
               outline: 'none',
-              transition: 'border-color 200ms ease',
+              boxSizing: 'border-box',
               minHeight: '44px',
             }}
-            onFocus={e => (e.target.style.borderColor = 'var(--color-accent)')}
-            onBlur={e => (e.target.style.borderColor = 'var(--color-border)')}
+            onFocus={e => (e.target.style.borderColor = '#f0a500')}
+            onBlur={e => (e.target.style.borderColor = 'rgba(255,255,255,0.1)')}
           />
         </div>
+      </section>
+
+      <div style={{ flex: 1, padding: '2.5rem 1.5rem 4rem', maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
 
         {/* Empty state */}
         {filtered.length === 0 ? (
@@ -336,17 +354,19 @@ export default function TournamentList() {
           }
         }
         .t-card {
-          background: var(--color-surface);
-          border: 1px solid var(--color-border);
+          background: #0d1b2e;
+          border: 1px solid rgba(255,255,255,0.07);
           border-radius: 12px;
           padding: 1.125rem;
           transition: border-color 200ms ease;
           height: 100%;
         }
         .t-card:hover {
-          border-color: var(--color-accent);
+          border-color: rgba(240,165,0,0.5);
         }
       `}</style>
+
+      <Footer />
     </div>
   )
 }

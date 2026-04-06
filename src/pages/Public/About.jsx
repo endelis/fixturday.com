@@ -1,132 +1,180 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
-import { Heart, Shield, Users } from 'lucide-react'
+import Footer from '../../components/Footer'
+import { Zap, ShieldCheck, Users } from 'lucide-react'
 
 export default function About() {
   const { t } = useTranslation()
 
   const values = [
     {
-      icon: <Heart size={24} />,
+      icon: <Zap size={28} />,
       title: t('about.value1Title'),
       desc: t('about.value1Desc'),
     },
     {
-      icon: <Shield size={24} />,
+      icon: <ShieldCheck size={28} />,
       title: t('about.value2Title'),
       desc: t('about.value2Desc'),
     },
     {
-      icon: <Users size={24} />,
+      icon: <Users size={28} />,
       title: t('about.value3Title'),
       desc: t('about.value3Desc'),
     },
   ]
 
   return (
-    <div style={{ background: 'var(--color-bg)', minHeight: '100vh', color: 'var(--color-text)' }}>
+    <div style={{ background: '#0a1628', color: '#e0e8f4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
 
-      {/* Hero */}
-      <div style={{
-        background: 'linear-gradient(180deg, #0d1b2e 0%, var(--color-bg) 100%)',
-        padding: '5rem 1.5rem 3rem',
+      {/* ── Hero ──────────────────────────────────────────────── */}
+      <section style={{
+        padding: '5rem 1.5rem 4rem',
         textAlign: 'center',
-        borderBottom: '1px solid var(--color-border)',
+        background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
+        position: 'relative',
       }}>
-        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-          <h1 style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: 'clamp(2.5rem, 6vw, 4rem)',
-            fontWeight: 700,
-            color: 'var(--color-accent)',
-            marginBottom: '1.25rem',
-            letterSpacing: '0.02em',
-          }}>
-            {t('about.title')}
-          </h1>
-          <p style={{
-            fontSize: '1.125rem',
-            color: 'var(--color-text-muted)',
-            lineHeight: 1.7,
-            maxWidth: '520px',
-            margin: '0 auto',
-          }}>
-            {t('about.mission')}
-          </p>
+        <div style={{ maxWidth: '640px', margin: '0 auto', position: 'relative' }}>
+          <div style={pill}>{t('nav.about').toUpperCase()}</div>
+          <h1 style={h1}>{t('about.title')}</h1>
+          <p style={subtitle}>{t('about.mission')}</p>
         </div>
-      </div>
+      </section>
 
-      <div className="container" style={{ paddingTop: '3rem', paddingBottom: '4rem', maxWidth: '800px' }}>
-
-        {/* Story */}
-        <section style={{ marginBottom: '3.5rem' }}>
-          <h2 style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '1.75rem',
-            color: 'var(--color-text)',
-            marginBottom: '1rem',
+      {/* ── Mission quote ─────────────────────────────────────── */}
+      <section style={{ padding: '4rem 1.5rem', background: '#0d1b2e' }}>
+        <div style={{ maxWidth: '760px', margin: '0 auto', textAlign: 'center' }}>
+          <blockquote style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 'clamp(1.35rem, 3vw, 1.75rem)',
+            fontWeight: 600,
+            color: '#ffffff',
+            lineHeight: 1.45,
+            borderLeft: '3px solid #f0a500',
+            paddingLeft: '1.5rem',
+            textAlign: 'left',
+            margin: '0 auto',
+            maxWidth: '680px',
           }}>
-            {t('about.storyTitle')}
-          </h2>
-          <div style={{ display: 'grid', gap: '1rem', color: 'var(--color-text-muted)', lineHeight: 1.7, fontSize: '0.9375rem' }}>
-            <p>{t('about.storyP1')}</p>
-            <p>{t('about.storyP2')}</p>
+            "{t('about.mission')}"
+          </blockquote>
+        </div>
+      </section>
+
+      {/* ── Story ────────────────────────────────────────────── */}
+      <section style={{ padding: '4rem 1.5rem', background: '#0a1628' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+          <h2 style={sectionH2}>{t('about.storyTitle')}</h2>
+          <div style={{ display: 'grid', gap: '1rem', color: '#8fa3bc', lineHeight: 1.75, fontSize: '0.9375rem' }}>
+            <p style={{ margin: 0 }}>{t('about.storyP1')}</p>
+            <p style={{ margin: 0 }}>{t('about.storyP2')}</p>
           </div>
-        </section>
+        </div>
+      </section>
 
-        {/* Values */}
-        <section>
-          <h2 style={{
-            fontFamily: 'var(--font-heading)',
-            fontSize: '1.75rem',
-            color: 'var(--color-text)',
-            marginBottom: '1.5rem',
-          }}>
-            {t('about.valuesTitle')}
-          </h2>
-          <div className="about-values-grid">
+      {/* ── Values ───────────────────────────────────────────── */}
+      <section style={{ padding: '4rem 1.5rem', background: '#0d1b2e' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h2 style={{ ...sectionH2, textAlign: 'center', marginBottom: '2.5rem' }}>{t('about.valuesTitle')}</h2>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(260px, 1fr))', gap: '1.25rem' }}>
             {values.map((v, i) => (
-              <div key={i} style={{
-                background: 'var(--color-surface)',
-                border: '1px solid var(--color-border)',
-                borderRadius: '12px',
-                padding: '1.5rem',
-              }}>
-                <div style={{ color: 'var(--color-accent)', marginBottom: '0.75rem' }}>{v.icon}</div>
+              <div
+                key={i}
+                style={{
+                  background: '#0a1628',
+                  border: '1px solid rgba(255,255,255,0.07)',
+                  borderRadius: '14px',
+                  padding: '2rem',
+                  transition: 'border-color 200ms',
+                }}
+                onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(240,165,0,0.4)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}
+              >
+                <div style={{ color: '#f0a500', marginBottom: '1rem' }}>{v.icon}</div>
                 <h3 style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '1.2rem',
-                  color: 'var(--color-text)',
-                  marginBottom: '0.4rem',
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '1.35rem', fontWeight: 700,
+                  color: '#ffffff', marginBottom: '0.5rem',
                 }}>
                   {v.title}
                 </h3>
-                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem', lineHeight: 1.6 }}>{v.desc}</p>
+                <p style={{ color: '#8fa3bc', fontSize: '0.9375rem', lineHeight: 1.65, margin: 0 }}>{v.desc}</p>
               </div>
             ))}
           </div>
-        </section>
-
-        {/* CTA */}
-        <div style={{ marginTop: '3.5rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>{t('about.ctaText')}</p>
-          <Link to="/admin/register" className="btn-primary" style={{ marginRight: '0.75rem' }}>
-            {t('nav.start')}
-          </Link>
-          <Link to="/kontakti" className="btn-secondary">{t('nav.contact')}</Link>
         </div>
-      </div>
+      </section>
 
-      <style>{`
-        .about-values-grid {
-          display: grid; grid-template-columns: 1fr; gap: 1rem;
-        }
-        @media (min-width: 600px) {
-          .about-values-grid { grid-template-columns: repeat(3, 1fr); }
-        }
-      `}</style>
+      {/* ── CTA ──────────────────────────────────────────────── */}
+      <section style={{ padding: '5rem 1.5rem', textAlign: 'center', background: '#0a1628', flex: 1 }}>
+        <div style={{ maxWidth: '480px', margin: '0 auto' }}>
+          <h2 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
+            fontWeight: 700, color: '#ffffff', marginBottom: '0.75rem',
+          }}>
+            Jautājumi? Sazinieties ar mums.
+          </h2>
+          <p style={{ color: '#8fa3bc', marginBottom: '1.75rem', fontSize: '0.9375rem' }}>
+            {t('about.ctaText')}
+          </p>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/kontakti" style={ctaBtn}>{t('nav.contact')}</Link>
+            <Link to="/admin/register" style={ctaBtnSecondary}>{t('nav.start')}</Link>
+          </div>
+        </div>
+      </section>
+
+      <Footer />
     </div>
   )
+}
+
+const pill = {
+  display: 'inline-block',
+  border: '1px solid rgba(240,165,0,0.35)',
+  borderRadius: '999px',
+  padding: '0.3rem 1rem',
+  fontSize: '0.75rem',
+  color: '#f0a500',
+  letterSpacing: '0.1em',
+  fontWeight: 600,
+  marginBottom: '1.25rem',
+}
+const h1 = {
+  fontFamily: "'Barlow Condensed', sans-serif",
+  fontSize: 'clamp(2.25rem, 6vw, 3.5rem)',
+  fontWeight: 700,
+  color: '#ffffff',
+  lineHeight: 1.1,
+  marginBottom: '1.25rem',
+}
+const subtitle = {
+  fontSize: 'clamp(1rem, 2.5vw, 1.125rem)',
+  color: '#8fa3bc',
+  lineHeight: 1.65,
+  maxWidth: '520px',
+  margin: '0 auto',
+}
+const sectionH2 = {
+  fontFamily: "'Barlow Condensed', sans-serif",
+  fontSize: 'clamp(1.5rem, 3.5vw, 2rem)',
+  fontWeight: 700,
+  color: '#ffffff',
+  marginBottom: '1.25rem',
+}
+const ctaBtn = {
+  display: 'inline-flex', alignItems: 'center',
+  background: '#f0a500', color: '#0a1628',
+  borderRadius: '8px', padding: '0.8rem 2rem',
+  fontWeight: 700, fontSize: '0.9375rem', textDecoration: 'none',
+}
+const ctaBtnSecondary = {
+  display: 'inline-flex', alignItems: 'center',
+  background: 'transparent', color: '#e0e8f4',
+  border: '1px solid rgba(255,255,255,0.2)',
+  borderRadius: '8px', padding: '0.8rem 2rem',
+  fontWeight: 500, fontSize: '0.9375rem', textDecoration: 'none',
 }

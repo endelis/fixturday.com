@@ -9,6 +9,7 @@ import {
   Download, Users, Trophy,
 } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
+import Footer from '../../components/Footer'
 import { calculateStandings } from '../../utils/standings'
 
 // ── Status helpers ────────────────────────────────────────────
@@ -858,6 +859,7 @@ export default function TournamentDetail() {
           <KomandasTab teams={teams} ageGroups={ageGroups} slug={slug} t={t} />
         )}
       </div>
+      <Footer />
     </div>
   )
 }
