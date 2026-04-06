@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
@@ -6,6 +7,12 @@ import { Trophy, Zap, Users } from 'lucide-react'
 
 export default function About() {
   const { t } = useTranslation()
+
+  useEffect(() => {
+    document.title = t('about.pageTitle')
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc) metaDesc.setAttribute('content', t('about.metaDesc'))
+  }, [t])
 
   const values = [
     { icon: <Trophy size={28} />, title: t('about.value1Title'), desc: t('about.value1Desc') },

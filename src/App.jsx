@@ -1,48 +1,50 @@
+import { lazy, Suspense } from 'react'
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from './components/Toast'
 import RequireAuth from './components/RequireAuth'
 import CookieBanner from './components/CookieBanner'
 
 // ── Public pages ──────────────────────────────────────────────────
-import Landing         from './pages/Public/Landing'
-import TournamentList  from './pages/Public/TournamentList'
-import TournamentDetail from './pages/Public/TournamentDetail'
-import Standings       from './pages/Public/Standings'
-import Schedule        from './pages/Public/Schedule'
-import TeamRoster      from './pages/Public/TeamRoster'
-import Register        from './pages/Public/Register'
-import About           from './pages/Public/About'
-import Contact         from './pages/Public/Contact'
-import Privacy         from './pages/Public/Privacy'
-import Terms           from './pages/Public/Terms'
-import CookiesPage     from './pages/Public/Cookies'
-import DataDeletion    from './pages/Public/DataDeletion'
+const Landing         = lazy(() => import('./pages/Public/Landing'))
+const TournamentList  = lazy(() => import('./pages/Public/TournamentList'))
+const TournamentDetail = lazy(() => import('./pages/Public/TournamentDetail'))
+const Standings       = lazy(() => import('./pages/Public/Standings'))
+const Schedule        = lazy(() => import('./pages/Public/Schedule'))
+const TeamRoster      = lazy(() => import('./pages/Public/TeamRoster'))
+const Register        = lazy(() => import('./pages/Public/Register'))
+const About           = lazy(() => import('./pages/Public/About'))
+const Contact         = lazy(() => import('./pages/Public/Contact'))
+const Privacy         = lazy(() => import('./pages/Public/Privacy'))
+const Terms           = lazy(() => import('./pages/Public/Terms'))
+const CookiesPage     = lazy(() => import('./pages/Public/Cookies'))
+const DataDeletion    = lazy(() => import('./pages/Public/DataDeletion'))
 
 // ── Admin pages ───────────────────────────────────────────────────
-import Login          from './pages/Admin/Login'
-import AdminRegister  from './pages/Admin/Register'
-import Dashboard      from './pages/Admin/Dashboard'
-import TournamentNew  from './pages/Admin/Tournaments/New'
-import TournamentEdit from './pages/Admin/Tournaments/Edit'
-import AgeGroups      from './pages/Admin/AgeGroups'
-import Venues         from './pages/Admin/Venues'
-import Teams          from './pages/Admin/Teams'
-import Fixtures       from './pages/Admin/Fixtures/index'
-import Matchday       from './pages/Admin/Matchday'
-import Print          from './pages/Admin/Print'
+const Login          = lazy(() => import('./pages/Admin/Login'))
+const AdminRegister  = lazy(() => import('./pages/Admin/Register'))
+const Dashboard      = lazy(() => import('./pages/Admin/Dashboard'))
+const TournamentNew  = lazy(() => import('./pages/Admin/Tournaments/New'))
+const TournamentEdit = lazy(() => import('./pages/Admin/Tournaments/Edit'))
+const AgeGroups      = lazy(() => import('./pages/Admin/AgeGroups'))
+const Venues         = lazy(() => import('./pages/Admin/Venues'))
+const Teams          = lazy(() => import('./pages/Admin/Teams'))
+const Fixtures       = lazy(() => import('./pages/Admin/Fixtures/index'))
+const Matchday       = lazy(() => import('./pages/Admin/Matchday'))
+const Print          = lazy(() => import('./pages/Admin/Print'))
 
 // ── Tournament workspace ──────────────────────────────────────────
-import TournamentLayout    from './pages/Admin/Tournament/TournamentLayout'
-import TournamentOverview  from './pages/Admin/Tournament/TournamentOverview'
-import TournamentStats     from './pages/Admin/Tournament/TournamentStats'
-import TournamentStandings from './pages/Admin/Tournament/TournamentStandings'
-import TournamentPlayoff   from './pages/Admin/Tournament/TournamentPlayoff'
+const TournamentLayout    = lazy(() => import('./pages/Admin/Tournament/TournamentLayout'))
+const TournamentOverview  = lazy(() => import('./pages/Admin/Tournament/TournamentOverview'))
+const TournamentStats     = lazy(() => import('./pages/Admin/Tournament/TournamentStats'))
+const TournamentStandings = lazy(() => import('./pages/Admin/Tournament/TournamentStandings'))
+const TournamentPlayoff   = lazy(() => import('./pages/Admin/Tournament/TournamentPlayoff'))
 
 export default function App() {
   return (
     <BrowserRouter>
       <ToastContainer />
       <CookieBanner />
+        <Suspense fallback={<div />}>
         <Routes>
           {/* Public routes */}
           <Route path="/"                                    element={<Landing />} />
@@ -89,6 +91,7 @@ export default function App() {
             <Route path="settings"   element={<TournamentEdit />} />
           </Route>
         </Routes>
+        </Suspense>
     </BrowserRouter>
   )
 }

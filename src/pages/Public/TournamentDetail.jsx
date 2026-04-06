@@ -523,7 +523,45 @@ export default function TournamentDetail() {
 
       if (error || !tourney) { setLoading(false); return }
       setTournament(tourney)
+
+      // Dynamic meta
       document.title = `${tourney.name} — Fixturday`
+      const metaDesc = document.querySelector('meta[name="description"]')
+      if (metaDesc) {
+        const dateStr = tourney.start_date
+          ? new Date(tourney.start_date).toLocaleDateString('lv-LV', { year: 'numeric', month: 'long', day: 'numeric' })
+          : ''
+        metaDesc.setAttribute('content', `${tourney.name} — ${tourney.sport ?? 'sporta'} turnīrs Latvijā.${dateStr ? ` ${dateStr}.` : ''} Seko rezultātiem un grafikam reāllaikā.`)
+      }
+
+      // SportsEvent JSON-LD
+      const venueNameStr = Array.isArray(tourney.venues) ? tourney.venues[0]?.name : tourney.venues?.name
+      const jsonLd = {
+        '@context': 'https://schema.org',
+        '@type': 'SportsEvent',
+        name: tourney.name,
+        sport: tourney.sport ?? undefined,
+        startDate: tourney.start_date ?? undefined,
+        endDate: tourney.end_date ?? tourney.start_date ?? undefined,
+        eventStatus: 'https://schema.org/EventScheduled',
+        eventAttendanceMode: 'https://schema.org/OfflineEventAttendanceMode',
+        location: {
+          '@type': 'Place',
+          name: venueNameStr ?? 'Latvija',
+          address: { '@type': 'PostalAddress', addressCountry: 'LV' },
+        },
+        organizer: { '@type': 'Person', name: 'Fixturday', url: 'https://www.fixturday.com' },
+        url: `https://www.fixturday.com/t/${tourney.slug}`,
+        inLanguage: 'lv',
+      }
+      let ldScript = document.getElementById('ld-sports-event')
+      if (!ldScript) {
+        ldScript = document.createElement('script')
+        ldScript.id = 'ld-sports-event'
+        ldScript.type = 'application/ld+json'
+        document.head.appendChild(ldScript)
+      }
+      ldScript.textContent = JSON.stringify(jsonLd)
 
       // 2. Age groups
       const { data: groups } = await supabase
@@ -604,6 +642,8 @@ export default function TournamentDetail() {
     return () => {
       supabase.removeChannel(channel)
       clearInterval(poll)
+      const ldScript = document.getElementById('ld-sports-event')
+      if (ldScript) ldScript.remove()
     }
   }, [slug])
 

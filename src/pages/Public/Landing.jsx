@@ -11,6 +11,12 @@ export default function Landing() {
   const [menuOpen, setMenuOpen] = useState(false)
 
   useEffect(() => {
+    document.title = t('landing.pageTitle')
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc) metaDesc.setAttribute('content', t('landing.metaDesc'))
+  }, [t])
+
+  useEffect(() => {
     async function loadStats() {
       const [
         { count: tc },
@@ -311,6 +317,95 @@ export default function Landing() {
           <Link to="/admin/register" style={heroPrimaryBtn}>
             {t('landing.heroCta')}
           </Link>
+        </div>
+      </section>
+
+      {/* ── How it works — semantic Q&A for LLMs ──────────────── */}
+      <section id="ka-darbojas" style={{ padding: '5rem 1.5rem', background: '#0d1b2e' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h2 style={sectionHeading}>{t('landing.howOrganizeTitle')}</h2>
+          <div className="landing-steps-grid">
+            {[
+              { n: '1.', title: t('landing.orgStep1Title'), desc: t('landing.orgStep1Desc') },
+              { n: '2.', title: t('landing.orgStep2Title'), desc: t('landing.orgStep2Desc') },
+              { n: '3.', title: t('landing.orgStep3Title'), desc: t('landing.orgStep3Desc') },
+              { n: '4.', title: t('landing.orgStep4Title'), desc: t('landing.orgStep4Desc') },
+            ].map((s, i) => (
+              <article key={i} style={{ display: 'flex', gap: '1.25rem', alignItems: 'flex-start' }}>
+                <div style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '3.5rem', fontWeight: 700,
+                  color: 'rgba(240,165,0,0.2)', lineHeight: 1, flexShrink: 0,
+                }}>
+                  {s.n}
+                </div>
+                <div>
+                  <h3 style={{
+                    fontFamily: "'Barlow Condensed', sans-serif",
+                    fontSize: '1.4rem', fontWeight: 700,
+                    color: '#ffffff', marginBottom: '0.35rem',
+                  }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ color: '#8fa3bc', fontSize: '0.9375rem', lineHeight: 1.6 }}>{s.desc}</p>
+                </div>
+              </article>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Why Fixturday — positions vs Excel/WhatsApp ──────────── */}
+      <section id="kapeec-fixturday" style={{ padding: '5rem 1.5rem', background: '#0a1628' }}>
+        <div style={{ maxWidth: '820px', margin: '0 auto' }}>
+          <h2 style={sectionHeading}>{t('landing.whyTitle')}</h2>
+          <p style={{ color: '#8fa3bc', lineHeight: 1.8, marginBottom: '2rem', textAlign: 'center', fontSize: '0.9375rem' }}>
+            {t('landing.whyDesc')}
+          </p>
+          <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
+            {[
+              t('landing.whyBenefit1'),
+              t('landing.whyBenefit2'),
+              t('landing.whyBenefit3'),
+              t('landing.whyBenefit4'),
+              t('landing.whyBenefit5'),
+            ].map((item, i) => (
+              <li key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '0.75rem', color: '#e0e8f4', fontSize: '0.9375rem', lineHeight: 1.6 }}>
+                <span style={{ color: '#f0a500', flexShrink: 0, fontWeight: 700 }}>✓</span>
+                {item}
+              </li>
+            ))}
+          </ul>
+        </div>
+      </section>
+
+      {/* ── Sport-specific content — entity-rich for LLMs ────────── */}
+      <section id="sporta-veidi" style={{ padding: '5rem 1.5rem', background: '#0d1b2e' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
+          <h2 style={sectionHeading}>{t('landing.sportsTitle')}</h2>
+          <div className="landing-features-grid">
+            {[
+              { id: 'futbola-turnirs',     title: t('landing.sport1Title'), desc: t('landing.sport1Desc') },
+              { id: 'basketbola-turnirs',  title: t('landing.sport2Title'), desc: t('landing.sport2Desc') },
+              { id: 'volejbola-turnirs',   title: t('landing.sport3Title'), desc: t('landing.sport3Desc') },
+            ].map((s) => (
+              <article key={s.id} id={s.id} style={{
+                background: '#0a1628',
+                border: '1px solid rgba(255,255,255,0.07)',
+                borderRadius: '14px',
+                padding: '2rem',
+              }}>
+                <h3 style={{
+                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontSize: '1.35rem', fontWeight: 700,
+                  color: '#ffffff', marginBottom: '0.5rem',
+                }}>
+                  {s.title}
+                </h3>
+                <p style={{ color: '#8fa3bc', lineHeight: 1.6, fontSize: '0.9375rem' }}>{s.desc}</p>
+              </article>
+            ))}
+          </div>
         </div>
       </section>
 

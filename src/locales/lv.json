@@ -366,7 +366,32 @@
     "statTeams": "Reģistrētas komandas",
     "statFixtures": "Nospēlētas spēles",
     "ctaTitle": "Gatavs savam pirmajam turnīram?",
-    "ctaSubtitle": "Reģistrācija ir bezmaksas. Nav nepieciešama kredītkarte."
+    "ctaSubtitle": "Reģistrācija ir bezmaksas. Nav nepieciešama kredītkarte.",
+    "pageTitle": "Fixturday — Bezmaksas Turnīru Organizēšanas Platforma Latvijā",
+    "metaDesc": "Organizē sporta turnīru dažās minūtēs. Automātisks grafiks, reāllaika tabula, komandu reģistrācija. Bezmaksas visiem sporta organizatoriem Latvijā.",
+    "howOrganizeTitle": "Kā organizēt turnīru ar Fixturday?",
+    "orgStep1Title": "Izveido turnīru",
+    "orgStep1Desc": "Reģistrējies Fixturday un izveido savu pirmo turnīru — norādi nosaukumu, sporta veidu, datumu un norises vietu. Tas aizņem mazāk par divām minūtēm.",
+    "orgStep2Title": "Pievieno komandas",
+    "orgStep2Desc": "Pievieno komandas manuāli vai atver publisku reģistrāciju — komandas pieteicas patstāvīgi, tu apstiprina to dalību.",
+    "orgStep3Title": "Ģenerē spēļu grafiku",
+    "orgStep3Desc": "Izvēlies turnīra formātu — apļa turnīrs, izslēgšanas turnīrs vai grupu posms ar playoff. Norādi pieejamo laukumu skaitu un spēles ilgumu. Grafiks tiek ģenerēts automātiski.",
+    "orgStep4Title": "Spēļu diena",
+    "orgStep4Desc": "Ievadi rezultātus pēc katras spēles. Tabula atjaunojas reāllaikā. Dalībnieki var sekot rezultātiem savā telefonā — nav nepieciešama reģistrācija.",
+    "whyTitle": "Kāpēc izvēlēties Fixturday turnīru organizēšanai?",
+    "whyDesc": "Latvijā sporta organizatori tradicionāli izmanto Excel tabulas vai WhatsApp grupas turnīru organizēšanai. Fixturday aizvieto šo procesu ar automatizētu risinājumu, kas ietaupa stundas darba un nodrošina profesionālu pieredzi visiem dalībniekiem.",
+    "whyBenefit1": "Automātisks grafiks sekundēs, nevis stundās",
+    "whyBenefit2": "Tabula atjaunojas automātiski — nav jārēķina manuāli",
+    "whyBenefit3": "Dalībnieki seko rezultātiem reāllaikā savā telefonā",
+    "whyBenefit4": "Publiskā lapa katram turnīram bez papildu izmaksām",
+    "whyBenefit5": "Pilnīgi bezmaksas — nav slēpto maksājumu",
+    "sportsTitle": "Turnīru organizēšana dažādos sporta veidos",
+    "sport1Title": "Futbola turnīra organizēšana Latvijā",
+    "sport1Desc": "Fixturday ir piemērots gan āra futbola, gan telpu futbola turnīriem. Platforma atbalsta U8 līdz senioru vecuma grupas, grupu posmus un izslēgšanas kārtas.",
+    "sport2Title": "Basketbola turnīra organizēšana",
+    "sport2Desc": "Organizē basketbola turnīrus ar automātisku grafiku un reāllaika tabulu. Piemērots skolu čempionātiem, klubu turnīriem un korporatīvajām sacensībām.",
+    "sport3Title": "Volejbola turnīra organizēšana",
+    "sport3Desc": "Plāno volejbola turnīrus ar vairāku laukumu atbalstu. Automātiskais grafiks nodrošina optimālu spēļu secību bez pārtraukumiem."
   },
   "about": {
     "pill": "PAR MUMS",
@@ -381,7 +406,9 @@
     "value3Title": "Kopiena",
     "value3Desc": "Veidots Latvijas sporta organizatoriem.",
     "ctaTitle": "Jautājumi? Sazinieties ar mums.",
-    "ctaText": "Gatavs izmēģināt?"
+    "ctaText": "Gatavs izmēģināt?",
+    "pageTitle": "Par Fixturday — Latvijas Turnīru Platforma",
+    "metaDesc": "Fixturday ir veidots Latvijas sporta kopienai. Uzzini vairāk par platformu un tās izstrādātāju."
   },
   "contact": {
     "pill": "KONTAKTI",
@@ -404,7 +431,13 @@
     "success": "Ziņojums nosūtīts! Atbildēsim drīz.",
     "successTitle": "Ziņojums nosūtīts!",
     "successBody": "Mēs atbildēsim uz jūsu e-pastu tuvākajā laikā.",
-    "sendAnother": "Sūtīt vēl vienu"
+    "sendAnother": "Sūtīt vēl vienu",
+    "pageTitle": "Kontakti — Fixturday Turnīru Platforma",
+    "metaDesc": "Sazinies ar Fixturday komandu. E-pasts: mail@endelis.co"
+  },
+  "tournamentList": {
+    "pageTitle": "Aktīvie Sporta Turnīri Latvijā — Fixturday",
+    "metaDesc": "Apskati aktīvos sporta turnīrus Latvijā. Futbols, basketbols, volejbols un citi sporta veidi. Seko rezultātiem reāllaikā."
   },
   "common": {
     "save": "Saglabāt",

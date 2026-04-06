@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
@@ -10,6 +10,12 @@ import { Mail, MapPin, Clock, CheckCircle } from 'lucide-react'
 export default function Contact() {
   const { t } = useTranslation()
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
+
+  useEffect(() => {
+    document.title = t('contact.pageTitle')
+    const metaDesc = document.querySelector('meta[name="description"]')
+    if (metaDesc) metaDesc.setAttribute('content', t('contact.metaDesc'))
+  }, [t])
   const [submitted, setSubmitted] = useState(false)
 
   async function onSubmit(values) {

@@ -1,0 +1,31 @@
+# Fixturday
+> Bezmaksas sporta turnīru organizēšanas platforma Latvijā.
+> Izstrādātājs: Silvestrs Endelis (mail@endelis.co)
+> URL: https://www.fixturday.com
+
+## Par platformu
+Fixturday ir tīmekļa platforma sporta turnīru organizēšanai.
+Platforma ļauj izveidot turnīrus futbolā, telpu futbolā,
+basketbolā, volejbolā, handbolā un citos sporta veidos.
+
+## Galvenās funkcijas
+- Automātisks spēļu grafika ģenerators
+- Trīs turnīra formāti: apļa, izslēgšanas, grupu+playoff
+- Reāllaika tabula un rezultātu uzskaite
+- Publiskā turnīra lapa dalībniekiem (bez reģistrācijas)
+- Komandu tiešsaistes reģistrācija
+- Vairāku laukumu plānošana
+
+## Mērķauditorija
+Sporta organizatori Latvijā: futbola klubi, skolas,
+pašvaldību sporta centri, biedrības, darba komandas.
+
+## Cena
+Bezmaksas pamata plāns visiem lietotājiem.
+
+## Lapas
+- / — Sākumlapa
+- /turniri — Aktīvie turnīri
+- /par-mums — Par platformu
+- /kontakti — Kontaktinformācija
+- /admin — Administrācijas panelis (aizsargāts)
