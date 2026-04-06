@@ -47,8 +47,11 @@
     "schedulingDefaults": "Ieplānošanas noklusējumi",
     "firstGameTime": "Pirmā spēle",
     "lastGameTime": "Pēdējā spēle",
-    "lunchStart": "Pusdienu pārtraukums sākums",
-    "lunchEnd": "Pusdienu pārtraukums beigas",
+    "lunchBreakToggle": "Pusdienu pārtraukums",
+    "lunchStart": "Sākums",
+    "lunchEnd": "Beigas",
+    "uploadLogo": "Augšupielādēt logo",
+    "invalidDate": "Nekorekts datuma formāts (dd/mm/gggg)",
     "registerCTA": "Pieteikt komandu →",
     "status": {
       "ongoing": "Notiek",
