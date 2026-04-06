@@ -270,9 +270,9 @@
   },
   "dashboard": {
     "loadError": "Kļūda ielādējot turnīrus",
-    "noTournaments": "Nav turnīru.",
+    "noTournaments": "Nav turnīru",
+    "noTournamentsHint": "Izveidojiet savu pirmo turnīru, lai sāktu",
     "createFirst": "Izveidot pirmo →",
-    "viewPublic": "Skatīt publiski ↗",
     "print": "Drukāt",
     "teamsLabel": "komandas",
     "fixturesLabel": "spēles",

@@ -86,7 +86,7 @@ export default function Register() {
             type="submit"
             className="btn-primary"
             disabled={isSubmitting}
-            style={{ width: '100%' }}
+            style={{ width: '100%', marginTop: '24px' }}
           >
             {isSubmitting ? t('common.loading') : t('auth.registerBtn')}
           </button>

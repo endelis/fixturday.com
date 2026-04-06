@@ -6,6 +6,7 @@ import { formatDate } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
+import { Trophy } from 'lucide-react'
 
 export default function Dashboard() {
   const { user, signOut } = useAuth()
@@ -50,8 +51,6 @@ export default function Dashboard() {
             Fixturday Admin
           </span>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            <Link to="/admin/matchday" className="btn-primary btn-sm">⚽ {t('workspace.navMatchday')}</Link>
-            <Link to="/" className="btn-secondary btn-sm" target="_blank">{t('dashboard.viewPublic')}</Link>
             <button className="btn-secondary btn-sm" onClick={handleSignOut}>{t('auth.logout')}</button>
           </div>
         </nav>
@@ -65,10 +64,16 @@ export default function Dashboard() {
           {loading ? (
             <div className="loading">{t('common.loading')}</div>
           ) : tournaments.length === 0 ? (
-            <div className="card" style={{ textAlign: 'center', color: 'var(--color-muted)' }}>
-              {t('dashboard.noTournaments')}{' '}
-              <Link to="/admin/tournaments/new" style={{ color: 'var(--color-accent)' }}>
-                {t('dashboard.createFirst')}
+            <div style={{ textAlign: 'center', padding: '4rem 1rem' }}>
+              <Trophy size={48} style={{ color: 'var(--color-text-muted)', margin: '0 auto 1rem' }} />
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
+                {t('dashboard.noTournaments')}
+              </h2>
+              <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
+                {t('dashboard.noTournamentsHint')}
+              </p>
+              <Link to="/admin/tournaments/new" className="btn-primary">
+                + {t('tournament.new')}
               </Link>
             </div>
           ) : (

@@ -24,7 +24,14 @@
       "Bash(git add:*)",
       "Bash(git commit:*)",
       "Bash(git merge:*)",
-      "Bash(npx vite:*)"
+      "Bash(npx vite:*)",
+      "Bash(ls:*)",
+      "Bash(curl -s http://localhost:5173/)",
+      "Bash(node -e \"require\\('./src/locales/lv.json'\\); console.log\\('JSON valid'\\)\")",
+      "Bash(curl -s http://localhost:5173/src/main.jsx)",
+      "Bash(taskkill:*)",
+      "Bash(curl -s http://localhost:5173)",
+      "Bash(kill %1)"
     ]
   }
 }
