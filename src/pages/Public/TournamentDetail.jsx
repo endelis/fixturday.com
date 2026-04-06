@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import {
-  Calendar, MapPin, ChevronDown, FileText, Image as ImageIcon,
+  Calendar, MapPin, Mail, Phone, ChevronDown, FileText, Image as ImageIcon,
   Download, Users, Trophy,
 } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
@@ -753,6 +753,24 @@ export default function TournamentDetail() {
                 }}>
                   <MapPin size={14} style={{ flexShrink: 0 }} />
                   <span>{venueName}</span>
+                </div>
+              )}
+
+              {/* Organizer contact */}
+              {tournament.organizer_email && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem' }}>
+                  <Mail size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+                  <a href={`mailto:${tournament.organizer_email}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>
+                    {tournament.organizer_email}
+                  </a>
+                </div>
+              )}
+              {tournament.organizer_phone && (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.8125rem' }}>
+                  <Phone size={13} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
+                  <a href={`tel:${tournament.organizer_phone}`} style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>
+                    {tournament.organizer_phone}
+                  </a>
                 </div>
               )}
             </div>
