@@ -24,6 +24,27 @@ export default function Contact() {
     setSubmitted(true)
   }
 
+  const infoCards = [
+    {
+      icon: <Mail size={20} />,
+      label: t('contact.infoEmailLabel'),
+      value: t('contact.infoEmailValue'),
+      href: `mailto:${t('contact.infoEmailValue')}`,
+    },
+    {
+      icon: <MapPin size={20} />,
+      label: t('contact.infoLocationLabel'),
+      value: t('contact.infoLocationValue'),
+      href: null,
+    },
+    {
+      icon: <Clock size={20} />,
+      label: t('contact.infoResponseLabel'),
+      value: t('contact.infoResponseValue'),
+      href: null,
+    },
+  ]
+
   return (
     <div style={{ background: '#0a1628', color: '#e0e8f4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
@@ -35,7 +56,7 @@ export default function Contact() {
         background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
       }}>
         <div style={{ maxWidth: '560px', margin: '0 auto' }}>
-          <div style={pill}>{t('nav.contact').toUpperCase()}</div>
+          <div style={pill}>{t('contact.pill')}</div>
           <h1 style={h1}>{t('contact.title')}</h1>
           <p style={subtitle}>{t('contact.subtitle')}</p>
         </div>
@@ -43,46 +64,11 @@ export default function Contact() {
 
       {/* ── Two-column layout ─────────────────────────────────── */}
       <section style={{ flex: 1, padding: '3rem 1.5rem 4rem' }}>
-        <div style={{
-          maxWidth: '1000px',
-          margin: '0 auto',
-          display: 'grid',
-          gridTemplateColumns: '1fr',
-          gap: '2rem',
-        }}
-          className="contact-grid"
-        >
+        <div style={{ maxWidth: '1000px', margin: '0 auto' }} className="contact-grid">
 
-          {/* Left — contact info */}
+          {/* Left — contact info cards */}
           <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
-            <h2 style={{
-              fontFamily: "'Barlow Condensed', sans-serif",
-              fontSize: '1.35rem', fontWeight: 700, color: '#ffffff',
-              marginBottom: '0.25rem',
-            }}>
-              Kontaktinformācija
-            </h2>
-
-            {[
-              {
-                icon: <Mail size={20} />,
-                label: 'E-pasts',
-                value: 'mail@endelis.co',
-                href: 'mailto:mail@endelis.co',
-              },
-              {
-                icon: <MapPin size={20} />,
-                label: 'Atrašanās vieta',
-                value: 'Latvija',
-                href: null,
-              },
-              {
-                icon: <Clock size={20} />,
-                label: 'Atbildes laiks',
-                value: 'Atbildam 24h laikā',
-                href: null,
-              },
-            ].map((item, i) => (
+            {infoCards.map((item, i) => (
               <div key={i} style={{
                 display: 'flex',
                 alignItems: 'flex-start',
@@ -93,15 +79,25 @@ export default function Contact() {
                 padding: '1rem 1.25rem',
               }}>
                 <div style={{
-                  color: '#f0a500', flexShrink: 0,
+                  color: '#f0a500',
+                  flexShrink: 0,
                   background: 'rgba(240,165,0,0.1)',
-                  borderRadius: '8px', padding: '0.5rem',
-                  display: 'flex', alignItems: 'center',
+                  borderRadius: '8px',
+                  padding: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
                 }}>
                   {item.icon}
                 </div>
                 <div>
-                  <div style={{ fontSize: '0.75rem', color: '#8fa3bc', marginBottom: '0.2rem', textTransform: 'uppercase', letterSpacing: '0.06em', fontWeight: 600 }}>
+                  <div style={{
+                    fontSize: '0.75rem',
+                    color: '#8fa3bc',
+                    marginBottom: '0.2rem',
+                    textTransform: 'uppercase',
+                    letterSpacing: '0.06em',
+                    fontWeight: 600,
+                  }}>
                     {item.label}
                   </div>
                   {item.href ? (
@@ -125,10 +121,12 @@ export default function Contact() {
           }}>
             {submitted ? (
               <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                <CheckCircle size={48} style={{ color: '#22c55e', margin: '0 auto 1rem' }} />
+                <CheckCircle size={48} style={{ color: '#22c55e', margin: '0 auto 1rem', display: 'block' }} />
                 <h2 style={{
                   fontFamily: "'Barlow Condensed', sans-serif",
-                  fontSize: '1.75rem', color: '#22c55e', marginBottom: '0.75rem',
+                  fontSize: '1.75rem',
+                  color: '#22c55e',
+                  marginBottom: '0.75rem',
                 }}>
                   {t('contact.successTitle')}
                 </h2>
@@ -136,9 +134,15 @@ export default function Contact() {
                 <button
                   onClick={() => setSubmitted(false)}
                   style={{
-                    border: '1px solid rgba(255,255,255,0.2)', color: '#e0e8f4',
-                    background: 'none', borderRadius: '8px', padding: '0.6rem 1.5rem',
-                    cursor: 'pointer', fontSize: '0.9rem', fontFamily: 'var(--font-body)',
+                    border: '1px solid rgba(255,255,255,0.2)',
+                    color: '#e0e8f4',
+                    background: 'none',
+                    borderRadius: '8px',
+                    padding: '0.6rem 1.5rem',
+                    cursor: 'pointer',
+                    fontSize: '0.9rem',
+                    fontFamily: 'var(--font-body)',
+                    minHeight: '44px',
                   }}
                 >
                   {t('contact.sendAnother')}
@@ -183,10 +187,13 @@ export default function Contact() {
                   disabled={isSubmitting}
                   style={{
                     width: '100%',
-                    background: '#f0a500', color: '#0a1628',
-                    border: 'none', borderRadius: '8px',
+                    background: '#f0a500',
+                    color: '#0a1628',
+                    border: 'none',
+                    borderRadius: '8px',
                     padding: '0.85rem 1.5rem',
-                    fontWeight: 700, fontSize: '0.9375rem',
+                    fontWeight: 700,
+                    fontSize: '0.9375rem',
                     cursor: isSubmitting ? 'not-allowed' : 'pointer',
                     opacity: isSubmitting ? 0.7 : 1,
                     fontFamily: 'var(--font-body)',
@@ -203,8 +210,13 @@ export default function Contact() {
       </section>
 
       <style>{`
+        .contact-grid {
+          display: grid;
+          grid-template-columns: 1fr;
+          gap: 2rem;
+        }
         @media (min-width: 768px) {
-          .contact-grid { grid-template-columns: 1fr 1.6fr !important; }
+          .contact-grid { grid-template-columns: 1fr 1.6fr; }
         }
       `}</style>
 
