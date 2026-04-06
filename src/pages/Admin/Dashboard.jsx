@@ -16,18 +16,24 @@ export default function Dashboard() {
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (!user) return
     async function load() {
-      const { data, error } = await supabase
-        .from('tournaments')
-        .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
-        .eq('owner_id', user.id)
-        .order('created_at', { ascending: false })
-      if (error) { toast(t('dashboard.loadError'), 'error'); setLoading(false); return }
-      setTournaments(data ?? [])
-      setLoading(false)
+      try {
+        const { data, error } = await supabase
+          .from('tournaments')
+          .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
+          .eq('owner_id', user.id)
+          .order('created_at', { ascending: false })
+        if (error) throw error
+        setTournaments(data ?? [])
+      } catch {
+        toast(t('dashboard.loadError'), 'error')
+      } finally {
+        setLoading(false)
+      }
     }
     load()
-  }, [])
+  }, [user])
 
   async function handleSignOut() {
     try {
