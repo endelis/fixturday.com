@@ -415,5 +415,19 @@
     "lastUpdated": "Atjaunots: {{time}}",
     "required": "Obligāts lauks.",
     "download": "Lejupielādēt"
+  },
+  "footer": {
+    "copyright": "© 2026 Fixturday. Silvestrs Endelis.",
+    "privacy": "Privātuma politika",
+    "terms": "Lietošanas noteikumi",
+    "cookies": "Sīkdatņu politika",
+    "dataDeletion": "Datu dzēšana"
+  },
+  "cookies": {
+    "bannerText": "Mēs izmantojam sīkdatnes, lai nodrošinātu pakalpojumu un uzlabotu lietotāja pieredzi.",
+    "privacyLink": "Privātuma politika",
+    "cookiesLink": "Sīkdatņu politika",
+    "acceptAll": "Pieņemt visas",
+    "acceptFunctional": "Tikai funkcionālās"
   }
 }

@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom'
 import { ToastContainer } from './components/Toast'
 import RequireAuth from './components/RequireAuth'
+import CookieBanner from './components/CookieBanner'
 
 // ── Public pages ──────────────────────────────────────────────────
 import Landing         from './pages/Public/Landing'
@@ -12,6 +13,10 @@ import TeamRoster      from './pages/Public/TeamRoster'
 import Register        from './pages/Public/Register'
 import About           from './pages/Public/About'
 import Contact         from './pages/Public/Contact'
+import Privacy         from './pages/Public/Privacy'
+import Terms           from './pages/Public/Terms'
+import CookiesPage     from './pages/Public/Cookies'
+import DataDeletion    from './pages/Public/DataDeletion'
 
 // ── Admin pages ───────────────────────────────────────────────────
 import Login          from './pages/Admin/Login'
@@ -37,6 +42,7 @@ export default function App() {
   return (
     <BrowserRouter>
       <ToastContainer />
+      <CookieBanner />
         <Routes>
           {/* Public routes */}
           <Route path="/"                                    element={<Landing />} />
@@ -48,6 +54,10 @@ export default function App() {
           <Route path="/t/:slug/:ageGroup/fixtures"          element={<Schedule />} />
           <Route path="/t/:slug/:ageGroup/teams/:teamId"     element={<TeamRoster />} />
           <Route path="/t/:slug/register"                    element={<Register />} />
+          <Route path="/privatuma-politika"                  element={<Privacy />} />
+          <Route path="/lietosanas-noteikumi"                element={<Terms />} />
+          <Route path="/sikdatnu-politika"                   element={<CookiesPage />} />
+          <Route path="/datu-dzesana"                        element={<DataDeletion />} />
 
           {/* Admin: top-level */}
           <Route path="/admin"          element={<Login />} />
