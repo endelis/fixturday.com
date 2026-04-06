@@ -425,6 +425,12 @@
     "required": "Obligāts lauks.",
     "download": "Lejupielādēt"
   },
+  "legal": {
+    "pill": "JURIDISKĀ INFORMĀCIJA",
+    "updated": "Atjaunots: 01/04/2026",
+    "dataDeletionTitle": "Datu dzēšanas pieprasījums",
+    "dataDeletionIntro": "Saskaņā ar VDAR jums ir tiesības pieprasīt savu personas datu dzēšanu no Fixturday platformas. Aizpildiet zemāk esošo veidlapu — mēs apstrādāsim jūsu pieprasījumu 30 dienu laikā."
+  },
   "footer": {
     "copyright": "© 2026 Fixturday. Silvestrs Endelis.",
     "privacy": "Privātuma politika",

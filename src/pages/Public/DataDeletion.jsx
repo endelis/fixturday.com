@@ -5,7 +5,6 @@ import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
-import { ShieldOff } from 'lucide-react'
 
 export default function DataDeletion() {
   const { t } = useTranslation()
@@ -24,21 +23,46 @@ export default function DataDeletion() {
   }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>
       <PublicNav />
 
-      <main style={{ flex: 1, padding: '3rem 1.5rem' }}>
+      {/* ── Hero ──────────────────────────────────────────────── */}
+      <section style={{
+        padding: '4.5rem 1.5rem 3rem',
+        textAlign: 'center',
+        background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
+      }}>
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
-
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <ShieldOff size={32} style={{ color: 'var(--color-accent)', flexShrink: 0 }} />
-            <h1 style={h1}>Datu dzēšanas pieprasījums</h1>
+          <div style={{
+            display: 'inline-block',
+            border: '1px solid rgba(240,165,0,0.35)',
+            borderRadius: '999px',
+            padding: '0.3rem 1rem',
+            fontSize: '0.75rem',
+            color: '#f0a500',
+            letterSpacing: '0.1em',
+            fontWeight: 600,
+            marginBottom: '1.25rem',
+          }}>
+            {t('legal.pill')}
           </div>
-          <p style={intro}>
-            Saskaņā ar VDAR (Vispārīgo datu aizsardzības regulu) jums ir tiesības pieprasīt savu
-            personas datu dzēšanu no Fixturday platformas. Aizpildiet zemāk esošo veidlapu —
-            mēs apstrādāsim jūsu pieprasījumu <strong>30 dienu laikā</strong>.
+          <h1 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: 700,
+            color: '#ffffff',
+            marginBottom: '0.75rem',
+          }}>
+            {t('legal.dataDeletionTitle')}
+          </h1>
+          <p style={{ fontSize: '0.8125rem', color: '#8fa3bc', margin: 0 }}>
+            {t('legal.updated')}
           </p>
+        </div>
+      </section>
+
+      <main style={{ flex: 1, padding: '3rem 1.5rem 5rem' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
 
           <div style={infoBox}>
             <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
@@ -123,7 +147,5 @@ export default function DataDeletion() {
   )
 }
 
-const h1 = { fontFamily: "'Barlow Condensed', sans-serif", fontSize: 'clamp(1.75rem, 4vw, 2.5rem)', fontWeight: 700, color: '#ffffff', margin: 0 }
-const intro = { color: 'var(--color-text-muted)', fontSize: '0.9375rem', lineHeight: 1.7, margin: '1rem 0 1.25rem' }
 const infoBox = { background: 'rgba(240,165,0,0.07)', border: '1px solid rgba(240,165,0,0.25)', borderRadius: '8px', padding: '1rem 1.25rem', marginBottom: '0.5rem' }
 const link = { color: 'var(--color-accent)', textDecoration: 'underline' }

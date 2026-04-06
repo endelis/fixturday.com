@@ -18,14 +18,46 @@ export default function Cookies() {
   const current = getConsent()
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>
       <PublicNav />
 
-      <main style={{ flex: 1, padding: '3rem 1.5rem' }}>
-        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
+      {/* ── Hero ──────────────────────────────────────────────── */}
+      <section style={{
+        padding: '4.5rem 1.5rem 3rem',
+        textAlign: 'center',
+        background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
+      }}>
+        <div style={{ maxWidth: '640px', margin: '0 auto' }}>
+          <div style={{
+            display: 'inline-block',
+            border: '1px solid rgba(240,165,0,0.35)',
+            borderRadius: '999px',
+            padding: '0.3rem 1rem',
+            fontSize: '0.75rem',
+            color: '#f0a500',
+            letterSpacing: '0.1em',
+            fontWeight: 600,
+            marginBottom: '1.25rem',
+          }}>
+            {t('legal.pill')}
+          </div>
+          <h1 style={{
+            fontFamily: "'Barlow Condensed', sans-serif",
+            fontSize: 'clamp(2rem, 5vw, 3rem)',
+            fontWeight: 700,
+            color: '#ffffff',
+            marginBottom: '0.75rem',
+          }}>
+            {t('footer.cookies')}
+          </h1>
+          <p style={{ fontSize: '0.8125rem', color: '#8fa3bc', margin: 0 }}>
+            {t('legal.updated')}
+          </p>
+        </div>
+      </section>
 
-          <h1 style={h1}>{t('footer.cookies')}</h1>
-          <p style={meta}>Spēkā no: 2026. gada 1. aprīļa &nbsp;·&nbsp; Fixturday.com</p>
+      <main style={{ flex: 1, padding: '3rem 1.5rem 5rem' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto' }}>
 
           <Section title="1. Kas ir sīkdatnes">
             <p style={body}>
