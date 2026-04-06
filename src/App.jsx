@@ -18,6 +18,7 @@ const Privacy         = lazy(() => import('./pages/Public/Privacy'))
 const Terms           = lazy(() => import('./pages/Public/Terms'))
 const CookiesPage     = lazy(() => import('./pages/Public/Cookies'))
 const DataDeletion    = lazy(() => import('./pages/Public/DataDeletion'))
+const Guide           = lazy(() => import('./pages/Public/Guide'))
 
 // ── Admin pages ───────────────────────────────────────────────────
 const Login          = lazy(() => import('./pages/Admin/Login'))
@@ -56,6 +57,7 @@ export default function App() {
           <Route path="/t/:slug/:ageGroup/fixtures"          element={<Schedule />} />
           <Route path="/t/:slug/:ageGroup/teams/:teamId"     element={<TeamRoster />} />
           <Route path="/t/:slug/register"                    element={<Register />} />
+          <Route path="/pamaciba"                            element={<Guide />} />
           <Route path="/privatuma-politika"                  element={<Privacy />} />
           <Route path="/lietosanas-noteikumi"                element={<Terms />} />
           <Route path="/sikdatnu-politika"                   element={<CookiesPage />} />

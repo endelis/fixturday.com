@@ -32,7 +32,9 @@
       "Bash(taskkill:*)",
       "Bash(curl -s http://localhost:5173)",
       "Bash(kill %1)",
-      "Bash(grep -n \"Footer\\\\|footer\\\\|</div>$\" src/pages/Public/TournamentDetail.jsx)"
+      "Bash(grep -n \"Footer\\\\|footer\\\\|</div>$\" src/pages/Public/TournamentDetail.jsx)",
+      "Bash(node scripts/gen-og.js)",
+      "Bash(node -e ':*)"
     ]
   }
 }

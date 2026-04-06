@@ -24,9 +24,10 @@ export default function Footer() {
             <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '22px', opacity: 0.85 }} />
           </Link>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <Link to="/turniri"  style={navLink}>{t('nav.tournaments')}</Link>
-            <Link to="/par-mums" style={navLink}>{t('nav.about')}</Link>
-            <Link to="/kontakti" style={navLink}>{t('nav.contact')}</Link>
+            <Link to="/turniri"   style={navLink}>{t('nav.tournaments')}</Link>
+            <Link to="/pamaciba"  style={navLink}>{t('nav.guide')}</Link>
+            <Link to="/par-mums"  style={navLink}>{t('nav.about')}</Link>
+            <Link to="/kontakti"  style={navLink}>{t('nav.contact')}</Link>
           </div>
         </div>
 

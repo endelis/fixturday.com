@@ -105,6 +105,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               {/* Desktop nav links */}
               <div className="pub-nav-desktop" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
                 <Link to="/turniri" style={navLink}>{t('nav.tournaments')}</Link>
+                <Link to="/pamaciba" style={navLink}>{t('nav.guide')}</Link>
                 <Link to="/par-mums" style={navLink}>{t('nav.about')}</Link>
                 <Link to="/kontakti" style={navLink}>{t('nav.contact')}</Link>
                 <Link to="/admin" style={{
@@ -185,6 +186,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
           {[
             { to: '/turniri', label: t('nav.tournaments') },
+            { to: '/pamaciba', label: t('nav.guide') },
             { to: '/par-mums', label: t('nav.about') },
             { to: '/kontakti', label: t('nav.contact') },
           ].map(item => (
