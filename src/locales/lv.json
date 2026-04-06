@@ -612,6 +612,9 @@
     "colPitch": "Laukums",
     "colHome": "Mājas",
     "colResult": "Rezultāts",
-    "colAway": "Viesi"
+    "colAway": "Viesi",
+    "qrSchedule": "Seko grafikam",
+    "qrStandings": "Seko tabulai",
+    "qrPlayoff": "Seko playoff"
   }
 }

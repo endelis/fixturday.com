@@ -1,9 +1,10 @@
 import { useEffect, useState } from 'react'
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams, Navigate, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { calculateStandings } from '../../../utils/standings'
+import PrintQR from '../../../components/Print/PrintQR'
 
 const PRINT_STYLE = `
   @media print {
@@ -60,6 +61,7 @@ export default function TournamentStandings() {
   const { id } = useParams()
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
+  const { tournament } = useOutletContext() ?? {}
   const [loading, setLoading] = useState(true)
   const [ageGroupStandings, setAgeGroupStandings] = useState([])
   const [error, setError] = useState(null)
@@ -170,6 +172,12 @@ export default function TournamentStandings() {
         )}
 
         <div className="print-content">
+          {tournament?.slug && (
+            <PrintQR
+              url={`https://www.fixturday.com/t/${tournament.slug}`}
+              label={t('print.qrStandings')}
+            />
+          )}
           {ageGroupStandings.map(({ ageGroup, rows }) => (
             <div key={ageGroup.id} className="print-age-group" style={{ marginBottom: '2.5rem' }}>
               <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>

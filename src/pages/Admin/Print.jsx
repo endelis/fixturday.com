@@ -13,6 +13,7 @@ import { lv } from 'date-fns/locale'
 import { formatDate } from '../../utils/dateFormat'
 import { calculateStandings } from '../../utils/standings'
 import { Printer } from 'lucide-react'
+import PrintQR from '../../components/Print/PrintQR'
 
 const PRINT_STYLE = `
   @media print {
@@ -349,6 +350,11 @@ export default function Print() {
         }}>
           fixturday.com — {tournament.name} — {printDate}
         </div>
+
+        <PrintQR
+          url={`https://www.fixturday.com/t/${tournament.slug}`}
+          label={t('print.qrSchedule')}
+        />
       </div>
     </>
   )
