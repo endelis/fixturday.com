@@ -12,6 +12,7 @@ export default function Standings() {
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [realtimeStatus, setRealtimeStatus] = useState('connecting')
 
   useEffect(() => {
     async function load() {
@@ -47,7 +48,9 @@ export default function Standings() {
     const channel = supabase
       .channel(`standings-${ageGroupId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, () => load())
-      .subscribe()
+      .subscribe(status => {
+        setRealtimeStatus(status === 'SUBSCRIBED' ? 'connected' : 'disconnected')
+      })
 
     const poll = setInterval(load, 30000)
 
@@ -81,6 +84,19 @@ export default function Standings() {
                 {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
               </span>
             )}
+            <span style={{
+              display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+              fontSize: '0.72rem', fontWeight: 600,
+              color: realtimeStatus === 'connected' ? 'var(--color-success)' : 'var(--color-muted)',
+              letterSpacing: '0.04em',
+            }}>
+              <span style={{
+                width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0,
+                background: realtimeStatus === 'connected' ? 'var(--color-success)' : '#4a5568',
+                boxShadow: realtimeStatus === 'connected' ? '0 0 6px var(--color-success)' : 'none',
+              }} />
+              {realtimeStatus === 'connected' ? t('standings.live') : t('standings.connecting')}
+            </span>
             <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
               {t('standings.scheduleLink')}
             </Link>

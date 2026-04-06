@@ -43,6 +43,14 @@ html {
   -webkit-text-size-adjust: 100%;
 }
 
+/* ── Hide AM/PM field on all time inputs globally ──────────── */
+input[type="time"]::-webkit-datetime-edit-ampm-field {
+  display: none !important;
+}
+input[type="time"] {
+  -webkit-appearance: none;
+}
+
 body {
   font-family: var(--font-body);
   background-color: var(--color-bg);

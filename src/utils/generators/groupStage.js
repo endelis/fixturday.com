@@ -82,13 +82,12 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2) {
 function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams) {
   if (totalPlayoffTeams < 2) return []
 
-  // Build an ordered list of placeholder labels
-  // e.g. for 2 groups, 2 advancing: [A1, B1, A2, B2]
+  // Build an ordered list of placeholder labels in Latvian format
+  // e.g. for 2 groups, 2 advancing: ["1. grupas 1. vieta", "2. grupas 1. vieta", "1. grupas 2. vieta", "2. grupas 2. vieta"]
   const placeholders = []
   for (let pos = 1; pos <= teamsAdvancing; pos++) {
     for (let g = 0; g < groupsCount; g++) {
-      const groupLetter = String.fromCharCode(65 + g) // A, B, C ...
-      placeholders.push(`${groupLetter} ${pos}.`)
+      placeholders.push(`${g + 1}. grupas ${pos}. vieta`)
     }
   }
 

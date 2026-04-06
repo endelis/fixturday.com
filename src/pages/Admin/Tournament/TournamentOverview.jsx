@@ -12,18 +12,14 @@ export default function TournamentOverview() {
 
   useEffect(() => {
     async function loadStats() {
-      const { data: ageGroups } = await supabase
-        .from('age_groups')
-        .select('id')
-        .eq('tournament_id', id)
+      // Phase 1 — load age_groups and venues in parallel (both only need tournament id)
+      const [{ data: ageGroups }, { count: venuesCount }] = await Promise.all([
+        supabase.from('age_groups').select('id').eq('tournament_id', id),
+        supabase.from('venues').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
+      ])
 
       const agIds = (ageGroups ?? []).map(ag => ag.id)
       const ageGroupsCount = agIds.length
-
-      const { count: venuesCount } = await supabase
-        .from('venues')
-        .select('id', { count: 'exact', head: true })
-        .eq('tournament_id', id)
 
       if (agIds.length === 0) {
         setStats({ ageGroups: 0, teams: 0, fixtures: 0, completed: 0, venues: venuesCount ?? 0 })
@@ -31,18 +27,15 @@ export default function TournamentOverview() {
         return
       }
 
-      const { data: stageData } = await supabase
-        .from('stages')
-        .select('id')
-        .in('age_group_id', agIds)
+      // Phase 2 — stages needed to get fixture counts; teams count can run in parallel with stage load
+      const [{ data: stageData }, { count: teamsCount }] = await Promise.all([
+        supabase.from('stages').select('id').in('age_group_id', agIds),
+        supabase.from('teams').select('id', { count: 'exact', head: true }).in('age_group_id', agIds).eq('status', 'confirmed'),
+      ])
       const stageIds = (stageData ?? []).map(s => s.id)
 
-      const [
-        { count: teamsCount },
-        { count: fixturesCount },
-        { count: completedCount },
-      ] = await Promise.all([
-        supabase.from('teams').select('id', { count: 'exact', head: true }).in('age_group_id', agIds).eq('status', 'confirmed'),
+      // Phase 3 — fixture counts (need stageIds)
+      const [{ count: fixturesCount }, { count: completedCount }] = await Promise.all([
         stageIds.length
           ? supabase.from('fixtures').select('id', { count: 'exact', head: true }).in('stage_id', stageIds)
           : Promise.resolve({ count: 0 }),

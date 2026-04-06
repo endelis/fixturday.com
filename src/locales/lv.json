@@ -186,7 +186,9 @@
     "group": "Grupa",
     "knockout": "Izslēgšanas kārtas",
     "knockoutPending": "Izslēgšanas kārtas tiks publicētas pēc grupu posma beigām.",
-    "print": "Drukāt"
+    "print": "Drukāt",
+    "live": "Tiešraide",
+    "connecting": "Savienojas..."
   },
   "venue": {
     "title": "Spēļu vietas",
