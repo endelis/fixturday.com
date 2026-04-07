@@ -100,13 +100,20 @@ export default function Print() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
+  const [authTimeout, setAuthTimeout] = useState(false)
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
   const [loading, setLoading] = useState(true)
   const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: lv })
 
+  // New-tab auth can hang — fall through after 3s regardless
   useEffect(() => {
-    if (authLoading || !user) return
+    const timer = setTimeout(() => setAuthTimeout(true), 3000)
+    return () => clearTimeout(timer)
+  }, [])
+
+  useEffect(() => {
+    if (authLoading && !authTimeout) return
     async function load() {
       const { data: tourney, error: tErr } = await supabase
         .from('tournaments')
@@ -161,7 +168,7 @@ export default function Print() {
       setLoading(false)
     }
     load()
-  }, [tournamentId, authLoading, user])
+  }, [tournamentId, authLoading, authTimeout, user])
 
   useEffect(() => {
     if (!loading && tournament) {
