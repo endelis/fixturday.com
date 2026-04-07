@@ -9,7 +9,7 @@ import { toast } from '../../components/Toast'
 import { Trophy } from 'lucide-react'
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, signOut, isSuperAdmin } = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [tournaments, setTournaments] = useState([])
@@ -19,11 +19,14 @@ export default function Dashboard() {
     if (!user) return
     async function load() {
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('tournaments')
-          .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
-          .eq('owner_id', user.id)
+          .select('*, owner:owner_id(email), age_groups(id, teams(id, status), stages(id, fixtures(id)))')
           .order('created_at', { ascending: false })
+        if (!isSuperAdmin) {
+          query = query.eq('owner_id', user.id)
+        }
+        const { data, error } = await query
         if (error) throw error
         setTournaments(data ?? [])
       } catch {
@@ -33,7 +36,7 @@ export default function Dashboard() {
       }
     }
     load()
-  }, [user])
+  }, [user, isSuperAdmin])
 
   async function handleSignOut() {
     try {
@@ -57,6 +60,15 @@ export default function Dashboard() {
             Fixturday Admin
           </span>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {isSuperAdmin && (
+              <span style={{
+                background: 'var(--color-accent)', color: '#000',
+                fontSize: '0.65rem', fontWeight: 700, letterSpacing: '0.08em',
+                padding: '2px 7px', borderRadius: '4px', textTransform: 'uppercase',
+              }}>
+                {t('dashboard.superAdminBadge')}
+              </span>
+            )}
             <button className="btn-secondary btn-sm" onClick={handleSignOut}>{t('auth.logout')}</button>
           </div>
         </nav>
@@ -110,6 +122,11 @@ export default function Dashboard() {
                         {(startDate || endDate) && (
                           <div style={{ fontSize: '0.8rem', color: 'var(--color-muted)', marginTop: '0.2rem' }}>
                             {startDate}{startDate && endDate ? ' – ' : ''}{endDate}
+                          </div>
+                        )}
+                        {isSuperAdmin && tourney.owner?.email && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-accent)', marginTop: '0.15rem', opacity: 0.8 }}>
+                            {tourney.owner.email}
                           </div>
                         )}
                       </div>

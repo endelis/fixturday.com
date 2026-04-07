@@ -285,7 +285,8 @@
     "print": "Drukāt",
     "teamsLabel": "komandas",
     "fixturesLabel": "spēles",
-    "pending": "gaida"
+    "pending": "gaida",
+    "superAdminBadge": "Super Admin"
   },
   "workspace": {
     "navOverview": "Pārskats",
