@@ -58,10 +58,13 @@ export function useAuth() {
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsSuperAdmin(await syncProfile(session?.user ?? null));
-      setLoading(false);
+      try {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsSuperAdmin(await syncProfile(session?.user ?? null));
+      } finally {
+        setLoading(false);
+      }
     });
 
     return () => {
