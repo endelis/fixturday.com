@@ -1,17 +1,20 @@
 import { useEffect, useState } from 'react'
 import { useParams, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { calculateStandings } from '../../../utils/standings'
 
 export default function TournamentStats() {
   const { id } = useParams()
   const { t } = useTranslation()
+  const { loading: authLoading } = useAuth()
   const { tournament } = useOutletContext()
   const [groups, setGroups] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
+    if (authLoading) return
     async function load() {
       const { data: ageGroups, error: agErr } = await supabase
         .from('age_groups')
@@ -83,7 +86,7 @@ export default function TournamentStats() {
       setLoading(false)
     }
     load()
-  }, [id])
+  }, [id, authLoading])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
 

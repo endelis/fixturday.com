@@ -7,6 +7,7 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { lv } from 'date-fns/locale'
@@ -98,12 +99,14 @@ const PRINT_STYLE = `
 export default function Print() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
   const [loading, setLoading] = useState(true)
   const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: lv })
 
   useEffect(() => {
+    if (authLoading || !user) return
     async function load() {
       const { data: tourney, error: tErr } = await supabase
         .from('tournaments')
@@ -158,7 +161,7 @@ export default function Print() {
       setLoading(false)
     }
     load()
-  }, [tournamentId])
+  }, [tournamentId, authLoading, user])
 
   useEffect(() => {
     if (!loading && tournament) {
