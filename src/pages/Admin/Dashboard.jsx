@@ -9,7 +9,7 @@ import { toast } from '../../components/Toast'
 import { Trophy } from 'lucide-react'
 
 export default function Dashboard() {
-  const { user, signOut, isSuperAdmin } = useAuth()
+  const { user, loading: authLoading, signOut, isSuperAdmin } = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [tournaments, setTournaments] = useState([])
@@ -19,7 +19,9 @@ export default function Dashboard() {
   const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
-    if (!user) return
+    // Wait for auth to fully resolve (user + isSuperAdmin both settled)
+    // before firing any Supabase queries to avoid lock contention.
+    if (authLoading || !user) return
     async function load() {
       try {
         let query = supabase
@@ -54,7 +56,7 @@ export default function Dashboard() {
       }
     }
     load()
-  }, [user, isSuperAdmin])
+  }, [authLoading, user, isSuperAdmin])
 
   async function handleDelete() {
     if (!deleteTarget) return
