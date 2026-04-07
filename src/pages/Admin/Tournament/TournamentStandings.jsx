@@ -67,6 +67,7 @@ export default function TournamentStandings() {
   const [error, setError] = useState(null)
 
   useEffect(() => {
+    if (authLoading || !user) return
     async function load() {
       // Fetch all age groups for this tournament
       const { data: ageGroups, error: agError } = await supabase
@@ -140,7 +141,7 @@ export default function TournamentStandings() {
     }
 
     load()
-  }, [id])
+  }, [id, authLoading, user])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />

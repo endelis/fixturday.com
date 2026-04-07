@@ -28,7 +28,7 @@ export default function Venues() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [tournamentId])
+  useEffect(() => { if (authLoading || !user) return; load() }, [tournamentId, authLoading, user])
 
   async function addVenue(values) {
     const { error } = await supabase.from('venues').insert({ ...values, tournament_id: tournamentId })

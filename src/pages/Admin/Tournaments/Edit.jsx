@@ -42,6 +42,7 @@ export default function TournamentEdit() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm()
 
   useEffect(() => {
+    if (authLoading || !user) return
     supabase.from('tournaments').select('*').eq('id', id).single().then(({ data }) => {
       if (data) {
         const { attachments: att, logo_url, ...rest } = data
@@ -56,7 +57,7 @@ export default function TournamentEdit() {
       }
       setLoading(false)
     })
-  }, [id, reset])
+  }, [id, reset, authLoading, user])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
