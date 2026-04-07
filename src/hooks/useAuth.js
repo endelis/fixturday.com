@@ -61,6 +61,7 @@ export function useAuth() {
       setSession(session);
       setUser(session?.user ?? null);
       setIsSuperAdmin(await syncProfile(session?.user ?? null));
+      setLoading(false);
     });
 
     return () => {
