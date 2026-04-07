@@ -13,7 +13,10 @@ export default function Dashboard() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [tournaments, setTournaments] = useState([])
+  const [ownerEmails, setOwnerEmails] = useState({})
   const [loading, setLoading] = useState(true)
+  const [deleteTarget, setDeleteTarget] = useState(null) // { id, name }
+  const [deleting, setDeleting] = useState(false)
 
   useEffect(() => {
     if (!user) return
@@ -28,7 +31,22 @@ export default function Dashboard() {
         }
         const { data, error } = await query
         if (error) throw error
-        setTournaments(data ?? [])
+        const list = data ?? []
+        setTournaments(list)
+
+        // Super admin: fetch owner emails from profiles for unique owner_ids
+        if (isSuperAdmin && list.length > 0) {
+          const uniqueOwnerIds = [...new Set(list.map(t => t.owner_id).filter(Boolean))]
+          const { data: profiles } = await supabase
+            .from('profiles')
+            .select('id, email')
+            .in('id', uniqueOwnerIds)
+          const emailMap = {}
+          for (const p of profiles ?? []) {
+            emailMap[p.id] = p.email
+          }
+          setOwnerEmails(emailMap)
+        }
       } catch {
         toast(t('dashboard.loadError'), 'error')
       } finally {
@@ -37,6 +55,22 @@ export default function Dashboard() {
     }
     load()
   }, [user, isSuperAdmin])
+
+  async function handleDelete() {
+    if (!deleteTarget) return
+    setDeleting(true)
+    try {
+      const { error } = await supabase.from('tournaments').delete().eq('id', deleteTarget.id)
+      if (error) throw error
+      setTournaments(prev => prev.filter(t => t.id !== deleteTarget.id))
+      toast(t('dashboard.deleteSuccess'), 'success')
+      setDeleteTarget(null)
+    } catch {
+      toast(t('dashboard.deleteError'), 'error')
+    } finally {
+      setDeleting(false)
+    }
+  }
 
   async function handleSignOut() {
     try {
@@ -124,9 +158,9 @@ export default function Dashboard() {
                             {startDate}{startDate && endDate ? ' – ' : ''}{endDate}
                           </div>
                         )}
-                        {isSuperAdmin && (
-                          <div style={{ fontSize: '0.7rem', color: 'var(--color-accent)', marginTop: '0.15rem', opacity: 0.7, fontFamily: 'monospace' }}>
-                            {tourney.owner_id?.slice(0, 8)}
+                        {isSuperAdmin && ownerEmails[tourney.owner_id] && (
+                          <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginTop: '0.15rem' }}>
+                            {t('dashboard.ownerLabel')}: {ownerEmails[tourney.owner_id]}
                           </div>
                         )}
                       </div>
@@ -150,15 +184,33 @@ export default function Dashboard() {
                         </span>
                         <span>⚽ {fixturesCount} {t('dashboard.fixturesLabel')}</span>
                       </div>
-                      <button
-                        className="btn-secondary btn-sm"
-                        onClick={e => {
-                          e.stopPropagation()
-                          window.open(`/admin/tournaments/${tourney.id}/print`, '_blank')
-                        }}
-                      >
-                        🖨 {t('dashboard.print')}
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          className="btn-secondary btn-sm"
+                          onClick={e => {
+                            e.stopPropagation()
+                            window.open(`/admin/tournaments/${tourney.id}/print`, '_blank')
+                          }}
+                        >
+                          🖨 {t('dashboard.print')}
+                        </button>
+                        {(isSuperAdmin || tourney.owner_id === user?.id) && (
+                          <button
+                            className="btn-sm"
+                            onClick={e => {
+                              e.stopPropagation()
+                              setDeleteTarget({ id: tourney.id, name: tourney.name })
+                            }}
+                            style={{
+                              background: 'none', border: '1px solid var(--color-danger)',
+                              color: 'var(--color-danger)', borderRadius: '6px',
+                              padding: '0.3rem 0.65rem', cursor: 'pointer', fontSize: '0.8rem',
+                            }}
+                          >
+                            🗑
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 )
@@ -167,6 +219,50 @@ export default function Dashboard() {
           )}
         </div>
       </div>
+      {/* ── Delete confirmation modal ─────────────────────────── */}
+      {deleteTarget && (
+        <div style={{
+          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)',
+          display: 'flex', alignItems: 'center', justifyContent: 'center',
+          zIndex: 500, padding: '1rem',
+        }}>
+          <div style={{
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-danger)',
+            borderRadius: '12px', padding: '1.75rem',
+            width: '100%', maxWidth: '420px',
+          }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', marginBottom: '0.5rem', color: 'var(--color-danger)' }}>
+              {t('dashboard.deleteConfirmTitle')}
+            </h2>
+            <p style={{ fontWeight: 600, marginBottom: '0.5rem' }}>{deleteTarget.name}</p>
+            <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+              {t('dashboard.deleteConfirmMsg')}
+            </p>
+            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
+              <button
+                className="btn-secondary"
+                onClick={() => setDeleteTarget(null)}
+                disabled={deleting}
+              >
+                {t('common.cancel')}
+              </button>
+              <button
+                onClick={handleDelete}
+                disabled={deleting}
+                style={{
+                  background: 'var(--color-danger)', color: '#fff', border: 'none',
+                  borderRadius: '6px', padding: '0.5rem 1.25rem',
+                  fontWeight: 700, fontSize: '0.9rem', cursor: deleting ? 'not-allowed' : 'pointer',
+                  opacity: deleting ? 0.6 : 1,
+                }}
+              >
+                {deleting ? t('common.deleting') : t('dashboard.deleteConfirmBtn')}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </>
   )
 }

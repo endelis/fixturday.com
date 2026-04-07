@@ -10,12 +10,17 @@
 import { useState, useEffect } from "react";
 import { supabase } from "../lib/supabase";
 
-async function fetchIsSuperAdmin(userId) {
-  if (!userId) return false;
+async function syncProfile(user) {
+  if (!user) return false;
+  // Upsert email so super admin can see who owns each tournament
+  await supabase.from('profiles').upsert(
+    { id: user.id, email: user.email },
+    { onConflict: 'id', ignoreDuplicates: false }
+  );
   const { data } = await supabase
     .from('profiles')
     .select('is_super_admin')
-    .eq('id', userId)
+    .eq('id', user.id)
     .single();
   return data?.is_super_admin ?? false;
 }
@@ -30,7 +35,7 @@ export function useAuth() {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsSuperAdmin(await fetchIsSuperAdmin(session?.user?.id));
+      setIsSuperAdmin(await syncProfile(session?.user ?? null));
       setLoading(false);
     });
 
@@ -39,7 +44,7 @@ export function useAuth() {
     } = supabase.auth.onAuthStateChange(async (_event, session) => {
       setSession(session);
       setUser(session?.user ?? null);
-      setIsSuperAdmin(await fetchIsSuperAdmin(session?.user?.id));
+      setIsSuperAdmin(await syncProfile(session?.user ?? null));
     });
 
     return () => {

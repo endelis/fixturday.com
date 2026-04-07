@@ -286,7 +286,13 @@
     "teamsLabel": "komandas",
     "fixturesLabel": "spēles",
     "pending": "gaida",
-    "superAdminBadge": "Super Admin"
+    "superAdminBadge": "Super Admin",
+    "ownerLabel": "Īpašnieks",
+    "deleteConfirmTitle": "Dzēst turnīru?",
+    "deleteConfirmMsg": "Tiks dzēsti arī visas vecuma grupas, spēles un rezultāti. Šo nevar atsaukt.",
+    "deleteConfirmBtn": "Dzēst",
+    "deleteSuccess": "Turnīrs dzēsts",
+    "deleteError": "Kļūda dzēšot turnīru"
   },
   "workspace": {
     "navOverview": "Pārskats",
@@ -566,6 +572,7 @@
     "save": "Saglabāt",
     "saved": "Saglabāts!",
     "saving": "Saglabā...",
+    "deleting": "Dzēš...",
     "cancel": "Atcelt",
     "delete": "Dzēst",
     "edit": "Rediģēt",
