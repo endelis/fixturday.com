@@ -21,7 +21,7 @@ export default function Dashboard() {
       try {
         let query = supabase
           .from('tournaments')
-          .select('*, owner:owner_id(email), age_groups(id, teams(id, status), stages(id, fixtures(id)))')
+          .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
           .order('created_at', { ascending: false })
         if (!isSuperAdmin) {
           query = query.eq('owner_id', user.id)
@@ -124,9 +124,9 @@ export default function Dashboard() {
                             {startDate}{startDate && endDate ? ' – ' : ''}{endDate}
                           </div>
                         )}
-                        {isSuperAdmin && tourney.owner?.email && (
-                          <div style={{ fontSize: '0.75rem', color: 'var(--color-accent)', marginTop: '0.15rem', opacity: 0.8 }}>
-                            {tourney.owner.email}
+                        {isSuperAdmin && (
+                          <div style={{ fontSize: '0.7rem', color: 'var(--color-accent)', marginTop: '0.15rem', opacity: 0.7, fontFamily: 'monospace' }}>
+                            {tourney.owner_id?.slice(0, 8)}
                           </div>
                         )}
                       </div>
