@@ -12,17 +12,27 @@ import { supabase } from "../lib/supabase";
 
 async function syncProfile(user) {
   if (!user) return false;
-  // Upsert email so super admin can see who owns each tournament
-  await supabase.from('profiles').upsert(
-    { id: user.id, email: user.email },
-    { onConflict: 'id', ignoreDuplicates: false }
-  );
-  const { data } = await supabase
-    .from('profiles')
-    .select('is_super_admin')
-    .eq('id', user.id)
-    .single();
-  return data?.is_super_admin ?? false;
+  try {
+    // Upsert email so super admin can see who owns each tournament.
+    // Silently ignored if email column doesn't exist yet — is_super_admin
+    // check below still works in that case.
+    await supabase.from('profiles').upsert(
+      { id: user.id, email: user.email },
+      { onConflict: 'id', ignoreDuplicates: false }
+    );
+  } catch {
+    // Non-fatal — profile email sync failed but auth can continue
+  }
+  try {
+    const { data } = await supabase
+      .from('profiles')
+      .select('is_super_admin')
+      .eq('id', user.id)
+      .single();
+    return data?.is_super_admin ?? false;
+  } catch {
+    return false;
+  }
 }
 
 export function useAuth() {
@@ -32,12 +42,18 @@ export function useAuth() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      setSession(session);
-      setUser(session?.user ?? null);
-      setIsSuperAdmin(await syncProfile(session?.user ?? null));
-      setLoading(false);
-    });
+    supabase.auth.getSession()
+      .then(async ({ data: { session } }) => {
+        setSession(session);
+        setUser(session?.user ?? null);
+        setIsSuperAdmin(await syncProfile(session?.user ?? null));
+      })
+      .catch(() => {
+        // getSession failed — treat as logged out, unblock UI
+      })
+      .finally(() => {
+        setLoading(false);
+      });
 
     const {
       data: { subscription },
