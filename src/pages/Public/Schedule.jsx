@@ -70,7 +70,7 @@ export default function Schedule() {
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   const grouped = fixtures.reduce((acc, f) => {
-    const day = f.kickoff_time ? format(new Date(f.kickoff_time), 'yyyy-MM-dd') : 'nav-datuma'
+    const day = f.kickoff_time ? format(new Date(f.kickoff_time), 'yyyy-MM-dd') : '__NO_DATE__'
     ;(acc[day] = acc[day] ?? []).push(f)
     return acc
   }, {})
@@ -128,7 +128,7 @@ export default function Schedule() {
           </div>
         )}
 
-        {Object.keys(grouped).length === 1 && grouped['nav-datuma'] && (
+        {Object.keys(grouped).length === 1 && grouped['__NO_DATE__'] && (
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
             {t('schedule.noScheduleYet')}
           </p>
@@ -137,7 +137,7 @@ export default function Schedule() {
         {Object.keys(grouped).sort().map(day => (
           <div key={day} style={{ marginBottom: '2rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
-              {day === 'nav-datuma' ? t('schedule.noDate') : formatDate(day)}
+              {day === '__NO_DATE__' ? t('schedule.noDate') : formatDate(day)}
             </h2>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
               {grouped[day].map(f => {

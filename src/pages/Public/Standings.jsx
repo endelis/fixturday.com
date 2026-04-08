@@ -171,7 +171,7 @@ export default function Standings() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>#</th><th>Komanda</th><th>S</th><th>U</th><th>N</th><th>Z</th><th>GV</th><th>GS</th><th>GS±</th><th>P</th>
+                  <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th>
                 </tr>
               </thead>
               <tbody>

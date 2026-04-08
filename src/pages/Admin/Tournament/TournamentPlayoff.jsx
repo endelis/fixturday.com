@@ -197,8 +197,13 @@ export default function TournamentPlayoff() {
 
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
                       {matches.map((match) => {
-                        const homeTeam = match.home_team?.name ?? match.home_placeholder ?? '?'
-                        const awayTeam = match.away_team?.name ?? match.away_placeholder ?? '?'
+                        const decodePlaceholder = (p) => {
+                          if (!p) return '?'
+                          const m = p.match(/^G(\d+)P(\d+)$/)
+                          return m ? t('standings.groupPlaceholder', { group: m[1], pos: m[2] }) : p
+                        }
+                        const homeTeam = match.home_team?.name ?? decodePlaceholder(match.home_placeholder)
+                        const awayTeam = match.away_team?.name ?? decodePlaceholder(match.away_placeholder)
                         const result = match.fixture_results?.[0]
                         const hasResult = result != null
                         const homeGoals = hasResult ? result.home_goals : null
