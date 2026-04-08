@@ -57,7 +57,7 @@ export default function Footer() {
             onMouseEnter={e => e.currentTarget.style.color = '#f0a500'}
             onMouseLeave={e => e.currentTarget.style.color = '#3a506b'}
           >
-            ☕ Fixturday ir bezmaksas. Ja noderēja, nopērc man kafiju!
+            ☕ Nopērc man kafiju!
           </a>
         </div>
 
