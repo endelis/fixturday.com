@@ -23,7 +23,7 @@ const HOWTO_LD = {
           '@type': 'HowToStep',
           position: 1,
           name: 'Izveido kontu',
-          text: 'Apmeklē fixturday.com/admin/register un reģistrējies ar e-pastu un paroli.',
+          text: 'Apmeklē fixturday.com/admin/register un reģistrējies ar vārdu, e-pastu un paroli.',
         },
         {
           '@type': 'HowToStep',
@@ -489,6 +489,7 @@ export default function Guide() {
                 <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '1.25rem' }}>
                   {t('guide.mockRegHeading')}
                 </p>
+                <MockField label={t('guide.mockFirstName')} placeholder="Jānis" />
                 <MockField label={t('guide.mockEmail')} placeholder="janis@piemers.lv" />
                 <MockField label={t('guide.mockPassword')} placeholder="••••••••" type="password" />
                 <MockButton>{t('guide.mockRegBtn')}</MockButton>
