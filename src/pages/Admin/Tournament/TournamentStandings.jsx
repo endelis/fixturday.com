@@ -137,8 +137,9 @@ export default function TournamentStandings() {
       setLoading(false)
     }
 
+    if (authLoading || !user) return
     load()
-  }, [id])
+  }, [id, authLoading, user])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />

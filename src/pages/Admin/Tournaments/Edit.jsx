@@ -41,7 +41,10 @@ export default function TournamentEdit() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm()
 
   useEffect(() => {
-    supabase.from('tournaments').select('*').eq('id', id).single().then(({ data }) => {
+    if (authLoading || !user) return
+    async function load() {
+      const { data, error } = await supabase.from('tournaments').select('*').eq('id', id).single()
+      if (error) { toast(t('common.error'), 'error'); setLoading(false); return }
       if (data) {
         const { attachments: att, logo_url, ...rest } = data
         reset({
@@ -54,8 +57,9 @@ export default function TournamentEdit() {
         setLunchEnabled(!!(data.lunch_start || data.lunch_end))
       }
       setLoading(false)
-    })
-  }, [id, reset])
+    }
+    load()
+  }, [id, reset, authLoading, user])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />

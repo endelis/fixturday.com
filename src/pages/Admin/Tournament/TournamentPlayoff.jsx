@@ -133,8 +133,9 @@ export default function TournamentPlayoff() {
       setLoading(false)
     }
 
+    if (authLoading || !user) return
     load()
-  }, [tournamentId, t])
+  }, [tournamentId, authLoading, user, t])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
