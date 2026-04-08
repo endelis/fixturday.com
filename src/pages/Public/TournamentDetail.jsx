@@ -564,11 +564,12 @@ export default function TournamentDetail() {
       ldScript.textContent = JSON.stringify(jsonLd)
 
       // 2. Age groups
-      const { data: groups } = await supabase
+      const { data: groups, error: groupsErr } = await supabase
         .from('age_groups')
         .select('id, name, format, game_duration, registration_open')
         .eq('tournament_id', tourney.id)
         .order('name')
+      if (groupsErr) { setLoading(false); return }
 
       const ags = groups ?? []
       setAgeGroups(ags)
@@ -582,13 +583,14 @@ export default function TournamentDetail() {
       const agIds = ags.map(g => g.id)
 
       // 3. Stages + Teams in parallel
-      const [{ data: stagesData }, { data: teamsData }] = await Promise.all([
+      const [{ data: stagesData, error: stErr }, { data: teamsData, error: tmErr }] = await Promise.all([
         supabase.from('stages').select('id, age_group_id, type').in('age_group_id', agIds),
         supabase.from('teams')
           .select('id, name, club, age_group_id, status')
           .in('age_group_id', agIds)
           .eq('status', 'confirmed'),
       ])
+      if (stErr || tmErr) { setLoading(false); return }
 
       setTeams(teamsData ?? [])
 
@@ -603,7 +605,7 @@ export default function TournamentDetail() {
       }
 
       // 4. Fixtures
-      const { data: fxData } = await supabase
+      const { data: fxData, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
           id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id,
@@ -614,6 +616,7 @@ export default function TournamentDetail() {
         `)
         .in('stage_id', stageIds)
         .order('kickoff_time', { ascending: true })
+      if (fxErr) { setLoading(false); return }
 
       const fxWithStage = (fxData ?? []).map(f => ({
         ...f,

@@ -56,20 +56,21 @@ export default function TournamentList() {
       if (list.length > 0) {
         const tIds = list.map(t => t.id)
 
-        const { data: ags } = await supabase
+        const { data: ags, error: agsErr } = await supabase
           .from('age_groups')
           .select('id, tournament_id')
           .in('tournament_id', tIds)
 
-        if (ags && ags.length > 0) {
+        if (!agsErr && ags && ags.length > 0) {
           const agIds = ags.map(g => g.id)
           const agToTournament = Object.fromEntries(ags.map(g => [g.id, g.tournament_id]))
 
-          const { data: teams } = await supabase
+          const { data: teams, error: teamsErr } = await supabase
             .from('teams')
             .select('id, age_group_id')
             .in('age_group_id', agIds)
             .neq('status', 'rejected')
+          if (teamsErr) { setLoading(false); return }
 
           const counts = {}
           for (const team of teams ?? []) {

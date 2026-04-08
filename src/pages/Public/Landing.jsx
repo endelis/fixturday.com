@@ -19,15 +19,17 @@ export default function Landing() {
   useEffect(() => {
     async function loadStats() {
       const [
-        { count: tc },
-        { count: teamsC },
-        { count: fc },
+        { count: tc, error: tcErr },
+        { count: teamsC, error: teamsErr },
+        { count: fc, error: fcErr },
       ] = await Promise.all([
         supabase.from('tournaments').select('*', { count: 'exact', head: true }).eq('is_active', true),
         supabase.from('teams').select('*', { count: 'exact', head: true }).eq('status', 'confirmed'),
         supabase.from('fixtures').select('*', { count: 'exact', head: true }).eq('status', 'completed'),
       ])
-      setStats({ tournaments: tc ?? 0, teams: teamsC ?? 0, fixtures: fc ?? 0 })
+      if (!tcErr && !teamsErr && !fcErr) {
+        setStats({ tournaments: tc ?? 0, teams: teamsC ?? 0, fixtures: fc ?? 0 })
+      }
     }
     loadStats()
   }, [])
