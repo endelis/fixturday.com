@@ -20,16 +20,20 @@ export default function AgeGroups() {
   const watchedFormat = watch('format', 'round_robin')
 
   async function load() {
-    const [{ data: t_ }, { data: ag }] = await Promise.all([
+    const [{ data: t_, error: tErr }, { data: ag, error: agErr }] = await Promise.all([
       supabase.from('tournaments').select('*').eq('id', tournamentId).single(),
       supabase.from('age_groups').select('*, teams(id, status)').eq('tournament_id', tournamentId).order('name'),
     ])
+    if (tErr || agErr) { toast(t('common.error'), 'error'); setLoading(false); return }
     setTournament(t_)
     setAgeGroups(ag ?? [])
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [tournamentId])
+  useEffect(() => {
+    if (authLoading || !user) return
+    load()
+  }, [tournamentId, authLoading, user])
 
   function startEdit(ag) {
     // Toggle: if already editing this card, close the form

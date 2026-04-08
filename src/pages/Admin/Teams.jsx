@@ -23,19 +23,24 @@ export default function Teams() {
   const playerForm = useForm()
 
   async function load() {
-    const [{ data: ag }, { data: t_ }] = await Promise.all([
+    const [{ data: ag, error: agErr }, { data: t_, error: tErr }] = await Promise.all([
       supabase.from('age_groups').select('*, tournaments(id, name)').eq('id', ageGroupId).single(),
       supabase.from('teams').select('*').eq('age_group_id', ageGroupId).order('name'),
     ])
+    if (agErr || tErr) { toast(t('common.error'), 'error'); setLoading(false); return }
     setAgeGroup(ag)
     setTeams(t_ ?? [])
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [ageGroupId])
+  useEffect(() => {
+    if (authLoading || !user) return
+    load()
+  }, [ageGroupId, authLoading, user])
 
   async function loadPlayers(teamId) {
-    const { data } = await supabase.from('team_players').select('*').eq('team_id', teamId).order('number')
+    const { data, error } = await supabase.from('team_players').select('*').eq('team_id', teamId).order('number')
+    if (error) { toast(t('common.error'), 'error'); return }
     setPlayers(prev => ({ ...prev, [teamId]: data ?? [] }))
   }
 

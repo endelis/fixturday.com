@@ -19,16 +19,20 @@ export default function Venues() {
   const pitchForm = useForm()
 
   async function load() {
-    const [{ data: t_ }, { data: v }] = await Promise.all([
+    const [{ data: t_, error: tErr }, { data: v, error: vErr }] = await Promise.all([
       supabase.from('tournaments').select('*').eq('id', tournamentId).single(),
       supabase.from('venues').select('*, pitches(*)').eq('tournament_id', tournamentId).order('name'),
     ])
+    if (tErr || vErr) { toast(t('common.error'), 'error'); setLoading(false); return }
     setTournament(t_)
     setVenues(v ?? [])
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [tournamentId])
+  useEffect(() => {
+    if (authLoading || !user) return
+    load()
+  }, [tournamentId, authLoading, user])
 
   async function addVenue(values) {
     const { error } = await supabase.from('venues').insert({ ...values, tournament_id: tournamentId })
