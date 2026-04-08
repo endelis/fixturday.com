@@ -47,5 +47,7 @@ export function useAuth() {
     if (error) throw error;
   }
 
-  return { session, user, loading, signIn, signOut };
+  const isSuperAdmin = session?.user?.app_metadata?.is_super_admin === true
+
+  return { session, user, loading, isSuperAdmin, signIn, signOut };
 }

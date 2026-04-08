@@ -9,7 +9,7 @@ import { toast } from '../../components/Toast'
 import { Trophy } from 'lucide-react'
 
 export default function Dashboard() {
-  const { user, signOut } = useAuth()
+  const { user, isSuperAdmin, signOut } = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
   const [tournaments, setTournaments] = useState([])
@@ -19,11 +19,12 @@ export default function Dashboard() {
     if (!user) return
     async function load() {
       try {
-        const { data, error } = await supabase
+        let query = supabase
           .from('tournaments')
           .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
-          .eq('owner_id', user.id)
           .order('created_at', { ascending: false })
+        if (!isSuperAdmin) query = query.eq('owner_id', user.id)
+        const { data, error } = await query
         if (error) throw error
         setTournaments(data ?? [])
       } catch {
@@ -33,7 +34,7 @@ export default function Dashboard() {
       }
     }
     load()
-  }, [user])
+  }, [user, isSuperAdmin])
 
   async function handleSignOut() {
     try {
