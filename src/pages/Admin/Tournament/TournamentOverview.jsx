@@ -1,19 +1,16 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, useOutletContext } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 
 export default function TournamentOverview() {
   const { id } = useParams()
   const { t } = useTranslation()
-  const { loading: authLoading } = useAuth()
   const { tournament, stepsComplete } = useOutletContext()
   const [stats, setStats] = useState(null)
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
-    if (authLoading) return
     async function loadStats() {
       // Phase 1 — load age_groups and venues in parallel (both only need tournament id)
       const [{ data: ageGroups }, { count: venuesCount }] = await Promise.all([
@@ -57,7 +54,7 @@ export default function TournamentOverview() {
       setLoading(false)
     }
     loadStats()
-  }, [id, authLoading])
+  }, [id])
 
   // Use stepsComplete from TournamentLayout outlet context
   const setupSteps = [

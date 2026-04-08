@@ -7,14 +7,12 @@
 import { useEffect, useState } from 'react'
 import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { lv } from 'date-fns/locale'
 import { formatDate } from '../../utils/dateFormat'
 import { calculateStandings } from '../../utils/standings'
 import { Printer } from 'lucide-react'
-import PrintQR from '../../components/Print/PrintQR'
 
 const PRINT_STYLE = `
   @media print {
@@ -99,21 +97,12 @@ const PRINT_STYLE = `
 export default function Print() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
-  const { user, loading: authLoading } = useAuth()
-  const [authTimeout, setAuthTimeout] = useState(false)
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
   const [loading, setLoading] = useState(true)
   const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: lv })
 
-  // New-tab auth can hang — fall through after 3s regardless
   useEffect(() => {
-    const timer = setTimeout(() => setAuthTimeout(true), 3000)
-    return () => clearTimeout(timer)
-  }, [])
-
-  useEffect(() => {
-    if (authLoading && !authTimeout) return
     async function load() {
       const { data: tourney, error: tErr } = await supabase
         .from('tournaments')
@@ -168,7 +157,7 @@ export default function Print() {
       setLoading(false)
     }
     load()
-  }, [tournamentId, authLoading, authTimeout, user])
+  }, [tournamentId])
 
   useEffect(() => {
     if (!loading && tournament) {
@@ -360,11 +349,6 @@ export default function Print() {
         }}>
           fixturday.com — {tournament.name} — {printDate}
         </div>
-
-        <PrintQR
-          url={`https://www.fixturday.com/t/${tournament.slug}`}
-          label={t('print.qrSchedule')}
-        />
       </div>
     </>
   )

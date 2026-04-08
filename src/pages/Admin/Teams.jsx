@@ -32,7 +32,7 @@ export default function Teams() {
     setLoading(false)
   }
 
-  useEffect(() => { if (authLoading || !user) return; load() }, [ageGroupId, authLoading, user])
+  useEffect(() => { load() }, [ageGroupId])
 
   async function loadPlayers(teamId) {
     const { data } = await supabase.from('team_players').select('*').eq('team_id', teamId).order('number')

@@ -29,7 +29,7 @@ export default function AgeGroups() {
     setLoading(false)
   }
 
-  useEffect(() => { if (authLoading || !user) return; load() }, [tournamentId, authLoading, user])
+  useEffect(() => { load() }, [tournamentId])
 
   function startEdit(ag) {
     // Toggle: if already editing this card, close the form

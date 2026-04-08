@@ -42,7 +42,6 @@
     "rulesHide": "Slēgt nolikumu",
     "save": "Saglabāt",
     "delete": "Dzēst turnīru",
-    "dangerZone": "Bīstamā zona",
     "edit": "Rediģēt",
     "active": "Aktīvs",
     "inactive": "Neaktīvs",
@@ -286,14 +285,7 @@
     "print": "Drukāt",
     "teamsLabel": "komandas",
     "fixturesLabel": "spēles",
-    "pending": "gaida",
-    "superAdminBadge": "Super Admin",
-    "ownerLabel": "Īpašnieks",
-    "deleteConfirmTitle": "Dzēst turnīru?",
-    "deleteConfirmMsg": "Tiks dzēsti arī visas vecuma grupas, spēles un rezultāti. Šo nevar atsaukt.",
-    "deleteConfirmBtn": "Dzēst",
-    "deleteSuccess": "Turnīrs dzēsts",
-    "deleteError": "Kļūda dzēšot turnīru"
+    "pending": "gaida"
   },
   "workspace": {
     "navOverview": "Pārskats",
@@ -573,7 +565,6 @@
     "save": "Saglabāt",
     "saved": "Saglabāts!",
     "saving": "Saglabā...",
-    "deleting": "Dzēš...",
     "cancel": "Atcelt",
     "delete": "Dzēst",
     "edit": "Rediģēt",
@@ -621,9 +612,6 @@
     "colPitch": "Laukums",
     "colHome": "Mājas",
     "colResult": "Rezultāts",
-    "colAway": "Viesi",
-    "qrSchedule": "Seko grafikam",
-    "qrStandings": "Seko tabulai",
-    "qrPlayoff": "Seko playoff"
+    "colAway": "Viesi"
   }
 }

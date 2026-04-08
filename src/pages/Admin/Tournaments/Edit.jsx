@@ -30,8 +30,7 @@ export default function TournamentEdit() {
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
-  const [showDeleteModal, setShowDeleteModal] = useState(false)
-  const [deleting, setDeleting] = useState(false)
+  const [deleteConfirm, setDeleteConfirm] = useState(false)
   const [logoPreview, setLogoPreview] = useState(null)
   const [logoUploading, setLogoUploading] = useState(false)
   const [attachments, setAttachments] = useState([])
@@ -42,7 +41,6 @@ export default function TournamentEdit() {
   const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm()
 
   useEffect(() => {
-    if (authLoading || !user) return
     supabase.from('tournaments').select('*').eq('id', id).single().then(({ data }) => {
       if (data) {
         const { attachments: att, logo_url, ...rest } = data
@@ -57,7 +55,7 @@ export default function TournamentEdit() {
       }
       setLoading(false)
     })
-  }, [id, reset, authLoading, user])
+  }, [id, reset])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
@@ -77,16 +75,10 @@ export default function TournamentEdit() {
   }
 
   async function handleDelete() {
-    setDeleting(true)
-    try {
-      const { error } = await supabase.from('tournaments').delete().eq('id', id)
-      if (error) throw error
-      navigate('/admin/dashboard')
-    } catch (err) {
-      toast(`${t('common.error')}: ${err.message}`, 'error')
-      setDeleting(false)
-      setShowDeleteModal(false)
-    }
+    if (!deleteConfirm) { setDeleteConfirm(true); return }
+    const { error } = await supabase.from('tournaments').delete().eq('id', id)
+    if (error) { toast(`${t('common.error')}: ${error.message}`, 'error'); return }
+    navigate('/admin/dashboard')
   }
 
   async function handleLogoChange(e) {
@@ -142,8 +134,14 @@ export default function TournamentEdit() {
   return (
     <div>
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '700px' }}>
-        <div style={{ marginBottom: '1.5rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('tournament.editTitle')}</h1>
+          <button
+            className={deleteConfirm ? 'btn-danger btn-sm' : 'btn-secondary btn-sm'}
+            onClick={handleDelete}
+          >
+            {deleteConfirm ? t('tournament.confirmDelete') : t('tournament.delete')}
+          </button>
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
@@ -400,82 +398,7 @@ export default function TournamentEdit() {
             📎 {attachUploading ? t('tournament.attachmentUploading') : t('tournament.attachmentAdd')}
           </button>
         </div>
-
-        {/* ── Danger zone ─────────────────────────────────────────── */}
-        <div style={{
-          marginTop: '2.5rem',
-          border: '1px solid var(--color-danger)',
-          borderRadius: '10px',
-          padding: '1.25rem 1.5rem',
-        }}>
-          <h3 style={{
-            fontFamily: 'var(--font-heading)', fontSize: '1.1rem',
-            color: 'var(--color-danger)', marginBottom: '0.4rem',
-          }}>
-            {t('tournament.dangerZone')}
-          </h3>
-          <p style={{ color: 'var(--color-muted)', fontSize: '0.85rem', marginBottom: '1rem' }}>
-            {t('dashboard.deleteConfirmMsg')}
-          </p>
-          <button
-            type="button"
-            onClick={() => setShowDeleteModal(true)}
-            style={{
-              background: 'none', border: '1px solid var(--color-danger)',
-              color: 'var(--color-danger)', borderRadius: '6px',
-              padding: '0.5rem 1.25rem', cursor: 'pointer',
-              fontWeight: 600, fontSize: '0.875rem',
-            }}
-          >
-            {t('tournament.delete')}
-          </button>
-        </div>
       </div>
-
-      {/* ── Delete confirmation modal ──────────────────────────────── */}
-      {showDeleteModal && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 500, padding: '1rem',
-        }}>
-          <div style={{
-            background: 'var(--color-surface)',
-            border: '1px solid var(--color-danger)',
-            borderRadius: '12px', padding: '1.75rem',
-            width: '100%', maxWidth: '420px',
-          }}>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', marginBottom: '0.75rem', color: 'var(--color-danger)' }}>
-              {t('dashboard.deleteConfirmTitle')}
-            </h2>
-            <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-              {t('dashboard.deleteConfirmMsg')}
-            </p>
-            <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'flex-end' }}>
-              <button
-                className="btn-secondary"
-                onClick={() => setShowDeleteModal(false)}
-                disabled={deleting}
-              >
-                {t('common.cancel')}
-              </button>
-              <button
-                onClick={handleDelete}
-                disabled={deleting}
-                style={{
-                  background: 'var(--color-danger)', color: '#fff', border: 'none',
-                  borderRadius: '6px', padding: '0.5rem 1.25rem',
-                  fontWeight: 700, fontSize: '0.9rem',
-                  cursor: deleting ? 'not-allowed' : 'pointer',
-                  opacity: deleting ? 0.6 : 1,
-                }}
-              >
-                {deleting ? t('common.deleting') : t('dashboard.deleteConfirmBtn')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   )
 }
