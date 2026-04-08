@@ -31,7 +31,37 @@ export default function Footer() {
           </div>
         </div>
 
-        {/* Row 2 — Copyright + legal links */}
+        {/* Row 2 — Buy me a coffee */}
+        <div style={{
+          textAlign: 'center',
+          paddingBottom: '1.25rem',
+          marginBottom: '1.25rem',
+          borderBottom: '1px solid rgba(255,255,255,0.05)',
+        }}>
+          <a
+            href="https://www.buymeacoffee.com/endelis"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '0.5rem',
+              color: '#3a506b',
+              fontSize: '0.8rem',
+              textDecoration: 'none',
+              transition: 'color 150ms',
+              padding: '0.4rem 0.875rem',
+              border: '1px solid rgba(255,255,255,0.07)',
+              borderRadius: '999px',
+            }}
+            onMouseEnter={e => e.currentTarget.style.color = '#f0a500'}
+            onMouseLeave={e => e.currentTarget.style.color = '#3a506b'}
+          >
+            ☕ Fixturday ir bezmaksas. Ja noderēja — paskaties kafiju.
+          </a>
+        </div>
+
+        {/* Row 3 — Copyright + legal links */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           flexWrap: 'wrap', gap: '0.75rem',
