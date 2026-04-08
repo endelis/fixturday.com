@@ -22,10 +22,11 @@ export default function TournamentStats() {
 
       const agIds = ageGroups.map(ag => ag.id)
 
-      const { data: stages } = await supabase
+      const { data: stages, error: stErr } = await supabase
         .from('stages')
         .select('id, age_group_id, type')
         .in('age_group_id', agIds)
+      if (stErr) { setLoading(false); return }
 
       const stageIds = (stages ?? []).map(s => s.id)
       if (!stageIds.length) {
@@ -34,7 +35,7 @@ export default function TournamentStats() {
         return
       }
 
-      const { data: fixtures } = await supabase
+      const { data: fixtures, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
           id, status, round, group_label, stage_id,
@@ -42,11 +43,13 @@ export default function TournamentStats() {
           away_team:teams!away_team_id(id, name)
         `)
         .in('stage_id', stageIds)
+      if (fxErr) { setLoading(false); return }
 
-      const { data: results } = await supabase
+      const { data: results, error: resErr } = await supabase
         .from('fixture_results')
         .select('fixture_id, home_goals, away_goals')
         .in('fixture_id', (fixtures ?? []).map(f => f.id))
+      if (resErr) { setLoading(false); return }
 
       const stageByAg = {}
       for (const s of (stages ?? [])) {

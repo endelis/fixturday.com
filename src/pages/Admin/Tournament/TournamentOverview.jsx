@@ -13,10 +13,11 @@ export default function TournamentOverview() {
   useEffect(() => {
     async function loadStats() {
       // Phase 1 — load age_groups and venues in parallel (both only need tournament id)
-      const [{ data: ageGroups }, { count: venuesCount }] = await Promise.all([
+      const [{ data: ageGroups, error: agErr }, { count: venuesCount, error: venErr }] = await Promise.all([
         supabase.from('age_groups').select('id').eq('tournament_id', id),
         supabase.from('venues').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
       ])
+      if (agErr || venErr) { setLoading(false); return }
 
       const agIds = (ageGroups ?? []).map(ag => ag.id)
       const ageGroupsCount = agIds.length
@@ -28,14 +29,15 @@ export default function TournamentOverview() {
       }
 
       // Phase 2 — stages needed to get fixture counts; teams count can run in parallel with stage load
-      const [{ data: stageData }, { count: teamsCount }] = await Promise.all([
+      const [{ data: stageData, error: stErr }, { count: teamsCount, error: tmErr }] = await Promise.all([
         supabase.from('stages').select('id').in('age_group_id', agIds),
         supabase.from('teams').select('id', { count: 'exact', head: true }).in('age_group_id', agIds).eq('status', 'confirmed'),
       ])
+      if (stErr || tmErr) { setLoading(false); return }
       const stageIds = (stageData ?? []).map(s => s.id)
 
       // Phase 3 — fixture counts (need stageIds)
-      const [{ count: fixturesCount }, { count: completedCount }] = await Promise.all([
+      const [{ count: fixturesCount, error: fxErr }, { count: completedCount, error: cErr }] = await Promise.all([
         stageIds.length
           ? supabase.from('fixtures').select('id', { count: 'exact', head: true }).in('stage_id', stageIds)
           : Promise.resolve({ count: 0 }),
@@ -43,6 +45,7 @@ export default function TournamentOverview() {
           ? supabase.from('fixtures').select('id', { count: 'exact', head: true }).in('stage_id', stageIds).eq('status', 'completed')
           : Promise.resolve({ count: 0 }),
       ])
+      if (fxErr || cErr) { setLoading(false); return }
 
       setStats({
         ageGroups: ageGroupsCount,

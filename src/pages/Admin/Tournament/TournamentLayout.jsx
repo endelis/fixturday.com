@@ -39,34 +39,38 @@ export default function TournamentLayout() {
   const [wizardStep, setWizardStep] = useState(0)
 
   useEffect(() => {
+    if (authLoading || !user) return
     async function load() {
       // Fetch tournament, age group count, and venues count in parallel
-      const [{ data: tourney }, { count: agCnt }, { count: venCnt }] = await Promise.all([
+      const [{ data: tourney, error: tErr }, { count: agCnt, error: agErr }, { count: venCnt, error: venErr }] = await Promise.all([
         supabase.from('tournaments').select('id, name, sport, is_active').eq('id', id).single(),
         supabase.from('age_groups').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
         supabase.from('venues').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
       ])
+      if (tErr || agErr || venErr) { setLoading(false); return }
       setTournament(tourney)
 
       // Steps 3-4 require age group IDs — only fetch if age groups exist
       let teamsCnt = 0, fixCnt = 0
       if ((agCnt ?? 0) > 0) {
-        const { data: ags } = await supabase
+        const { data: ags, error: agsErr } = await supabase
           .from('age_groups').select('id').eq('tournament_id', id)
-        const agIds = (ags ?? []).map(a => a.id)
+        if (!agsErr) {
+          const agIds = (ags ?? []).map(a => a.id)
 
-        const [{ count: tc }, { data: stages }] = await Promise.all([
-          supabase.from('teams').select('id', { count: 'exact', head: true })
-            .in('age_group_id', agIds).eq('status', 'confirmed'),
-          supabase.from('stages').select('id').in('age_group_id', agIds),
-        ])
-        teamsCnt = tc ?? 0
+          const [{ count: tc }, { data: stages }] = await Promise.all([
+            supabase.from('teams').select('id', { count: 'exact', head: true })
+              .in('age_group_id', agIds).eq('status', 'confirmed'),
+            supabase.from('stages').select('id').in('age_group_id', agIds),
+          ])
+          teamsCnt = tc ?? 0
 
-        if ((stages ?? []).length > 0) {
-          const { count: fc } = await supabase.from('fixtures')
-            .select('id', { count: 'exact', head: true })
-            .in('stage_id', stages.map(s => s.id))
-          fixCnt = fc ?? 0
+          if ((stages ?? []).length > 0) {
+            const { count: fc } = await supabase.from('fixtures')
+              .select('id', { count: 'exact', head: true })
+              .in('stage_id', stages.map(s => s.id))
+            fixCnt = fc ?? 0
+          }
         }
       }
 
@@ -87,7 +91,7 @@ export default function TournamentLayout() {
       setLoading(false)
     }
     load()
-  }, [id])
+  }, [id, authLoading, user])
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
