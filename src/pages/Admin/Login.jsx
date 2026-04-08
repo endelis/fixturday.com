@@ -81,6 +81,7 @@ export default function Login() {
             type="submit"
             className="btn-primary"
             disabled={submitting}
+            style={{ marginTop: '8px' }}
           >
             {submitting ? t('common.loading') : t('auth.login')}
           </button>
