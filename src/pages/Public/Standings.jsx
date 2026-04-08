@@ -29,7 +29,7 @@ export default function Standings() {
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
         supabase.from('teams').select('*').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
         supabase.from('fixtures')
-          .select('id, home_team_id, away_team_id, status, group_label, stages!inner(age_group_id, type)')
+          .select('id, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
           .eq('stages.age_group_id', ageGroupId),
       ])
       if (sibErr || tmErr || fxErr) { setLoading(false); return }
@@ -72,7 +72,9 @@ export default function Standings() {
   // Group-knockout: derive per-group data
   const groupFixtures = fixtures.filter(f => f.stages?.type === 'group_stage' && f.group_label)
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
-  const hasKnockoutFixtures = fixtures.some(f => f.stages?.type === 'knockout')
+  const knockoutFixtures = fixtures.filter(f => f.stages?.type === 'knockout')
+  const hasKnockoutFixtures = knockoutFixtures.length > 0
+  const knockoutRounds = [...new Set(knockoutFixtures.map(f => f.round_name).filter(Boolean))]
 
   return (
     <div>
@@ -158,11 +160,37 @@ export default function Standings() {
               )
             })}
             {hasKnockoutFixtures && (
-              <div style={{ marginTop: '1rem' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', marginBottom: '0.5rem' }}>
-                  {t('standings.knockout')}
+              <div style={{ marginTop: '2rem' }}>
+                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
+                  {t('standings.knockoutPhase')}
                 </h2>
-                <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.knockoutPending')}</p>
+                {knockoutRounds.length === 0 ? (
+                  <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.knockoutPending')}</p>
+                ) : knockoutRounds.map(round => (
+                  <div key={round} style={{ marginBottom: '1.5rem' }}>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
+                      {round}
+                    </h3>
+                    <div style={{ display: 'grid', gap: '0.5rem' }}>
+                      {knockoutFixtures.filter(f => f.round_name === round).map(f => {
+                        const result = results.find(r => r.fixture_id === f.id)
+                        const homeName = f.home_team?.name ?? f.home_placeholder ?? '?'
+                        const awayName = f.away_team?.name ?? f.away_placeholder ?? '?'
+                        const homeWon = result && result.home_goals > result.away_goals
+                        const awayWon = result && result.away_goals > result.home_goals
+                        return (
+                          <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}>
+                            <span style={{ flex: 1, textAlign: 'right', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--color-accent)' : 'inherit' }}>{homeName}</span>
+                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
+                              {result ? `${result.home_goals} : ${result.away_goals}` : (f.home_team ? t('fixture.vs') : '—')}
+                            </span>
+                            <span style={{ flex: 1, fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--color-accent)' : 'inherit' }}>{awayName}</span>
+                          </div>
+                        )
+                      })}
+                    </div>
+                  </div>
+                ))}
               </div>
             )}
           </>
