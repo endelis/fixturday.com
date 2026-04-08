@@ -51,7 +51,7 @@ export default function Fixtures() {
       const groupsCount = ageGroup.groups_count ?? 2
       const teamsAdvancing = ageGroup.teams_advancing ?? 2
 
-      const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Grupu posms', type: 'group_stage', sequence: stages.length + 1 }).select().single()
+      const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stages.length + 1 }).select().single()
       if (gsError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing)
@@ -59,7 +59,7 @@ export default function Fixtures() {
       const { error: gfError } = await supabase.from('fixtures').insert(groupRows)
       if (gfError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
-      const { data: knockoutStage, error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: 'Izslēgšanas kārtas', type: 'knockout', sequence: stages.length + 2 }).select().single()
+      const { data: knockoutStage, error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageKnockout'), type: 'knockout', sequence: stages.length + 2 }).select().single()
       if (ksError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       if (knockoutFixtures.length > 0) {
@@ -83,8 +83,8 @@ export default function Fixtures() {
     }
 
     const stageConfig = ageGroup.format === 'knockout'
-      ? { name: 'Izslēgšanas kārtas', type: 'knockout' }
-      : { name: 'Apļa turnīrs', type: 'round_robin' }
+      ? { name: t('fixture.stageKnockout'), type: 'knockout' }
+      : { name: t('fixture.stageRoundRobin'), type: 'round_robin' }
     const { data: stage, error: stageError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, ...stageConfig, sequence: stages.length + 1 }).select().single()
     if (stageError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
@@ -104,7 +104,7 @@ export default function Fixtures() {
 
   async function updateFixture(fixtureId, changes) {
     const { error } = await supabase.from('fixtures').update(changes).eq('id', fixtureId)
-    if (error) { toast(`Kļūda: ${error.message}`, 'error'); return }
+    if (error) { toast(t('common.error'), 'error'); return }
     load()
   }
 

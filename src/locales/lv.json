@@ -167,7 +167,10 @@
     "noPitchesWarning": "Nav konfigurētu laukumu. Pievienojiet laukumus sadaļā Vietas.",
     "pitchSelect": "Laukums...",
     "noFixtures": "Nav spēļu.",
-    "confirmedTeams": "Apstiprinātas komandas:"
+    "confirmedTeams": "Apstiprinātas komandas:",
+    "stageGroupStage": "Grupu posms",
+    "stageKnockout": "Izslēgšanas kārtas",
+    "stageRoundRobin": "Apļa turnīrs"
   },
   "standings": {
     "title": "Tabula",
