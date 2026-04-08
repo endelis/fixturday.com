@@ -289,6 +289,9 @@
     "noTournamentsHint": "Izveidojiet savu pirmo turnīru, lai sāktu",
     "createFirst": "Izveidot pirmo →",
     "print": "Drukāt",
+    "delete": "Dzēst",
+    "deleteConfirm": "Dzēst turnīru \"{{name}}\"? Šī darbība ir neatgriezeniska.",
+    "deleteError": "Kļūda dzēšot turnīru",
     "teamsLabel": "komandas",
     "fixturesLabel": "spēles",
     "pending": "gaida"

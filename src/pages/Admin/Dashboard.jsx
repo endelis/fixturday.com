@@ -45,6 +45,18 @@ export default function Dashboard() {
     }
   }
 
+  async function handleDelete(e, tourney) {
+    e.stopPropagation()
+    if (!window.confirm(t('dashboard.deleteConfirm', { name: tourney.name }))) return
+    try {
+      const { error } = await supabase.from('tournaments').delete().eq('id', tourney.id)
+      if (error) throw error
+      setTournaments(prev => prev.filter(t => t.id !== tourney.id))
+    } catch {
+      toast(t('dashboard.deleteError'), 'error')
+    }
+  }
+
   function fmtDate(str) {
     try { return str ? formatDate(parseISO(str)) : null } catch { return null }
   }
@@ -134,15 +146,24 @@ export default function Dashboard() {
                         </span>
                         <span>⚽ {fixturesCount} {t('dashboard.fixturesLabel')}</span>
                       </div>
-                      <button
-                        className="btn-secondary btn-sm"
-                        onClick={e => {
-                          e.stopPropagation()
-                          window.open(`/admin/tournaments/${tourney.id}/print`, '_blank')
-                        }}
-                      >
-                        🖨 {t('dashboard.print')}
-                      </button>
+                      <div style={{ display: 'flex', gap: '0.4rem' }}>
+                        <button
+                          className="btn-secondary btn-sm"
+                          onClick={e => {
+                            e.stopPropagation()
+                            window.open(`/admin/tournaments/${tourney.id}/print`, '_blank')
+                          }}
+                        >
+                          🖨 {t('dashboard.print')}
+                        </button>
+                        <button
+                          className="btn-sm"
+                          style={{ background: 'transparent', border: '1px solid var(--color-danger)', color: 'var(--color-danger)' }}
+                          onClick={e => handleDelete(e, tourney)}
+                        >
+                          {t('dashboard.delete')}
+                        </button>
+                      </div>
                     </div>
                   </div>
                 )
