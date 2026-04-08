@@ -228,7 +228,11 @@
     "passwordMismatch": "Paroles nesakrīt.",
     "passwordMinLength": "Parolei jābūt vismaz 6 simboliem.",
     "haveAccount": "Jau ir konts?",
-    "noAccount": "Nav konta?"
+    "noAccount": "Nav konta?",
+    "firstName": "Vārds",
+    "lastName": "Uzvārds",
+    "phone": "Tālrunis",
+    "optional": "neobligāts"
   },
   "register": {
     "title": "Reģistrācija",

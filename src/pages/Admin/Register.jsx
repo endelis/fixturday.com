@@ -13,13 +13,23 @@ export default function Register() {
 
   const password = watch('password')
 
-  async function onSubmit({ email, password, confirmPassword }) {
+  async function onSubmit({ email, password, confirmPassword, firstName, lastName, phone }) {
     if (password !== confirmPassword) {
       setAuthError(t('auth.passwordMismatch'))
       return
     }
     setAuthError(null)
-    const { error } = await supabase.auth.signUp({ email, password })
+    const { error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: {
+        data: {
+          first_name: firstName,
+          last_name: lastName || null,
+          phone: phone || null,
+        },
+      },
+    })
     if (error) { setAuthError(error.message); return }
     toast(t('auth.registerSuccess'))
     navigate('/admin/dashboard', { replace: true })
@@ -44,6 +54,43 @@ export default function Register() {
         </div>
 
         <form onSubmit={handleSubmit(onSubmit)} noValidate>
+          <div className="form-group">
+            <label htmlFor="firstName">{t('auth.firstName')}</label>
+            <input
+              id="firstName"
+              type="text"
+              autoComplete="given-name"
+              {...register('firstName', { required: t('common.required') })}
+            />
+            {errors.firstName && <span className="error-message">{errors.firstName.message}</span>}
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="lastName">
+              {t('auth.lastName')}{' '}
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>({t('auth.optional')})</span>
+            </label>
+            <input
+              id="lastName"
+              type="text"
+              autoComplete="family-name"
+              {...register('lastName')}
+            />
+          </div>
+
+          <div className="form-group">
+            <label htmlFor="phone">
+              {t('auth.phone')}{' '}
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>({t('auth.optional')})</span>
+            </label>
+            <input
+              id="phone"
+              type="tel"
+              autoComplete="tel"
+              {...register('phone')}
+            />
+          </div>
+
           <div className="form-group">
             <label htmlFor="email">{t('auth.email')}</label>
             <input
