@@ -25,9 +25,9 @@ function getTournamentStatus(tournament) {
 }
 
 const STATUS_CONFIG = {
-  ongoing:  { label: 'AKTĪVS',   cls: 'badge-success' },
-  upcoming: { label: 'DRĪZUMĀ',  cls: 'badge-warning' },
-  finished: { label: 'BEIDZIES', cls: 'badge-muted'   },
+  ongoing:  { labelKey: 'tournament.status.ongoing',  cls: 'badge-success' },
+  upcoming: { labelKey: 'tournament.status.upcoming', cls: 'badge-warning' },
+  finished: { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
 }
 
 // ── Time-block helpers for Grafiks tab ────────────────────────
@@ -54,8 +54,8 @@ function isCurrentBlock(blockKey) {
   return format(now, 'yyyy-MM-dd') === dateStr && now.getHours() === parseInt(hourStr)
 }
 
-function blockLabel(blockKey, hasMultipleDays) {
-  if (blockKey === 'no-time') return 'Laiks nav norādīts'
+function blockLabel(blockKey, hasMultipleDays, t) {
+  if (blockKey === 'no-time') return t('tournament.noTime')
   const [dateStr, hourStr] = blockKey.split('_')
   const hour = parseInt(hourStr)
   const timeRange = `${hourStr}:00 — ${String(hour + 1).padStart(2, '0')}:00`
@@ -217,7 +217,7 @@ function GrafiksTab({ fixtures, t }) {
                 letterSpacing: '0.05em',
                 textTransform: 'uppercase',
               }}>
-                {blockLabel(blockKey, hasMultipleDays)}
+                {blockLabel(blockKey, hasMultipleDays, t)}
               </h2>
               {isNow && (
                 <span className="live-badge">{t('public.tagNow')}</span>
@@ -759,7 +759,7 @@ export default function TournamentDetail() {
                   </span>
                 )}
                 {statusCfg && (
-                  <span className={`badge ${statusCfg.cls}`}>{statusCfg.label}</span>
+                  <span className={`badge ${statusCfg.cls}`}>{t(statusCfg.labelKey)}</span>
                 )}
               </div>
 

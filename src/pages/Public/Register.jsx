@@ -216,7 +216,7 @@ export default function Register() {
               <select
                 {...register('age_group_id', { required: true })}
               >
-                <option value="">Izvēlieties...</option>
+                <option value="">{t('common.select')}</option>
                 {openAgeGroups.map(ag => (
                   <option key={ag.id} value={ag.id}>
                     {ag.name}
@@ -412,7 +412,7 @@ export default function Register() {
                               alignSelf: 'flex-end',
                               marginBottom: '2px',
                             }}
-                            aria-label="Noņemt spēlētāju"
+                            aria-label={t('register.removePlayer')}
                           >
                             ✕
                           </button>
@@ -441,6 +441,7 @@ export default function Register() {
                   type="submit"
                   className="btn-primary"
                   disabled={isSubmitting}
+                  style={{ width: '100%' }}
                 >
                   {isSubmitting ? t('register.submitting') : t('register.submit')}
                 </button>

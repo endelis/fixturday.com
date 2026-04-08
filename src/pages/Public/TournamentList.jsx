@@ -20,9 +20,9 @@ function getTournamentStatus(tournament) {
 }
 
 const STATUS_CONFIG = {
-  ongoing:  { label: 'AKTĪVS',   cls: 'badge-success' },
-  upcoming: { label: 'DRĪZUMĀ',  cls: 'badge-warning' },
-  finished: { label: 'BEIDZIES', cls: 'badge-muted'   },
+  ongoing:  { labelKey: 'tournament.status.ongoing',  cls: 'badge-success' },
+  upcoming: { labelKey: 'tournament.status.upcoming', cls: 'badge-warning' },
+  finished: { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
 }
 
 // ── Component ─────────────────────────────────────────────────
@@ -324,7 +324,7 @@ export default function TournamentList() {
 
                       {statusCfg && (
                         <span className={`badge ${statusCfg.cls}`}>
-                          {statusCfg.label}
+                          {t(statusCfg.labelKey)}
                         </span>
                       )}
 

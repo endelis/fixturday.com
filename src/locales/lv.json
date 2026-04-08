@@ -61,7 +61,8 @@
       "ongoing": "Notiek",
       "upcoming": "Drīzumā",
       "finished": "Pabeigts"
-    }
+    },
+    "noTime": "Laiks nav norādīts"
   },
   "ageGroup": {
     "title": "Vecuma grupas",
@@ -249,7 +250,8 @@
     "backToTournament": "← Atpakaļ uz turnīru",
     "closed": "Reģistrācija šobrīd nav pieejama. Sekojiet turnīra aktualitātēm.",
     "notFound": "Turnīrs nav atrasts.",
-    "error": "Radās kļūda. Lūdzu mēģiniet vēlreiz."
+    "error": "Radās kļūda. Lūdzu mēģiniet vēlreiz.",
+    "removePlayer": "Noņemt spēlētāju"
   },
   "stats": {
     "total": "Kopā spēles",
@@ -565,6 +567,7 @@
     "metaDesc": "Apskati aktīvos sporta turnīrus Latvijā. Futbols, basketbols, volejbols un citi sporta veidi. Seko rezultātiem reāllaikā."
   },
   "common": {
+    "select": "Izvēlieties...",
     "save": "Saglabāt",
     "saved": "Saglabāts!",
     "saving": "Saglabā...",
