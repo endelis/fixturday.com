@@ -49,13 +49,13 @@ export default function Register() {
 
   useEffect(() => {
     async function load() {
-      const { data: t } = await supabase
+      const { data: t, error: tErr } = await supabase
         .from('tournaments')
         .select('*')
         .eq('slug', slug)
         .single()
 
-      if (!t) {
+      if (tErr || !t) {
         setNotFound(true)
         setLoading(false)
         return
@@ -63,11 +63,12 @@ export default function Register() {
 
       setTournament(t)
 
-      const { data: ag } = await supabase
+      const { data: ag, error: agErr } = await supabase
         .from('age_groups')
         .select('*')
         .eq('tournament_id', t.id)
         .order('name')
+      if (agErr) { setLoading(false); return }
 
       setAllAgeGroups(ag ?? [])
       setLoading(false)

@@ -17,22 +17,23 @@ export default function Schedule() {
 
   useEffect(() => {
     async function load() {
-      const { data: agData } = await supabase
+      const { data: agData, error: agErr } = await supabase
         .from('age_groups')
         .select('*, tournaments(id, name, slug)')
         .eq('id', ageGroupId)
         .single()
 
+      if (agErr) { setLoading(false); return }
       setAg(agData)
 
       if (agData?.tournaments?.id) {
-        const { data: sibs } = await supabase
+        const { data: sibs, error: sibErr } = await supabase
           .from('age_groups').select('id, name')
           .eq('tournament_id', agData.tournaments.id).order('name')
-        setSiblings(sibs ?? [])
+        if (!sibErr) setSiblings(sibs ?? [])
       }
 
-      const { data: fx } = await supabase
+      const { data: fx, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
           *,
@@ -45,6 +46,7 @@ export default function Schedule() {
         .eq('stages.age_group_id', ageGroupId)
         .order('kickoff_time', { ascending: true })
 
+      if (fxErr) { setLoading(false); return }
       setFixtures(fx ?? [])
       setLastUpdated(new Date())
       setLoading(false)

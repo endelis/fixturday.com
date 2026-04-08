@@ -15,17 +15,18 @@ export default function TeamRoster() {
 
   useEffect(() => {
     async function load() {
-      const [{ data: t }, { data: p }] = await Promise.all([
+      const [{ data: t, error: tErr }, { data: p, error: pErr }] = await Promise.all([
         supabase.from('teams').select('*, age_groups(id, name, tournament_id, tournaments(id, name, slug))').eq('id', teamId).single(),
         supabase.from('team_players').select('*').eq('team_id', teamId).order('number'),
       ])
+      if (tErr) { setLoading(false); return }
       setTeam(t)
-      setPlayers(p ?? [])
+      setPlayers(pErr ? [] : (p ?? []))
       if (t?.age_groups?.tournaments?.id) {
-        const { data: sibs } = await supabase
+        const { data: sibs, error: sibErr } = await supabase
           .from('age_groups').select('id, name')
           .eq('tournament_id', t.age_groups.tournaments.id).order('name')
-        setSiblings(sibs ?? [])
+        if (!sibErr) setSiblings(sibs ?? [])
       }
       setLoading(false)
     }

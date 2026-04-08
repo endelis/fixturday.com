@@ -17,27 +17,29 @@ export default function Standings() {
   useEffect(() => {
     async function load() {
       // Load age group + its tournament + sibling age groups in one shot
-      const { data: ag } = await supabase
+      const { data: ag, error: agErr } = await supabase
         .from('age_groups')
         .select('*, tournaments(id, name, slug)')
         .eq('id', ageGroupId)
         .single()
 
-      if (!ag) { setLoading(false); return }
+      if (agErr || !ag) { setLoading(false); return }
 
-      const [{ data: siblings }, { data: teams }, { data: fixtures }] = await Promise.all([
+      const [{ data: siblings, error: sibErr }, { data: teams, error: tmErr }, { data: fixtures, error: fxErr }] = await Promise.all([
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
         supabase.from('teams').select('*').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
         supabase.from('fixtures')
           .select('id, home_team_id, away_team_id, status, group_label, stages!inner(age_group_id, type)')
           .eq('stages.age_group_id', ageGroupId),
       ])
+      if (sibErr || tmErr || fxErr) { setLoading(false); return }
 
       // Scope results to only this age group's fixture IDs
       const fixtureIds = (fixtures ?? []).map(f => f.id)
-      const { data: results } = fixtureIds.length > 0
+      const { data: results, error: resErr } = fixtureIds.length > 0
         ? await supabase.from('fixture_results').select('*').in('fixture_id', fixtureIds)
-        : { data: [] }
+        : { data: [], error: null }
+      if (resErr) { setLoading(false); return }
 
       setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
       setLastUpdated(new Date())
