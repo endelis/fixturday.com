@@ -1,5 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
@@ -36,7 +37,10 @@ export default function Register() {
   }
 
   return (
-    <div className="admin-login">
+    <div className="admin-login" style={{ position: 'relative' }}>
+      <Link to="/" style={{ position: 'absolute', top: '1rem', left: '1rem', color: 'var(--color-muted)', display: 'flex', alignItems: 'center' }}>
+        <ArrowLeft size={20} />
+      </Link>
       <div className="login-card">
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{

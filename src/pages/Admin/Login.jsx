@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
+import { ArrowLeft } from "lucide-react";
 import { useForm } from "react-hook-form";
 import { useTranslation } from "react-i18next";
 import { useAuth } from "../../hooks/useAuth";
@@ -41,7 +42,10 @@ export default function Login() {
   }
 
   return (
-    <div className="admin-login">
+    <div className="admin-login" style={{ position: 'relative' }}>
+      <Link to="/" style={{ position: 'absolute', top: '1rem', left: '1rem', color: 'var(--color-muted)', display: 'flex', alignItems: 'center' }}>
+        <ArrowLeft size={20} />
+      </Link>
       <div className="login-card">
         <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2.5rem', color: 'var(--color-accent)', margin: 0, letterSpacing: '0.05em' }}>
