@@ -171,6 +171,17 @@ export default function Dashboard() {
             </div>
           )}
         </div>
+
+        <div style={{ textAlign: 'center', padding: '2rem 0 1rem' }}>
+          <a
+            href="https://www.buymeacoffee.com/endelis"
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ color: 'var(--color-muted)', fontSize: '0.8rem', textDecoration: 'none' }}
+          >
+            ☕ Fixturday ir bezmaksas. Ja noderēja — paskaties kafiju.
+          </a>
+        </div>
       </div>
     </>
   )
