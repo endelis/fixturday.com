@@ -8,10 +8,18 @@ import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
 
-const SPORTS = [
-  'Futbols', 'Telpu futbols', 'Basketbols', 'Volejbols',
-  'Handbols', 'Florbols', 'Teniss', 'Badmintons', 'Regbijs', 'Cits',
+const SPORT_OPTIONS = [
+  { value: 'football',       icon: '⚽', labelKey: 'sports.football' },
+  { value: 'volleyball',     icon: '🏐', labelKey: 'sports.volleyball' },
+  { value: 'beach_volleyball', icon: '🏖️', labelKey: 'sports.beach_volleyball' },
+  { value: 'rugby',          icon: '🏉', labelKey: 'sports.rugby' },
+  { value: 'table_tennis',   icon: '🏓', labelKey: 'sports.table_tennis' },
 ]
+
+const PARTICIPANT_TYPE = {
+  football: 'team', volleyball: 'team', beach_volleyball: 'team',
+  rugby: 'team', table_tennis: 'individual',
+}
 
 function parseDateToISO(str) {
   if (!str) return null
@@ -31,6 +39,7 @@ export default function TournamentEdit() {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
+  const [selectedSport, setSelectedSport] = useState(null)
   const [logoPreview, setLogoPreview] = useState(null)
   const [logoUploading, setLogoUploading] = useState(false)
   const [attachments, setAttachments] = useState([])
@@ -38,7 +47,7 @@ export default function TournamentEdit() {
   const [lunchEnabled, setLunchEnabled] = useState(false)
   const logoInputRef = useRef(null)
   const fileInputRef = useRef(null)
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting, isDirty } } = useForm()
+  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
 
   useEffect(() => {
     if (authLoading || !user) return
@@ -55,6 +64,9 @@ export default function TournamentEdit() {
         setAttachments(att ?? [])
         if (logo_url) setLogoPreview(logo_url)
         setLunchEnabled(!!(data.lunch_start || data.lunch_end))
+        // Set selectedSport from DB — may be null if old free-form value
+        const knownSport = SPORT_OPTIONS.find(s => s.value === data.sport)
+        setSelectedSport(knownSport ? data.sport : null)
       }
       setLoading(false)
     }
@@ -65,8 +77,11 @@ export default function TournamentEdit() {
   if (!user) return <Navigate to="/admin" replace />
 
   async function onSubmit(values) {
+    if (!selectedSport) { toast(t('tournament.sportRequired'), 'error'); return }
     const submitData = {
       ...values,
+      sport: selectedSport,
+      participant_type: PARTICIPANT_TYPE[selectedSport] ?? 'team',
       start_date: parseDateToISO(values.start_date),
       end_date: parseDateToISO(values.end_date),
       lunch_start: lunchEnabled ? values.lunch_start || null : null,
@@ -162,12 +177,36 @@ export default function TournamentEdit() {
             <input {...register('slug')} />
           </div>
 
-          {/* Sport dropdown */}
+          {/* Sport card selector */}
           <div className="form-group">
             <label>{t('tournament.sport')}</label>
-            <select {...register('sport')}>
-              {SPORTS.map(s => <option key={s} value={s}>{s}</option>)}
-            </select>
+            {!selectedSport && (
+              <p style={{ fontSize: '0.8rem', color: 'var(--color-muted)', marginBottom: '0.4rem' }}>
+                {t('sports.unsupported')}
+              </p>
+            )}
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem', marginTop: '0.25rem' }}>
+              {SPORT_OPTIONS.map(s => (
+                <button
+                  key={s.value}
+                  type="button"
+                  onClick={() => setSelectedSport(s.value)}
+                  style={{
+                    display: 'flex', flexDirection: 'column', alignItems: 'center',
+                    gap: '0.25rem', padding: '0.6rem 0.25rem',
+                    border: `2px solid ${selectedSport === s.value ? 'var(--color-accent)' : 'rgba(255,255,255,0.12)'}`,
+                    borderRadius: '8px', background: selectedSport === s.value ? 'rgba(240,165,0,0.08)' : 'var(--color-surface)',
+                    cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s',
+                    color: 'var(--color-text)',
+                  }}
+                >
+                  <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{s.icon}</span>
+                  <span style={{ fontSize: '0.68rem', fontWeight: selectedSport === s.value ? 700 : 400, textAlign: 'center', lineHeight: 1.2, color: selectedSport === s.value ? 'var(--color-accent)' : 'var(--color-muted)' }}>
+                    {t(s.labelKey)}
+                  </span>
+                </button>
+              ))}
+            </div>
           </div>
 
           {/* Dates — dd/MM/yyyy text inputs */}
@@ -325,7 +364,7 @@ export default function TournamentEdit() {
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
-            <button type="submit" className="btn-primary" disabled={isSubmitting || !isDirty}>
+            <button type="submit" className="btn-primary" disabled={isSubmitting}>
               {isSubmitting ? t('common.saving') : t('common.save')}
             </button>
             <Link to="/admin/dashboard" className="btn-secondary">{t('common.cancel')}</Link>

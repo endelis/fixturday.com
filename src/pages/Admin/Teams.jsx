@@ -74,6 +74,7 @@ export default function Teams() {
       ...values,
       team_id: teamId,
       number: values.number ? Number(values.number) : null,
+      position: values.position || null,
     })
     if (error) { toast(t('common.error'), 'error'); return }
     toast(t('team.playerAdded'))
@@ -230,6 +231,7 @@ export default function Teams() {
                       <tr>
                         <th>#</th>
                         <th>{t('team.playerName')}</th>
+                        <th>{t('team.position')}</th>
                         <th>{t('team.dob')}</th>
                         <th></th>
                       </tr>
@@ -239,6 +241,9 @@ export default function Teams() {
                         <tr key={p.id}>
                           <td>{p.number ?? '—'}</td>
                           <td>{p.name}</td>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>
+                            {p.position ? t(`team.positions.${p.position}`) : '—'}
+                          </td>
                           <td>{p.date_of_birth ? formatDate(p.date_of_birth) : '—'}</td>
                           <td>
                             <button className="btn-danger btn-sm" onClick={() => deletePlayer(p.id, team.id)}>×</button>
@@ -247,7 +252,7 @@ export default function Teams() {
                       ))}
                       {(players[team.id] ?? []).length === 0 && (
                         <tr>
-                          <td colSpan={4} style={{ color: 'var(--color-text-muted)', textAlign: 'center' }}>
+                          <td colSpan={5} style={{ color: 'var(--color-text-muted)', textAlign: 'center' }}>
                             {t('team.noPlayers')}
                           </td>
                         </tr>
@@ -268,6 +273,16 @@ export default function Teams() {
                       placeholder={t('team.playerName')}
                       style={{ flex: 1, minWidth: '10rem', background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)' }}
                     />
+                    <select
+                      {...playerForm.register('position')}
+                      style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.5rem', borderRadius: 'var(--radius-sm)' }}
+                    >
+                      <option value="">{t('team.positionAny')}</option>
+                      <option value="goalkeeper">{t('team.positions.goalkeeper')}</option>
+                      <option value="defender">{t('team.positions.defender')}</option>
+                      <option value="midfielder">{t('team.positions.midfielder')}</option>
+                      <option value="forward">{t('team.positions.forward')}</option>
+                    </select>
                     <input
                       type="date"
                       {...playerForm.register('date_of_birth')}

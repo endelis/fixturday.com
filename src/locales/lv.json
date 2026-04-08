@@ -1,4 +1,18 @@
 {
+  "sports": {
+    "football": "Futbols",
+    "volleyball": "Volejbols",
+    "beach_volleyball": "Pludmales volejbols",
+    "rugby": "Regbijs",
+    "table_tennis": "Galda teniss",
+    "unsupported": "Neatbalstīts sporta veids"
+  },
+  "participants": {
+    "team": "Komanda",
+    "team_plural": "Komandas",
+    "individual": "Dalībnieks",
+    "individual_plural": "Dalībnieki"
+  },
   "nav": {
     "tournaments": "Turnīri",
     "about": "Par mums",
@@ -54,6 +68,7 @@
     "uploadLogo": "Augšupielādēt logo",
     "invalidDate": "Nekorekts datuma formāts (dd/mm/gggg)",
     "invalidTime": "Nekorekts laika formāts (HH:mm)",
+    "sportRequired": "Lūdzu izvēlieties sporta veidu",
     "organizerEmail": "Rīkotāja e-pasts",
     "organizerPhone": "Rīkotāja tālrunis",
     "registerCTA": "Pieteikt komandu →",
@@ -123,6 +138,14 @@
     "approveAll": "Apstiprināt visas",
     "confirmApproveAll": "Apstiprināt visas gaidošās komandas?",
     "allApproved": "Visas komandas apstiprinātas!",
+    "position": "Pozīcija",
+    "positionAny": "— Pozīcija —",
+    "positions": {
+      "goalkeeper": "Vārtsargs",
+      "defender": "Aizsargs",
+      "midfielder": "Pussargs",
+      "forward": "Uzbrucējs"
+    },
     "statuses": {
       "pending": "Gaida apstiprinājumu",
       "confirmed": "Apstiprināta",
@@ -284,7 +307,17 @@
     "postponeBtn": "Atlikt",
     "updateBtn": "Labot",
     "saveBtn": "Saglabāt",
-    "title": "Rezultātu reģistrs"
+    "title": "Rezultātu reģistrs",
+    "events": "Notikumi",
+    "addEvent": "Pievienot",
+    "eventTeam": "Komanda",
+    "eventPlayer": "Spēlētājs",
+    "eventMinute": "Min.",
+    "eventGoal": "⚽ Vārti",
+    "eventOwnGoal": "🥅 Paša vārti",
+    "eventYellow": "🟨 Dzeltenā",
+    "eventRed": "🟥 Sarkanā",
+    "secondYellowWarning": "Otrā dzeltenā! Sarkanā kartīte pievienota automātiski."
   },
   "schedule": {
     "liveNow": "Notiek tagad",
