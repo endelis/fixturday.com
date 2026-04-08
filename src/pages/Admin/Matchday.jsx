@@ -57,7 +57,10 @@ export default function Matchday() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [selectedDate])
+  useEffect(() => {
+    if (authLoading || !user) return
+    load()
+  }, [selectedDate, authLoading, user])
 
   if (authLoading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
