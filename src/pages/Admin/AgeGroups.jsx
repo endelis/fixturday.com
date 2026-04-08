@@ -48,7 +48,7 @@ export default function AgeGroups() {
     setValue('game_duration_minutes', ag.game_duration_minutes ?? 20)
     setValue('pitch_gap_minutes', ag.pitch_gap_minutes ?? 5)
     setValue('team_rest_minutes', ag.team_rest_minutes ?? 20)
-    setValue('groups_count', ag.groups_count ?? 2)
+    setValue('teams_per_group', ag.teams_per_group ?? 4)
     setValue('teams_advancing', ag.teams_advancing ?? 2)
     setValue('registration_open', ag.registration_open)
     setShowForm(true)
@@ -74,7 +74,7 @@ export default function AgeGroups() {
       game_duration_minutes: values.game_duration_minutes ? Number(values.game_duration_minutes) : 20,
       pitch_gap_minutes: values.pitch_gap_minutes ? Number(values.pitch_gap_minutes) : 5,
       team_rest_minutes: values.team_rest_minutes ? Number(values.team_rest_minutes) : 20,
-      groups_count: values.groups_count ? Number(values.groups_count) : 2,
+      teams_per_group: values.teams_per_group ? Number(values.teams_per_group) : 4,
       teams_advancing: values.teams_advancing ? Number(values.teams_advancing) : 2,
     }
 
@@ -284,11 +284,11 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
         {isGroupKnockout && (
           <>
             <div className="form-group">
-              <label>{t('ageGroup.groupsCount')}</label>
+              <label>{t('ageGroup.teamsPerGroup')}</label>
               <input
                 type="number"
-                {...register('groups_count')}
-                defaultValue={2}
+                {...register('teams_per_group')}
+                defaultValue={4}
                 min="2"
               />
             </div>

@@ -82,7 +82,7 @@
     "gameDuration": "Spēles ilgums (min.)",
     "pitchGap": "Starplaiks starp spēlēm (min.)",
     "teamRest": "Minimālais atpūtas laiks (min.)",
-    "groupsCount": "Grupu skaits",
+    "teamsPerGroup": "Komandas grupā",
     "teamsAdvancing": "Komandas kas virzās tālāk",
     "edit": "Rediģēt",
     "confirmedCount": "apstiprinātas",

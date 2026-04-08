@@ -28,23 +28,24 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2) {
   // Clamp group count to a sensible value
   const actualCount = Math.min(groupsCount, Math.floor(teams.length / 2))
 
-  // Split teams into groups
-  const shuffled = [...teams] // preserve original order (caller can shuffle if needed)
-  const groups = []
-  const baseSize = Math.floor(shuffled.length / actualCount)
-  const remainder = shuffled.length % actualCount
+  // Snake seeding: team[0]→A, team[1]→B, ..., team[n-1]→last, team[n]→last, team[n+1]→prev...
+  // e.g. 8 teams, 4 groups: 1→A, 2→B, 3→C, 4→D, 5→D, 6→C, 7→B, 8→A
+  const groups = Array.from({ length: actualCount }, (_, g) => ({
+    name: String.fromCharCode(65 + g),
+    teams: [],
+    fixtures: [],
+  }))
 
-  let idx = 0
-  for (let g = 0; g < actualCount; g++) {
-    const size = baseSize + (g < remainder ? 1 : 0)
-    const groupTeams = shuffled.slice(idx, idx + size)
-    idx += size
+  teams.forEach((team, i) => {
+    const pass = Math.floor(i / actualCount)
+    const offset = i % actualCount
+    const groupIndex = pass % 2 === 0 ? offset : actualCount - 1 - offset
+    groups[groupIndex].teams.push(team)
+  })
 
-    const name = String.fromCharCode(65 + g) // A, B, C, ...
-    const rounds = generateRoundRobin(groupTeams)
-    const fixtures = rounds.flat().map(f => ({ ...f, group: name }))
-
-    groups.push({ name, teams: groupTeams, fixtures })
+  for (const g of groups) {
+    const rounds = generateRoundRobin(g.teams)
+    g.fixtures = rounds.flat().map(f => ({ ...f, group: g.name }))
   }
 
   const allFixtures = groups.flatMap(g => g.fixtures)

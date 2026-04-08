@@ -48,7 +48,8 @@ export default function Fixtures() {
     setGenerating(true)
 
     if (ageGroup.format === 'group_knockout') {
-      const groupsCount = ageGroup.groups_count ?? 2
+      const teamsPerGroup = ageGroup.teams_per_group ?? 4
+      const groupsCount = Math.max(2, Math.ceil(teams.length / teamsPerGroup))
       const teamsAdvancing = ageGroup.teams_advancing ?? 2
 
       const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stages.length + 1 }).select().single()
