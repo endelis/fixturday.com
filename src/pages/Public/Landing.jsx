@@ -83,6 +83,7 @@ export default function Landing() {
             <Link to="/turniri" style={navLinkStyle}>{t('nav.tournaments')}</Link>
             <Link to="/par-mums" style={navLinkStyle}>{t('nav.about')}</Link>
             <Link to="/kontakti" style={navLinkStyle}>{t('nav.contact')}</Link>
+            <Link to="/pamaciba" style={navLinkStyle}>{t('nav.guide')}</Link>
             <Link to="/admin" style={{ ...navLinkStyle, border: '1px solid rgba(240,165,0,0.5)', borderRadius: '6px', padding: '0.35rem 0.9rem' }}>
               {t('nav.login')}
             </Link>
@@ -127,6 +128,7 @@ export default function Landing() {
             <Link to="/turniri" style={mobileNavLink} onClick={() => setMenuOpen(false)}>{t('nav.tournaments')}</Link>
             <Link to="/par-mums" style={mobileNavLink} onClick={() => setMenuOpen(false)}>{t('nav.about')}</Link>
             <Link to="/kontakti" style={mobileNavLink} onClick={() => setMenuOpen(false)}>{t('nav.contact')}</Link>
+            <Link to="/pamaciba" style={mobileNavLink} onClick={() => setMenuOpen(false)}>{t('nav.guide')}</Link>
             <Link to="/admin" style={mobileNavLink} onClick={() => setMenuOpen(false)}>{t('nav.login')}</Link>
             <Link to="/admin/register" style={{ ...mobileNavLink, color: '#f0a500', fontWeight: 700 }} onClick={() => setMenuOpen(false)}>{t('nav.start')}</Link>
           </div>
