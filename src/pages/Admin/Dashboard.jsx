@@ -179,7 +179,7 @@ export default function Dashboard() {
             rel="noopener noreferrer"
             style={{ color: 'var(--color-muted)', fontSize: '0.8rem', textDecoration: 'none' }}
           >
-            ☕ Nopērc man kafiju!
+            ☕ Fixturday ir bezmaksas. Ja noderēja, uzsauc man kafiju!
           </a>
         </div>
       </div>
