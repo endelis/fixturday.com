@@ -15,9 +15,7 @@ export default function AgeGroups() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm()
-
-  const watchedFormat = watch('format', 'round_robin')
+  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm()
 
   async function load() {
     const [{ data: t_, error: tErr }, { data: ag, error: agErr }] = await Promise.all([
@@ -47,9 +45,6 @@ export default function AgeGroups() {
     setValue('max_teams', ag.max_teams ?? '')
     setValue('game_duration_minutes', ag.game_duration_minutes ?? 20)
     setValue('pitch_gap_minutes', ag.pitch_gap_minutes ?? 5)
-    setValue('team_rest_minutes', ag.team_rest_minutes ?? 20)
-    setValue('teams_per_group', ag.teams_per_group ?? 4)
-    setValue('teams_advancing', ag.teams_advancing ?? 2)
     setValue('registration_open', ag.registration_open)
     setShowForm(true)
   }
@@ -73,9 +68,6 @@ export default function AgeGroups() {
       max_teams: values.max_teams ? Number(values.max_teams) : null,
       game_duration_minutes: values.game_duration_minutes ? Number(values.game_duration_minutes) : 20,
       pitch_gap_minutes: values.pitch_gap_minutes ? Number(values.pitch_gap_minutes) : 5,
-      team_rest_minutes: values.team_rest_minutes ? Number(values.team_rest_minutes) : 20,
-      teams_per_group: values.teams_per_group ? Number(values.teams_per_group) : 4,
-      teams_advancing: values.teams_advancing ? Number(values.teams_advancing) : 2,
     }
 
     if (editingId) {
@@ -136,7 +128,7 @@ export default function AgeGroups() {
               handleSubmit={handleSubmit}
               errors={errors}
               isSubmitting={isSubmitting}
-              watchedFormat={watchedFormat}
+
               onSubmit={onSubmit}
               onCancel={cancelForm}
               t={t}
@@ -213,7 +205,7 @@ export default function AgeGroups() {
                       handleSubmit={handleSubmit}
                       errors={errors}
                       isSubmitting={isSubmitting}
-                      watchedFormat={watchedFormat}
+        
                       onSubmit={onSubmit}
                       onCancel={cancelForm}
                       t={t}
@@ -229,9 +221,7 @@ export default function AgeGroups() {
   )
 }
 
-function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, onSubmit, onCancel, t }) {
-  const isGroupKnockout = watchedFormat === 'group_knockout'
-
+function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, onSubmit, onCancel, t }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
@@ -272,37 +262,6 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
             min="0"
           />
         </div>
-        <div className="form-group">
-          <label>{t('ageGroup.teamRest')}</label>
-          <input
-            type="number"
-            {...register('team_rest_minutes')}
-            defaultValue={20}
-            min="0"
-          />
-        </div>
-        {isGroupKnockout && (
-          <>
-            <div className="form-group">
-              <label>{t('ageGroup.teamsPerGroup')}</label>
-              <input
-                type="number"
-                {...register('teams_per_group')}
-                defaultValue={4}
-                min="2"
-              />
-            </div>
-            <div className="form-group">
-              <label>{t('ageGroup.teamsAdvancing')}</label>
-              <input
-                type="number"
-                {...register('teams_advancing')}
-                defaultValue={2}
-                min="1"
-              />
-            </div>
-          </>
-        )}
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
         <input type="checkbox" id="reg_open" {...register('registration_open')} />
