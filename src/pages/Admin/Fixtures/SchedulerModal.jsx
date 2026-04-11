@@ -56,6 +56,8 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
       lunchStart: schedLunchEnabled ? (schedLunchStart || null) : null,
       lunchEnd: schedLunchEnabled ? (schedLunchEnd || null) : null,
       date: schedDate,
+      pitchGap: ageGroup?.pitch_gap_minutes || 5,
+      teamRest: ageGroup?.team_rest_minutes || 20,
     })
     setSchedResult(result)
   }

@@ -63,6 +63,8 @@ export function generateSchedule({
   lunchStart,
   lunchEnd,
   date,
+  pitchGap = 5,
+  teamRest = 20,
 }) {
   // --- Parse boundary times ---
   const firstMins = parseTime(firstGameTime);
@@ -71,9 +73,9 @@ export function generateSchedule({
   const lunchEndMins = lunchEnd ? parseTime(lunchEnd) : null;
 
   // Turnaround gap between consecutive games on the same pitch (minutes).
-  const PITCH_GAP = 5;
+  const PITCH_GAP = pitchGap;
   // Minimum rest a team needs between consecutive games (minutes).
-  const TEAM_REST = 20;
+  const TEAM_REST = teamRest;
 
   // Track earliest available start time for each pitch (minutes since midnight).
   // All pitches start at firstMins.

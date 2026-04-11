@@ -42,6 +42,7 @@ export default function Fixtures() {
   }
 
   useEffect(() => { load() }, [ageGroupId])
+  useEffect(() => { if (schedulerOpen) load() }, [schedulerOpen])
 
   async function generateFixtures() {
     if (teams.length < 2) { toast(t('fixture.needMoreTeams'), 'warning'); return }
