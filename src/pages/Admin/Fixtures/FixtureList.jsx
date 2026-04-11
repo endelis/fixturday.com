@@ -39,7 +39,7 @@ export default function FixtureList({ byRound, pitches, teams, updateFixture }) 
                     </span>
                     <input
                       type="datetime-local"
-                      defaultValue={f.kickoff_time ? format(new Date(f.kickoff_time), "yyyy-MM-dd'T'HH:mm") : ''}
+                      defaultValue={f.kickoff_time ? format(new Date(f.kickoff_time.replace('Z', '')), "yyyy-MM-dd'T'HH:mm") : ''}
                       onChange={e => updateFixture(f.id, { kickoff_time: e.target.value || null })}
                       style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.25rem 0.5rem', borderRadius: 'var(--radius-sm)', fontSize: '0.875rem' }}
                     />

@@ -19,11 +19,19 @@ function roundUp5(mins) {
 }
 
 /**
- * Format minutes-since-midnight as an ISO datetime string for the given date.
- * e.g. date="2026-04-17", mins=540 → "2026-04-17T09:00:00"
+ * Format minutes-since-midnight as an ISO datetime string with local timezone offset.
+ * e.g. date="2026-04-17", mins=540, tz=+03:00 → "2026-04-17T09:00:00+03:00"
+ * Including the offset ensures Supabase stores the correct absolute time.
  */
 function toISO(date, mins) {
-  return `${date}T${formatTime(mins)}:00`;
+  const h = Math.floor(mins / 60);
+  const m = mins % 60;
+  const pad = n => String(n).padStart(2, '0');
+  const offset = -new Date().getTimezoneOffset();
+  const sign = offset >= 0 ? '+' : '-';
+  const oh = Math.floor(Math.abs(offset) / 60);
+  const om = Math.abs(offset) % 60;
+  return `${date}T${pad(h)}:${pad(m)}:00${sign}${pad(oh)}:${pad(om)}`;
 }
 
 /**
