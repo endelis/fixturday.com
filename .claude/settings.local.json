@@ -34,7 +34,14 @@
       "Bash(kill %1)",
       "Bash(grep -n \"Footer\\\\|footer\\\\|</div>$\" src/pages/Public/TournamentDetail.jsx)",
       "Bash(node scripts/gen-og.js)",
-      "Bash(node -e ':*)"
+      "Bash(node -e ':*)",
+      "Bash(node -e \"const lv=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/lv.json','utf8'\\)\\); console.log\\(JSON.stringify\\(lv.fixture, null, 2\\)\\)\")",
+      "Bash(node -e \"const lv=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/lv.json','utf8'\\)\\); console.log\\(JSON.stringify\\(lv.tournament?.status ?? lv.tournamentList ?? {}, null, 2\\)\\)\")",
+      "Bash(node -e \"const lv=JSON.parse\\(require\\('fs'\\).readFileSync\\('src/locales/lv.json','utf8'\\)\\); console.log\\(JSON.stringify\\(lv.common, null, 2\\)\\)\")",
+      "Bash(xargs grep:*)",
+      "Bash(python3:*)",
+      "Read(//c/Users/liels/Downloads/**)",
+      "Bash(node:*)"
     ]
   }
 }
