@@ -43,13 +43,21 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
 
   if (!open) return null
 
-  function runPreview() {
+  function runPreview(shuffle = false) {
     console.log('runPreview called', schedDate, schedPitches)
     if (!isValid(parse(schedDateDisplay, 'dd/MM/yyyy', new Date()))) {
       toast(t('tournament.invalidDate'), 'error'); return
     }
+    let mapped = fixtures.map(f => ({ id: f.id, homeTeamId: f.home_team_id, awayTeamId: f.away_team_id }))
+    if (shuffle) {
+      // Fisher-Yates shuffle for a fresh ordering
+      for (let i = mapped.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [mapped[i], mapped[j]] = [mapped[j], mapped[i]]
+      }
+    }
     const result = generateSchedule({
-      fixtures: fixtures.map(f => ({ id: f.id, homeTeamId: f.home_team_id, awayTeamId: f.away_team_id })),
+      fixtures: mapped,
       pitchCount: Number(schedPitches),
       gameDuration: ageGroup?.game_duration_minutes || 20,
       firstGameTime: schedFirst || '09:00',
@@ -194,7 +202,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                   <button className="btn-primary" onClick={confirmSchedule} disabled={saving}>
                     {saving ? t('common.saving') : t('fixture.schedConfirm')}
                   </button>
-                  <button className="btn-secondary" onClick={runPreview}>
+                  <button className="btn-secondary" onClick={() => runPreview(true)}>
                     {t('fixture.schedRegenerate')}
                   </button>
                 </div>
