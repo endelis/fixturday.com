@@ -44,6 +44,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   if (!open) return null
 
   function runPreview() {
+    console.log('runPreview called', schedDate, schedPitches)
     if (!isValid(parse(schedDateDisplay, 'dd/MM/yyyy', new Date()))) {
       toast(t('tournament.invalidDate'), 'error'); return
     }
@@ -57,7 +58,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
       lunchEnd: schedLunchEnabled ? (schedLunchEnd || null) : null,
       date: schedDate,
       pitchGap: ageGroup?.pitch_gap_minutes || 5,
-      teamRest: ageGroup?.team_rest_minutes || 20,
+      teamRest: ageGroup?.team_rest_minutes || null,
     })
     setSchedResult(result)
   }

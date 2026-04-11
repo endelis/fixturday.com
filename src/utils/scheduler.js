@@ -51,6 +51,9 @@ function skipLunch(kickoff, lunchStartMins, lunchEndMins) {
  * @param {string|null} params.lunchStart - "13:00" or null
  * @param {string|null} params.lunchEnd   - "14:00" or null
  * @param {string}  params.date          - "2026-04-17"
+ * @param {number}  [params.pitchGap=5]  - turnaround gap on same pitch (minutes)
+ * @param {number|null} [params.teamRest=null] - minimum rest between a team's games;
+ *   defaults to gameDuration + pitchGap so back-to-back games are impossible
  *
  * @returns {{ schedule: { fixtureId: string, pitchIndex: number, kickoff: string }[], warnings: string[] }}
  */
@@ -64,7 +67,7 @@ export function generateSchedule({
   lunchEnd,
   date,
   pitchGap = 5,
-  teamRest = 20,
+  teamRest = null,
 }) {
   // --- Parse boundary times ---
   const firstMins = parseTime(firstGameTime);
@@ -74,8 +77,10 @@ export function generateSchedule({
 
   // Turnaround gap between consecutive games on the same pitch (minutes).
   const PITCH_GAP = pitchGap;
-  // Minimum rest a team needs between consecutive games (minutes).
-  const TEAM_REST = teamRest;
+  // Hard physical minimum: a team's game must finish before they can play again.
+  const MIN_REST = gameDuration + PITCH_GAP;
+  // Preferred minimum rest. Defaults to MIN_REST so back-to-back is never allowed.
+  const TEAM_REST = teamRest ?? MIN_REST;
 
   // Track earliest available start time for each pitch (minutes since midnight).
   // All pitches start at firstMins.
@@ -168,22 +173,22 @@ export function generateSchedule({
         continue;
       }
 
-      // Schedule with insufficient rest; build warning(s).
+      // Schedule with insufficient rest; warn whenever rest < MIN_REST.
       const kickoff = fallbackKickoff;
 
       if (homeLastEnd !== null) {
         const actualRest = kickoff - homeLastEnd;
-        if (actualRest < TEAM_REST) {
+        if (actualRest < MIN_REST) {
           warnings.push(
-            `Komanda '${homeTeamId}' atpūšas tikai ${actualRest} min starp spēlēm`
+            `Komanda '${homeTeamId}' atpūšas tikai ${actualRest} min starp spēlēm (min. ${MIN_REST} min)`
           );
         }
       }
       if (awayLastEnd !== null) {
         const actualRest = kickoff - awayLastEnd;
-        if (actualRest < TEAM_REST) {
+        if (actualRest < MIN_REST) {
           warnings.push(
-            `Komanda '${awayTeamId}' atpūšas tikai ${actualRest} min starp spēlēm`
+            `Komanda '${awayTeamId}' atpūšas tikai ${actualRest} min starp spēlēm (min. ${MIN_REST} min)`
           );
         }
       }
