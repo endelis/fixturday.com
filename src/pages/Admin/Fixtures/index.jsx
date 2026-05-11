@@ -142,6 +142,11 @@ export default function Fixtures() {
             )}
           </div>
         </div>
+        {fixtures.length > 0 && (
+          <div style={{ borderLeft: '3px solid var(--color-accent)', background: 'var(--color-surface)', padding: '0.6rem 1rem', marginBottom: '1rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', borderRadius: '0 var(--radius-sm) var(--radius-sm) 0' }}>
+            {t('fixture.addTeamsFirst')}
+          </div>
+        )}
         <FixtureList byRound={byRound} pitches={pitches} teams={teams} updateFixture={updateFixture} />
       </div>
       <SchedulerModal

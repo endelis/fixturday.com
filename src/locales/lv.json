@@ -213,7 +213,9 @@
     "stageGroupStage": "Grupu posms",
     "stageKnockout": "Izslēgšanas kārtas",
     "stageRoundRobin": "Apļa turnīrs",
-    "pitchConflict": "Laika konflikts uz laukuma: {{games}}"
+    "pitchConflict": "Laika konflikts uz laukuma: {{games}}",
+    "addTeamsFirst": "Pievienojiet visas komandas pirms spēļu ģenerēšanas. Atkārtota ģenerēšana dzēsīs esošos rezultātus.",
+    "regenerateWarning": "{{count}} spēlēm jau ir ievadīti rezultāti. Atkārtota grafika saglabāšana tos pārrakstīs. Turpināt?"
   },
   "scheduler": {
     "skippedWarning": "{{count}} spēle(s) netika ieplānota(s) — laika logs ir par šauru",

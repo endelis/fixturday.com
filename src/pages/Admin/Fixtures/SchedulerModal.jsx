@@ -99,6 +99,15 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
 
   async function confirmSchedule() {
     if (!schedResult?.schedule?.length) return
+    const fixtureIds = fixtures.map(f => f.id)
+    if (fixtureIds.length > 0) {
+      const { count } = await supabase
+        .from('fixture_results')
+        .select('fixture_id', { count: 'exact', head: true })
+        .in('fixture_id', fixtureIds)
+        .not('home_goals', 'is', null)
+      if (count > 0 && !window.confirm(t('fixture.regenerateWarning', { count }))) return
+    }
     setSaving(true)
     try {
       const updates = schedResult.schedule.map(item =>
