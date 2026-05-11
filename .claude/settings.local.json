@@ -41,7 +41,8 @@
       "Bash(xargs grep:*)",
       "Bash(python3:*)",
       "Read(//c/Users/liels/Downloads/**)",
-      "Bash(node:*)"
+      "Bash(node:*)",
+      "Bash(supabase db *)"
     ]
   }
 }

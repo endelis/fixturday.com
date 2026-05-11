@@ -1,5 +1,6 @@
 import { generateRoundRobin } from './roundRobin'
 import { nextPowerOf2, getRoundName } from './knockout'
+import { generateMultiTierKnockout } from './multiTierKnockout'
 
 /**
  * generateGroupStage(teams, groupsCount, teamsAdvancing)
@@ -11,6 +12,10 @@ import { nextPowerOf2, getRoundName } from './knockout'
  * @param {Array<{id:*, name:string}>} teams - confirmed teams
  * @param {number} groupsCount - number of groups (default 2)
  * @param {number} teamsAdvancing - teams advancing per group (default 2)
+ * @param {Array<{ label: string, positions: number[] }>|null} tiersConfig
+ *   Optional. When provided, knockout placeholders are split into parallel
+ *   brackets (tiers) via generateMultiTierKnockout. When null/undefined,
+ *   a single combined bracket is generated (legacy behaviour).
  * @returns {{
  *   groups: Array<{ name: string, teams: Array, fixtures: Array }>,
  *   allFixtures: Array<{ home, away, round, group: string }>,
@@ -22,7 +27,7 @@ import { nextPowerOf2, getRoundName } from './knockout'
  *  - < 4 teams → falls back to single round-robin group
  *  - Uneven split → extra teams go to earlier groups (groups[0] gets the remainder)
  */
-export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2) {
+export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, tiersConfig = null) {
   if (!teams || teams.length < 2) return { groups: [], allFixtures: [], groupFixtures: [], knockoutFixtures: [] }
 
   // Clamp group count to a sensible value
@@ -62,10 +67,24 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2) {
       away_placeholder: null,
     }))
 
+  // Highest round number used by group-stage fixtures — used to offset playoff rounds
+  // so they never share a round integer with group fixtures.
+  const totalGroupRounds = allFixtures.reduce((max, f) => Math.max(max, f.round ?? 0), 0)
+
   // Generate placeholder knockout fixtures
-  // Total playoff slots = groupsCount * teamsAdvancing, padded to next power of 2
   const totalPlayoffTeams = actualCount * teamsAdvancing
-  const knockoutFixtures = generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams)
+  const rawKnockoutFixtures = tiersConfig
+    ? generateMultiTierKnockout({
+        groups: groups.map(g => ({ groupLabel: g.name, teams: g.teams })),
+        tiersConfig,
+      })
+    : generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams)
+
+  // Shift every playoff fixture's round number past the last group round.
+  const knockoutFixtures = rawKnockoutFixtures.map(f => ({
+    ...f,
+    round: f.round + totalGroupRounds,
+  }))
 
   return {
     groups,

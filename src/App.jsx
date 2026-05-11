@@ -19,6 +19,10 @@ const Terms           = lazy(() => import('./pages/Public/Terms'))
 const CookiesPage     = lazy(() => import('./pages/Public/Cookies'))
 const DataDeletion    = lazy(() => import('./pages/Public/DataDeletion'))
 const Guide           = lazy(() => import('./pages/Public/Guide'))
+const Match           = lazy(() => import('./pages/Public/Match'))
+const Team            = lazy(() => import('./pages/Public/Team'))
+const PublicInfo      = lazy(() => import('./pages/Public/Info'))
+const Registration    = lazy(() => import('./pages/Public/Registration'))
 
 // ── Admin pages ───────────────────────────────────────────────────
 const Login          = lazy(() => import('./pages/Admin/Login'))
@@ -39,6 +43,8 @@ const TournamentOverview  = lazy(() => import('./pages/Admin/Tournament/Tourname
 const TournamentStats     = lazy(() => import('./pages/Admin/Tournament/TournamentStats'))
 const TournamentStandings = lazy(() => import('./pages/Admin/Tournament/TournamentStandings'))
 const TournamentPlayoff   = lazy(() => import('./pages/Admin/Tournament/TournamentPlayoff'))
+const TournamentInfo      = lazy(() => import('./pages/Admin/Tournament/TournamentInfo'))
+const AdminRegistrations  = lazy(() => import('./pages/Admin/Registrations'))
 
 export default function App() {
   return (
@@ -57,6 +63,10 @@ export default function App() {
           <Route path="/t/:slug/:ageGroup/fixtures"          element={<Schedule />} />
           <Route path="/t/:slug/:ageGroup/teams/:teamId"     element={<TeamRoster />} />
           <Route path="/t/:slug/register"                    element={<Register />} />
+          <Route path="/:slug/matches/:matchId"              element={<Match />} />
+          <Route path="/:slug/teams/:teamId"                element={<Team />} />
+          <Route path="/:slug/info"                        element={<PublicInfo />} />
+          <Route path="/:slug/registration"              element={<Registration />} />
           <Route path="/pamaciba"                            element={<Guide />} />
           <Route path="/privatuma-politika"                  element={<Privacy />} />
           <Route path="/lietosanas-noteikumi"                element={<Terms />} />
@@ -91,6 +101,8 @@ export default function App() {
             <Route path="standings"  element={<TournamentStandings />} />
             <Route path="playoff"    element={<TournamentPlayoff />} />
             <Route path="settings"   element={<TournamentEdit />} />
+            <Route path="info"          element={<TournamentInfo />} />
+            <Route path="registrations" element={<AdminRegistrations />} />
           </Route>
         </Routes>
         </Suspense>

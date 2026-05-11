@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
+import ClassFilter from '../../components/ClassFilter'
 
 export default function Standings() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -13,24 +14,37 @@ export default function Standings() {
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [realtimeStatus, setRealtimeStatus] = useState('connecting')
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedAgeGroupId = searchParams.get('ageGroupId') || null
+
+  function handleFilterChange(id) {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (id) next.set('ageGroupId', id)
+      else next.delete('ageGroupId')
+      return next
+    })
+  }
 
   useEffect(() => {
     async function load() {
+      const effectiveId = selectedAgeGroupId ?? ageGroupId
+
       // Load age group + its tournament + sibling age groups in one shot
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
         .select('*, tournaments(id, name, slug)')
-        .eq('id', ageGroupId)
+        .eq('id', effectiveId)
         .single()
 
       if (agErr || !ag) { setLoading(false); return }
 
       const [{ data: siblings, error: sibErr }, { data: teams, error: tmErr }, { data: fixtures, error: fxErr }] = await Promise.all([
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
-        supabase.from('teams').select('*').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
+        supabase.from('teams').select('*').eq('age_group_id', effectiveId).eq('status', 'confirmed'),
         supabase.from('fixtures')
           .select('id, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
-          .eq('stages.age_group_id', ageGroupId),
+          .eq('stages.age_group_id', effectiveId),
       ])
       if (sibErr || tmErr || fxErr) { setLoading(false); return }
 
@@ -60,7 +74,7 @@ export default function Standings() {
       supabase.removeChannel(channel)
       clearInterval(poll)
     }
-  }, [ageGroupId])
+  }, [ageGroupId, selectedAgeGroupId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (!data?.ag) return <div className="loading">{t('standings.notFound')}</div>
@@ -105,6 +119,14 @@ export default function Standings() {
               {t('standings.scheduleLink')}
             </Link>
           </div>
+        </div>
+
+        <div style={{ position: 'sticky', top: 0, background: 'var(--color-primary)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
+          <ClassFilter
+            tournamentId={tournament.id}
+            value={selectedAgeGroupId}
+            onChange={handleFilterChange}
+          />
         </div>
 
         {standings.length === 0 ? (

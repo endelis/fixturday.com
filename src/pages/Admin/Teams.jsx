@@ -6,6 +6,7 @@ import { formatDate } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
+import TeamLogoUpload from '../../components/admin/TeamLogoUpload'
 
 const STATUS_BADGES = { pending: 'badge-warning', confirmed: 'badge-success', rejected: 'badge-danger' }
 
@@ -19,6 +20,7 @@ export default function Teams() {
   const [showForm, setShowForm] = useState(false)
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [metaDraft, setMetaDraft] = useState({ contact_name: '', country_code: 'LV' })
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
   const playerForm = useForm()
 
@@ -92,6 +94,21 @@ export default function Teams() {
     if (expandedTeam === teamId) { setExpandedTeam(null); return }
     setExpandedTeam(teamId)
     loadPlayers(teamId)
+    const teamData = teams.find(tm => tm.id === teamId)
+    setMetaDraft({
+      contact_name: teamData?.contact_name ?? '',
+      country_code: teamData?.country_code ?? 'LV',
+    })
+  }
+
+  async function saveMeta(teamId) {
+    const { error } = await supabase
+      .from('teams')
+      .update({ contact_name: metaDraft.contact_name || null, country_code: metaDraft.country_code || null })
+      .eq('id', teamId)
+    if (error) { toast(t('admin.team.metaFailed'), 'error'); return }
+    setTeams(prev => prev.map(tm => tm.id === teamId ? { ...tm, ...metaDraft } : tm))
+    toast(t('admin.team.metaSaved'))
   }
 
   async function bulkApprove() {
@@ -226,6 +243,43 @@ export default function Teams() {
 
               {expandedTeam === team.id && (
                 <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
+
+                  {/* Logo + meta fields */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.25rem', alignItems: 'flex-end' }}>
+                    <TeamLogoUpload
+                      teamId={team.id}
+                      currentLogoPath={team.logo_path}
+                      onChange={newPath => setTeams(prev => prev.map(tm => tm.id === team.id ? { ...tm, logo_path: newPath } : tm))}
+                    />
+                    <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>{t('admin.team.managerName')}</div>
+                        <input
+                          value={metaDraft.contact_name}
+                          onChange={e => setMetaDraft(prev => ({ ...prev, contact_name: e.target.value }))}
+                          placeholder={t('admin.team.managerName')}
+                          style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)', minWidth: '12rem' }}
+                        />
+                      </div>
+                      <div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>{t('admin.team.countryCode')}</div>
+                        <input
+                          value={metaDraft.country_code}
+                          onChange={e => setMetaDraft(prev => ({ ...prev, country_code: e.target.value.toUpperCase().slice(0, 2) }))}
+                          maxLength={2}
+                          style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.5rem', borderRadius: 'var(--radius-sm)', width: '4rem', textAlign: 'center', textTransform: 'uppercase' }}
+                        />
+                      </div>
+                      <button
+                        type="button"
+                        className="btn-primary btn-sm"
+                        onClick={() => saveMeta(team.id)}
+                      >
+                        {t('admin.team.saveMeta')}
+                      </button>
+                    </div>
+                  </div>
+
                   <table className="table" style={{ marginBottom: '1rem' }}>
                     <thead>
                       <tr>

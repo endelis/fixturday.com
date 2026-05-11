@@ -7,6 +7,7 @@ import { Upload } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
+import TournamentLogoUpload from '../../../components/admin/TournamentLogoUpload'
 
 const SPORT_OPTIONS = [
   { value: 'football',       icon: '⚽', labelKey: 'sports.football' },
@@ -42,6 +43,7 @@ export default function TournamentEdit() {
   const [selectedSport, setSelectedSport] = useState(null)
   const [logoPreview, setLogoPreview] = useState(null)
   const [logoUploading, setLogoUploading] = useState(false)
+  const [logoPath, setLogoPath] = useState(null)
   const [attachments, setAttachments] = useState([])
   const [attachUploading, setAttachUploading] = useState(false)
   const [lunchEnabled, setLunchEnabled] = useState(false)
@@ -55,7 +57,7 @@ export default function TournamentEdit() {
       const { data, error } = await supabase.from('tournaments').select('*').eq('id', id).single()
       if (error) { toast(t('common.error'), 'error'); setLoading(false); return }
       if (data) {
-        const { attachments: att, logo_url, ...rest } = data
+        const { attachments: att, logo_url, logo_path, ...rest } = data
         reset({
           ...rest,
           start_date: isoToDisplay(data.start_date),
@@ -63,6 +65,7 @@ export default function TournamentEdit() {
         })
         setAttachments(att ?? [])
         if (logo_url) setLogoPreview(logo_url)
+        setLogoPath(logo_path ?? null)
         setLunchEnabled(!!(data.lunch_start || data.lunch_end))
         // Set selectedSport from DB — may be null if old free-form value
         const knownSport = SPORT_OPTIONS.find(s => s.value === data.sport)
@@ -356,6 +359,13 @@ export default function TournamentEdit() {
               <Upload size={16} /> {logoUploading ? t('tournament.logoUploading') : t('tournament.uploadLogo')}
             </button>
           </div>
+
+          {/* Storage-backed logo (logo_path) */}
+          <TournamentLogoUpload
+            tournamentId={id}
+            currentLogoPath={logoPath}
+            onChange={setLogoPath}
+          />
 
           {/* Active checkbox */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

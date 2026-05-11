@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { X, Menu } from 'lucide-react'
 
@@ -140,6 +140,41 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
             </>
           )}
         </div>
+
+        {tournament && (
+          <div
+            className="container"
+            style={{
+              display: 'flex',
+              gap: '0.25rem',
+              borderTop: '1px solid #1e3a5f',
+              paddingTop: '0.3rem',
+              paddingBottom: '0.3rem',
+            }}
+          >
+            <NavLink
+              to={activeAgeGroupId ? `/t/${tournament.slug}/${activeAgeGroupId}/fixtures` : `/t/${tournament.slug}`}
+              end
+              style={tourNavLink}
+            >
+              {t('nav.schedule')}
+            </NavLink>
+            <NavLink
+              to={activeAgeGroupId ? `/t/${tournament.slug}/${activeAgeGroupId}` : `/t/${tournament.slug}`}
+              end
+              style={tourNavLink}
+            >
+              {t('nav.standings')}
+            </NavLink>
+            <NavLink
+              to={`/${tournament.slug}/info`}
+              end
+              style={tourNavLink}
+            >
+              {t('nav.info')}
+            </NavLink>
+          </div>
+        )}
       </nav>
 
       {/* ── Mobile drawer ─────────────────────────────────────────── */}
@@ -265,3 +300,13 @@ const navLink = {
   fontWeight: 500,
   whiteSpace: 'nowrap',
 }
+
+const tourNavLink = ({ isActive }) => ({
+  color: isActive ? '#f0a500' : '#8fa3bc',
+  textDecoration: 'none',
+  fontSize: '0.8rem',
+  fontWeight: isActive ? 600 : 400,
+  padding: '0.3rem 0.6rem',
+  borderRadius: '4px',
+  whiteSpace: 'nowrap',
+})

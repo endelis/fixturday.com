@@ -1,10 +1,12 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link } from 'react-router-dom'
+import { useParams, Link, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
+import TeamLogo from '../../components/TeamLogo'
+import ClassFilter from '../../components/ClassFilter'
 
 export default function Schedule() {
   const { t } = useTranslation()
@@ -14,6 +16,17 @@ export default function Schedule() {
   const [fixtures, setFixtures] = useState([])
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
+  const [searchParams, setSearchParams] = useSearchParams()
+  const selectedAgeGroupId = searchParams.get('ageGroupId') || null
+
+  function handleFilterChange(id) {
+    setSearchParams(prev => {
+      const next = new URLSearchParams(prev)
+      if (id) next.set('ageGroupId', id)
+      else next.delete('ageGroupId')
+      return next
+    })
+  }
 
   useEffect(() => {
     async function load() {
@@ -36,14 +49,14 @@ export default function Schedule() {
       const { data: fx, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
-          *,
-          home_team:teams!home_team_id(id, name),
-          away_team:teams!away_team_id(id, name),
+          *, home_placeholder_label, away_placeholder_label,
+          home_team:teams!home_team_id(id, name, logo_path),
+          away_team:teams!away_team_id(id, name, logo_path),
           pitch:pitches(name, venues(name)),
           fixture_results(home_goals, away_goals),
           stages!inner(age_group_id)
         `)
-        .eq('stages.age_group_id', ageGroupId)
+        .eq('stages.age_group_id', selectedAgeGroupId ?? ageGroupId)
         .order('kickoff_time', { ascending: true })
 
       if (fxErr) { setLoading(false); return }
@@ -65,9 +78,15 @@ export default function Schedule() {
       supabase.removeChannel(channel)
       clearInterval(poll)
     }
-  }, [ageGroupId])
+  }, [ageGroupId, selectedAgeGroupId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
+
+  function teamName(teamId, name, placeholder) {
+    if (teamId) return name ?? '?'
+    if (placeholder) return <span style={{ color: 'var(--color-muted)', fontStyle: 'italic' }}>{placeholder}</span>
+    return '?'
+  }
 
   const grouped = fixtures.reduce((acc, f) => {
     const day = f.kickoff_time ? format(new Date(f.kickoff_time), 'yyyy-MM-dd') : '__NO_DATE__'
@@ -93,6 +112,14 @@ export default function Schedule() {
           </div>
         </div>
 
+        <div style={{ position: 'sticky', top: 0, background: 'var(--color-primary)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
+          <ClassFilter
+            tournamentId={ag?.tournaments?.id}
+            value={selectedAgeGroupId}
+            onChange={handleFilterChange}
+          />
+        </div>
+
         {fixtures.filter(f => f.status === 'live').length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-success)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -109,13 +136,19 @@ export default function Schedule() {
                         {formatTime(f.kickoff_time)}
                       </span>
                     )}
-                    <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem' }}>{f.home_team?.name ?? '?'}</span>
+                    <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
+                      <TeamLogo size="sm" logoPath={f.home_team?.logo_path} alt={f.home_team?.name ?? ''} />
+                    </span>
                     <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
                       {result
                         ? `${result.home_goals} : ${result.away_goals}`
                         : <span className="live-badge">LIVE</span>}
                     </span>
-                    <span style={{ flex: 1, minWidth: '6rem' }}>{f.away_team?.name ?? '?'}</span>
+                    <span style={{ flex: 1, minWidth: '6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <TeamLogo size="sm" logoPath={f.away_team?.logo_path} alt={f.away_team?.name ?? ''} />
+                      {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
+                    </span>
                     {f.pitch && (
                       <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
                         {f.pitch.venues?.name} — {f.pitch.name}
@@ -149,7 +182,10 @@ export default function Schedule() {
                         {formatTime(f.kickoff_time)}
                       </span>
                     )}
-                    <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem' }}>{f.home_team?.name ?? '?'}</span>
+                    <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
+                      {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
+                      <TeamLogo size="sm" logoPath={f.home_team?.logo_path} alt={f.home_team?.name ?? ''} />
+                    </span>
                     <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
                       {result
                         ? `${result.home_goals} : ${result.away_goals}`
@@ -157,7 +193,10 @@ export default function Schedule() {
                           ? <span className="live-badge">LIVE</span>
                           : t('fixture.vs')}
                     </span>
-                    <span style={{ flex: 1, minWidth: '6rem' }}>{f.away_team?.name ?? '?'}</span>
+                    <span style={{ flex: 1, minWidth: '6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                      <TeamLogo size="sm" logoPath={f.away_team?.logo_path} alt={f.away_team?.name ?? ''} />
+                      {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
+                    </span>
                     {f.pitch && (
                       <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
                         {f.pitch.venues?.name} — {f.pitch.name}

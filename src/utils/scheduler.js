@@ -76,6 +76,7 @@ export function generateSchedule({
   date,
   pitchGap = 5,
   teamRest = null,
+  pitchIds = null,
 }) {
   // --- Parse boundary times ---
   const firstMins = parseTime(firstGameTime);
@@ -90,9 +91,11 @@ export function generateSchedule({
   // Preferred minimum rest. Defaults to MIN_REST so back-to-back is never allowed.
   const TEAM_REST = teamRest ?? MIN_REST;
 
+  const resolvedPitchCount = pitchIds ? pitchIds.length : pitchCount;
+
   // Track earliest available start time for each pitch (minutes since midnight).
   // All pitches start at firstMins.
-  const pitchAvailable = Array.from({ length: pitchCount }, () => firstMins);
+  const pitchAvailable = Array.from({ length: resolvedPitchCount }, () => firstMins);
 
   // Track each team's last game end time (kickoff + gameDuration).
   // key: teamId, value: minutes since midnight when their last game ends.
@@ -120,15 +123,18 @@ export function generateSchedule({
     let bestPitch = null;
     let bestKickoff = Infinity;
 
-    for (let p = 0; p < pitchCount; p++) {
+    for (let p = 0; p < resolvedPitchCount; p++) {
       // Earliest this pitch is free.
       const pitchFree = pitchAvailable[p];
 
       // Candidate kickoff: later of pitch availability and team rest requirement.
       let candidate = roundUp5(Math.max(pitchFree, teamEarliestKickoff));
 
-      // Skip lunch window.
+      // Skip lunch window — also push past lunch if game starts before but would end inside it.
       candidate = skipLunch(candidate, lunchStartMins, lunchEndMins);
+      if (lunchStartMins !== null && candidate < lunchStartMins && candidate + gameDuration > lunchStartMins) {
+        candidate = lunchEndMins
+      }
 
       // Ensure game fits before lastGameTime.
       if (candidate + gameDuration > lastMins) continue;
@@ -147,9 +153,12 @@ export function generateSchedule({
       let fallbackKickoff = Infinity;
       let minRest = null; // smallest rest achieved across both teams
 
-      for (let p = 0; p < pitchCount; p++) {
+      for (let p = 0; p < resolvedPitchCount; p++) {
         let candidate = roundUp5(Math.max(pitchAvailable[p], firstMins));
         candidate = skipLunch(candidate, lunchStartMins, lunchEndMins);
+        if (lunchStartMins !== null && candidate < lunchStartMins && candidate + gameDuration > lunchStartMins) {
+          candidate = lunchEndMins
+        }
 
         if (candidate + gameDuration > lastMins) continue;
 
@@ -204,6 +213,7 @@ export function generateSchedule({
       schedule.push({
         fixtureId,
         pitchIndex: fallbackPitch,
+        pitchId: pitchIds ? pitchIds[fallbackPitch] : null,
         kickoff: toISO(date, kickoff),
       });
 
@@ -220,6 +230,7 @@ export function generateSchedule({
     schedule.push({
       fixtureId,
       pitchIndex: bestPitch,
+      pitchId: pitchIds ? pitchIds[bestPitch] : null,
       kickoff: toISO(date, bestKickoff),
     });
 

@@ -2,7 +2,7 @@ import { useRef, useState } from 'react'
 import { useNavigate, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
-import { parse, isValid, format } from 'date-fns'
+import DateTimePicker from '../../../components/admin/DateTimePicker'
 import { Upload } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
@@ -32,11 +32,6 @@ function slugify(text) {
     .replace(/[^\w-]/g, '').replace(/--+/g, '-')
 }
 
-function parseDateToISO(str) {
-  if (!str) return null
-  const d = parse(str, 'dd/MM/yyyy', new Date())
-  return isValid(d) ? format(d, 'yyyy-MM-dd') : null
-}
 
 export default function TournamentNew() {
   const { user, loading: authLoading } = useAuth()
@@ -50,6 +45,8 @@ export default function TournamentNew() {
   const [logoPreview, setLogoPreview] = useState(null)
   const [logoFileName, setLogoFileName] = useState(null)
   const [lunchEnabled, setLunchEnabled] = useState(false)
+  const [startDate, setStartDate] = useState('')
+  const [endDate, setEndDate] = useState('')
   const [pendingAttachments, setPendingAttachments] = useState([])
   const logoInputRef = useRef(null)
   const attachInputRef = useRef(null)
@@ -92,8 +89,8 @@ export default function TournamentNew() {
       ...values,
       sport: selectedSport,
       participant_type: PARTICIPANT_TYPE[selectedSport] ?? 'team',
-      start_date: parseDateToISO(values.start_date),
-      end_date: parseDateToISO(values.end_date),
+      start_date: startDate || null,
+      end_date: endDate || null,
       lunch_start: lunchEnabled ? values.lunch_start || null : null,
       lunch_end: lunchEnabled ? values.lunch_end || null : null,
       logo_url: null,
@@ -114,8 +111,7 @@ export default function TournamentNew() {
       if (upErr) {
         toast(t('tournament.logoUploadError'), 'error')
       } else {
-        const { data: { publicUrl } } = supabase.storage.from('tournament-logos').getPublicUrl(path)
-        await supabase.from('tournaments').update({ logo_url: publicUrl }).eq('id', data.id)
+        await supabase.from('tournaments').update({ logo_path: path }).eq('id', data.id)
       }
     }
 
@@ -198,27 +194,15 @@ export default function TournamentNew() {
             </div>
           </div>
 
-          {/* Dates — dd/MM/yyyy text inputs */}
+          {/* Dates */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label>{t('tournament.startDate')}</label>
-              <input
-                placeholder="dd/mm/gggg"
-                {...register('start_date', {
-                  validate: v => !v || isValid(parse(v, 'dd/MM/yyyy', new Date())) || t('tournament.invalidDate'),
-                })}
-              />
-              {errors.start_date && <span className="error-message">{errors.start_date.message}</span>}
+              <DateTimePicker dateOnly value={startDate} onChange={setStartDate} />
             </div>
             <div className="form-group">
               <label>{t('tournament.endDate')}</label>
-              <input
-                placeholder="dd/mm/gggg"
-                {...register('end_date', {
-                  validate: v => !v || isValid(parse(v, 'dd/MM/yyyy', new Date())) || t('tournament.invalidDate'),
-                })}
-              />
-              {errors.end_date && <span className="error-message">{errors.end_date.message}</span>}
+              <DateTimePicker dateOnly value={endDate} onChange={setEndDate} />
             </div>
           </div>
 

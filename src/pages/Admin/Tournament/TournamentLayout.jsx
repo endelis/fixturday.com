@@ -19,6 +19,8 @@ const NAV_ITEMS = [
   { path: 'venues',      icon: '🏟', labelKey: 'workspace.navVenues' },
   { path: 'stats',       icon: '📊', labelKey: 'workspace.navStats' },
   { path: 'settings',    icon: '⚙',  labelKey: 'workspace.navSettings' },
+  { path: 'info',          icon: 'ℹ',  labelKey: 'workspace.navInfo' },
+  { path: 'registrations', icon: '📝', labelKey: 'workspace.navRegistrations' },
 ]
 
 export default function TournamentLayout() {

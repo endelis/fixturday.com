@@ -10,6 +10,7 @@ import {
 } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import NextMatchesWidget from '../../components/NextMatchesWidget'
 import { calculateStandings } from '../../utils/standings'
 
 // ── Status helpers ────────────────────────────────────────────
@@ -871,8 +872,13 @@ export default function TournamentDetail() {
         </div>
       </div>
 
+      {/* ── Next matches widget ───────────────────────────── */}
+      <div className="container" style={{ paddingTop: '1.5rem' }}>
+        <NextMatchesWidget tournamentId={tournament.id} slug={slug} />
+      </div>
+
       {/* ── Tab content ───────────────────────────────────── */}
-      <div className="container" style={{ paddingTop: '1.75rem', paddingBottom: '4rem' }}>
+      <div className="container" style={{ paddingTop: '1.25rem', paddingBottom: '4rem' }}>
         {activeTab === 'info' && (
           <InfoTab
             tournament={tournament}

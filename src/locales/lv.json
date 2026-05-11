@@ -21,7 +21,10 @@
     "start": "Sākt bezmaksas",
     "admin": "Administrators",
     "logout": "Iziet",
-    "guide": "Pamācība"
+    "guide": "Pamācība",
+    "schedule": "Saraksts",
+    "standings": "Tabula",
+    "info": "Info"
   },
   "tournament": {
     "title": "Turnīri",
@@ -150,7 +153,22 @@
       "pending": "Gaida apstiprinājumu",
       "confirmed": "Apstiprināta",
       "rejected": "Noraidīta"
-    }
+    },
+    "profile": "Komandas profils",
+    "manager": "Treneris",
+    "played": "S",
+    "won": "U",
+    "drawn": "N",
+    "lost": "Z",
+    "goalsFor": "GV",
+    "goalsAgainst": "SV",
+    "goalDifference": "VD",
+    "points": "P",
+    "home": "Mājas",
+    "away": "Viesi",
+    "upcomingFixtures": "Gaidāmās spēles",
+    "completedFixtures": "Aizvadītās spēles",
+    "noFixtures": "Nav spēļu"
   },
   "fixture": {
     "title": "Spēles",
@@ -174,7 +192,7 @@
     "schedDate": "Datums",
     "schedPitches": "Laukumu skaits",
     "schedFirstGame": "Pirmā spēle",
-    "schedLastGame": "Pēdējā spēle",
+    "schedLastGame": "Pēdējā spēle beidzas",
     "schedLunchToggle": "Pusdienu pārtraukums",
     "schedLunchStart": "Pusdienu pārtraukums sākums",
     "schedLunchEnd": "Pusdienu pārtraukums beigas",
@@ -194,7 +212,13 @@
     "confirmedTeams": "Apstiprinātas komandas:",
     "stageGroupStage": "Grupu posms",
     "stageKnockout": "Izslēgšanas kārtas",
-    "stageRoundRobin": "Apļa turnīrs"
+    "stageRoundRobin": "Apļa turnīrs",
+    "pitchConflict": "Laika konflikts uz laukuma: {{games}}"
+  },
+  "scheduler": {
+    "skippedWarning": "{{count}} spēle(s) netika ieplānota(s) — laika logs ir par šauru",
+    "pitchAssignment": "Laukumu sadalījums",
+    "selectPitches": "Atzīmējiet laukumus, ko iekļaut grafikā:"
   },
   "standings": {
     "title": "Tabula",
@@ -287,6 +311,26 @@
     "error": "Radās kļūda. Lūdzu mēģiniet vēlreiz.",
     "removePlayer": "Noņemt spēlētāju"
   },
+  "registration": {
+    "title": "Komandas pieteikums",
+    "teamName": "Komandas nosaukums",
+    "ageGroup": "Vecuma grupa",
+    "managerName": "Vadītāja vārds",
+    "managerEmail": "Vadītāja e-pasts",
+    "managerPhone": "Vadītāja tālrunis",
+    "playerRoster": "Spēlētāju saraksts",
+    "playerRosterHint": "Viens spēlētājs uz rindiņas: Vārds Uzvārds",
+    "submit": "Iesniegt pieteikumu",
+    "submitting": "Iesniedz...",
+    "successTitle": "Pieteikums saņemts!",
+    "successMessage": "Paldies! Jūsu komandas pieteikums ir reģistrēts. Mēs sazināsimies ar jums drīzumā.",
+    "cooldownMessage": "Nākamo pieteikumu varēs iesniegt pēc {{seconds}} sekundēm.",
+    "registerAnother": "Pieteikt vēl vienu komandu",
+    "errors": {
+      "required": "Šis lauks ir obligāts",
+      "email": "Lūdzu ievadiet derīgu e-pasta adresi"
+    }
+  },
   "stats": {
     "total": "Kopā spēles",
     "completed": "Pabeigtas",
@@ -348,6 +392,8 @@
     "navStandings": "Tabula",
     "navPlayoff": "Playoff tabula",
     "navMatchday": "Rezultātu reģistrs",
+    "navInfo": "Informācija",
+    "navRegistrations": "Pieteikumi",
     "backToDashboard": "Visi turnīri",
     "notFound": "Turnīrs nav atrasts.",
     "statAgeGroups": "Vecuma grupas",
@@ -614,6 +660,9 @@
     "pageTitle": "Aktīvie Sporta Turnīri Latvijā — Fixturday",
     "metaDesc": "Apskati aktīvos sporta turnīrus Latvijā. Futbols, basketbols, volejbols un citi sporta veidi. Seko rezultātiem reāllaikā."
   },
+  "widget": {
+    "nextMatches": "Nākamās spēles"
+  },
   "common": {
     "select": "Izvēlieties...",
     "save": "Saglabāt",
@@ -653,6 +702,92 @@
     "cookiesLink": "Sīkdatņu politika",
     "acceptAll": "Pieņemt visas",
     "acceptFunctional": "Tikai funkcionālās"
+  },
+  "classFilter": {
+    "all": "Visas",
+    "label": "Vecuma grupas"
+  },
+  "info": {
+    "title": "Informācija",
+    "noContent": "Informācija nav pievienota.",
+    "contact": "Kontakti",
+    "email": "E-pasts",
+    "phone": "Tālrunis"
+  },
+  "tournamentInfo": {
+    "title": "Turnīra informācija",
+    "tabEdit": "Rediģēt",
+    "tabPreview": "Priekšskatījums",
+    "previewEmpty": "Nav satura priekšskatījumam.",
+    "contentLabel": "Apraksts (Markdown)",
+    "contactEmailLabel": "Kontaktpasts",
+    "contactPhoneLabel": "Tālrunis",
+    "save": "Saglabāt",
+    "saved": "Saglabāts"
+  },
+  "admin": {
+    "registrations": {
+      "title": "Komandu pieteikumi",
+      "tabPending": "Gaida",
+      "tabApproved": "Apstiprināts",
+      "tabRejected": "Noraidīts",
+      "approve": "Apstiprināt",
+      "reject": "Noraidīt",
+      "approveConfirm": "Apstiprināt šo komandu un pievienot to turnīram?",
+      "rejectPrompt": "Noraidīšanas iemesls (neobligāts):",
+      "approved": "Komanda apstiprināta un pievienota turnīram.",
+      "rejected": "Pieteikums noraidīts.",
+      "colSubmitted": "Iesniegts",
+      "colTeam": "Komanda",
+      "colAgeGroup": "Vecuma grupa",
+      "colManager": "Vadītājs",
+      "colEmail": "E-pasts",
+      "colActions": "Darbības"
+    },
+    "tournamentLogo": {
+      "title": "Turnīra logo (Storage)",
+      "current": "Pašreizējais logo",
+      "upload": "Augšupielādēt logo",
+      "remove": "Noņemt logo",
+      "removeConfirm": "Tiešām noņemt?",
+      "fileTooLarge": "Fails pārāk liels. Maksimums 2 MB",
+      "invalidFormat": "Nepareizs formāts. Atļauts: PNG, JPEG, WebP",
+      "uploadSuccess": "Logo saglabāts!",
+      "removeSuccess": "Logo noņemts",
+      "uploading": "Augšupielādē..."
+    },
+    "teamLogo": {
+      "title": "Komandas logo",
+      "upload": "Augšupielādēt logo",
+      "remove": "Noņemt logo",
+      "removeConfirm": "Tiešām noņemt?",
+      "fileTooLarge": "Fails pārāk liels. Maksimums 2 MB",
+      "invalidFormat": "Nepareizs formāts. Atļauts: PNG, JPEG, WebP",
+      "uploadSuccess": "Logo saglabāts!",
+      "removeSuccess": "Logo noņemts",
+      "uploading": "Augšupielādē..."
+    },
+    "team": {
+      "managerName": "Treneris",
+      "countryCode": "Valsts kods",
+      "saveMeta": "Saglabāt",
+      "metaSaved": "Saglabāts!",
+      "metaFailed": "Kļūda saglabājot"
+    }
+  },
+  "match": {
+    "title": "Spēle",
+    "breadcrumbAll": "Visi turnīri",
+    "statusScheduled": "Ieplānota",
+    "statusLive": "Notiek",
+    "statusCompleted": "Pabeigta",
+    "statusPostponed": "Atlikta",
+    "vs": "vs",
+    "kickoff": "Sākums",
+    "pitch": "Laukums",
+    "venue": "Vieta",
+    "openInMaps": "Atvērt kartē",
+    "matchNotFound": "Spēle nav atrasta"
   },
   "print": {
     "preparing": "Sagatavo drukāšanai...",
