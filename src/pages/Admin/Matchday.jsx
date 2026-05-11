@@ -130,12 +130,14 @@ export default function Matchday() {
 
   async function saveScore(f) {
     setSaving(prev => ({ ...prev, [f.id]: true }))
-    const existing = f.fixture_results?.[0]
     const score = scores[f.id] ?? { home: 0, away: 0 }
 
-    const { error: resErr } = existing
-      ? await supabase.from('fixture_results').update({ home_goals: score.home, away_goals: score.away }).eq('id', existing.id)
-      : await supabase.from('fixture_results').insert({ fixture_id: f.id, home_goals: score.home, away_goals: score.away })
+    const { error: resErr } = await supabase
+      .from('fixture_results')
+      .upsert(
+        { fixture_id: f.id, home_goals: score.home, away_goals: score.away },
+        { onConflict: 'fixture_id' }
+      )
 
     if (resErr) { toast(`${t('common.error')}: ${resErr.message}`, 'error'); setSaving(prev => ({ ...prev, [f.id]: false })); return }
 
@@ -150,11 +152,13 @@ export default function Matchday() {
     const updates = filtered
       .filter(f => f.status !== 'postponed')
       .map(async f => {
-        const existing = f.fixture_results?.[0]
         const score = scores[f.id] ?? { home: 0, away: 0 }
-        const { error: resErr } = existing
-          ? await supabase.from('fixture_results').update({ home_goals: score.home, away_goals: score.away }).eq('id', existing.id)
-          : await supabase.from('fixture_results').insert({ fixture_id: f.id, home_goals: score.home, away_goals: score.away })
+        const { error: resErr } = await supabase
+          .from('fixture_results')
+          .upsert(
+            { fixture_id: f.id, home_goals: score.home, away_goals: score.away },
+            { onConflict: 'fixture_id' }
+          )
         if (!resErr) await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
         return resErr
       })
