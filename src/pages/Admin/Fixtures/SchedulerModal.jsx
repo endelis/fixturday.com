@@ -52,13 +52,13 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     let cancelled = false
     supabase
       .from('venues')
-      .select('id, name, pitches(id, name)')
+      .select('id, name, pitches(id, label)')
       .eq('tournament_id', tournamentId)
       .order('name')
       .then(({ data }) => {
         if (cancelled) return
         const flat = (data ?? []).flatMap(v =>
-          (v.pitches ?? []).map(p => ({ id: p.id, label: `${v.name} — ${p.name}` }))
+          (v.pitches ?? []).map(p => ({ id: p.id, label: `${v.name} — ${p.label}` }))
         )
         setAvailablePitches(flat)
         setSelectedPitchIds(new Set(flat.map(p => p.id)))
