@@ -104,11 +104,23 @@ export function generateSchedule({
   const schedule = [];
   const warnings = [];
 
-  for (const fixture of fixtures) {
-    const { id: fixtureId, homeTeamId, awayTeamId } = fixture;
+  // Latest end time of any group-stage fixture — used to gate playoff start.
+  let lastGroupEnd = firstMins;
+  let playoffStarted = false;
 
-    const homeLastEnd = teamLastEnd[homeTeamId] ?? null;
-    const awayLastEnd = teamLastEnd[awayTeamId] ?? null;
+  for (const fixture of fixtures) {
+    const { id: fixtureId, homeTeamId, awayTeamId, isPlayoff } = fixture;
+
+    // Before the first playoff fixture, advance all pitches past the last group game.
+    if (isPlayoff && !playoffStarted) {
+      playoffStarted = true;
+      for (let p = 0; p < resolvedPitchCount; p++) {
+        pitchAvailable[p] = Math.max(pitchAvailable[p], roundUp5(lastGroupEnd + PITCH_GAP));
+      }
+    }
+
+    const homeLastEnd = homeTeamId != null ? (teamLastEnd[homeTeamId] ?? null) : null;
+    const awayLastEnd = awayTeamId != null ? (teamLastEnd[awayTeamId] ?? null) : null;
 
     // Earliest kickoff satisfying team-rest constraints (before lunch/pitch checks).
     // A team can kick off at: lastEnd + TEAM_REST (rounded up to 5).
@@ -220,8 +232,9 @@ export function generateSchedule({
       // Update state.
       const endTime = kickoff + gameDuration;
       pitchAvailable[fallbackPitch] = roundUp5(endTime + PITCH_GAP);
-      teamLastEnd[homeTeamId] = endTime;
-      teamLastEnd[awayTeamId] = endTime;
+      if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
+      if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
+      if (!isPlayoff) lastGroupEnd = Math.max(lastGroupEnd, endTime);
 
       continue;
     }
@@ -237,8 +250,9 @@ export function generateSchedule({
     // Update state.
     const endTime = bestKickoff + gameDuration;
     pitchAvailable[bestPitch] = roundUp5(endTime + PITCH_GAP);
-    teamLastEnd[homeTeamId] = endTime;
-    teamLastEnd[awayTeamId] = endTime;
+    if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
+    if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
+    if (!isPlayoff) lastGroupEnd = Math.max(lastGroupEnd, endTime);
   }
 
   return { schedule, warnings };
