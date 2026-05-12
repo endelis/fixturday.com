@@ -43,8 +43,6 @@ export default function AgeGroups() {
     setValue('name', ag.name)
     setValue('format', ag.format)
     setValue('max_teams', ag.max_teams ?? '')
-    setValue('game_duration_minutes', ag.game_duration_minutes ?? 20)
-    setValue('pitch_gap_minutes', ag.pitch_gap_minutes ?? 5)
     setValue('registration_open', ag.registration_open)
     setShowForm(true)
   }
@@ -66,8 +64,6 @@ export default function AgeGroups() {
       ...values,
       tournament_id: tournamentId,
       max_teams: values.max_teams ? Number(values.max_teams) : null,
-      game_duration_minutes: values.game_duration_minutes ? Number(values.game_duration_minutes) : 20,
-      pitch_gap_minutes: values.pitch_gap_minutes ? Number(values.pitch_gap_minutes) : 5,
     }
 
     if (editingId) {
@@ -241,26 +237,6 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, onSubmit, 
         <div className="form-group">
           <label>{t('ageGroup.maxTeams')}</label>
           <input type="number" {...register('max_teams')} min="2" />
-        </div>
-        <div className="form-group">
-          <label>{t('ageGroup.gameDuration')} *</label>
-          <input
-            type="number"
-            {...register('game_duration_minutes', { required: t('common.required'), min: 5, max: 90 })}
-            defaultValue={20}
-            min="5"
-            max="90"
-          />
-          {errors.game_duration_minutes && <span className="error-message">{errors.game_duration_minutes.message}</span>}
-        </div>
-        <div className="form-group">
-          <label>{t('ageGroup.pitchGap')}</label>
-          <input
-            type="number"
-            {...register('pitch_gap_minutes')}
-            defaultValue={5}
-            min="0"
-          />
         </div>
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>

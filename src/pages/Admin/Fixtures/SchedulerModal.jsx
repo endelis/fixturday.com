@@ -23,6 +23,8 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     if (isValid(parsed)) setSchedDate(format(parsed, 'yyyy-MM-dd'))
   }
   const [schedPitches, setSchedPitches] = useState(1)
+  const [schedGameDuration, setSchedGameDuration] = useState(ageGroup?.game_duration_minutes || 20)
+  const [schedPitchGap, setSchedPitchGap] = useState(ageGroup?.pitch_gap_minutes || 5)
   const [schedFirst, setSchedFirst] = useState('09:00')
   const [schedLast, setSchedLast] = useState('18:00')
   const [schedLunchEnabled, setSchedLunchEnabled] = useState(false)
@@ -33,9 +35,12 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   const [availablePitches, setAvailablePitches] = useState([])
   const [selectedPitchIds, setSelectedPitchIds] = useState(new Set())
 
-  // Sync tournament scheduling defaults when ageGroup data arrives
+  // Sync scheduling defaults when ageGroup data arrives
   useEffect(() => {
-    if (!ageGroup?.tournaments) return
+    if (!ageGroup) return
+    if (ageGroup.game_duration_minutes) setSchedGameDuration(ageGroup.game_duration_minutes)
+    if (ageGroup.pitch_gap_minutes != null) setSchedPitchGap(ageGroup.pitch_gap_minutes)
+    if (!ageGroup.tournaments) return
     const { first_game_time, last_game_time, lunch_start, lunch_end } = ageGroup.tournaments
     if (first_game_time) setSchedFirst(first_game_time.slice(0, 5))
     if (last_game_time) setSchedLast(last_game_time.slice(0, 5))
@@ -85,13 +90,13 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
       fixtures: mapped,
       pitchCount: pitchIds ? pitchIds.length : Number(schedPitches),
       pitchIds,
-      gameDuration: ageGroup?.game_duration_minutes || 20,
+      gameDuration: schedGameDuration,
       firstGameTime: schedFirst || '09:00',
       lastGameTime: schedLast || '18:00',
       lunchStart: schedLunchEnabled ? (schedLunchStart || null) : null,
       lunchEnd: schedLunchEnabled ? (schedLunchEnd || null) : null,
       date: schedDate,
-      pitchGap: ageGroup?.pitch_gap_minutes || 5,
+      pitchGap: schedPitchGap,
       teamRest: ageGroup?.team_rest_minutes || null,
     })
     setSchedResult(result)
@@ -180,6 +185,14 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
               <input type="number" min={1} value={schedPitches} onChange={e => setSchedPitches(e.target.value)} style={inputStyle} />
             </label>
           )}
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
+            {t('scheduler.gameDuration')}
+            <input type="number" min={5} max={90} value={schedGameDuration} onChange={e => setSchedGameDuration(Number(e.target.value))} style={inputStyle} />
+          </label>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
+            {t('scheduler.pitchGap')}
+            <input type="number" min={0} value={schedPitchGap} onChange={e => setSchedPitchGap(Number(e.target.value))} style={inputStyle} />
+          </label>
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('fixture.schedFirstGame')}
             <input type="time" step="60" value={schedFirst} onChange={e => setSchedFirst(e.target.value)} style={inputStyle} />

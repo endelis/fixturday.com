@@ -97,8 +97,6 @@
     "regClosed": "Reģistrācija slēgta",
     "added": "Vecuma grupa pievienota",
     "deleted": "Vecuma grupa dzēsta",
-    "gameDuration": "Spēles ilgums (min.)",
-    "pitchGap": "Starplaiks starp spēlēm (min.)",
     "teamRest": "Minimālais atpūtas laiks (min.)",
     "teamsPerGroup": "Komandas grupā",
     "teamsAdvancing": "Komandas kas virzās tālāk",
@@ -218,6 +216,8 @@
     "regenerateWarning": "{{count}} spēlēm jau ir ievadīti rezultāti. Atkārtota grafika saglabāšana tos pārrakstīs. Turpināt?"
   },
   "scheduler": {
+    "gameDuration": "Spēles ilgums (min.)",
+    "pitchGap": "Starplaiks starp spēlēm (min.)",
     "skippedWarning": "{{count}} spēle(s) netika ieplānota(s) — laika logs ir par šauru",
     "pitchAssignment": "Laukumu sadalījums",
     "selectPitches": "Atzīmējiet laukumus, ko iekļaut grafikā:"
