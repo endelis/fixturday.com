@@ -55,9 +55,12 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, t
 
   const allFixtures = groups.flatMap(g => g.fixtures)
 
-  // Build normalized groupFixtures array
+  // Build normalized groupFixtures array, sorted by round so fixtures from all
+  // groups interleave (all Round-1 games first, then Round-2, etc.) enabling
+  // the scheduler to distribute groups across pitches simultaneously.
   const groupFixtures = allFixtures
     .filter(f => f.home?.id && f.away?.id)
+    .sort((a, b) => a.round - b.round)
     .map(f => ({
       homeTeamId: f.home.id,
       awayTeamId: f.away.id,
@@ -95,42 +98,59 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, t
 }
 
 /**
- * Builds placeholder knockout fixtures.
- * Slot order: 1st from gr A, 1st from gr B, ..., 2nd from gr A, 2nd from gr B, ...
- * Then paired using standard seeding: slot[i] vs slot[total-1-i].
+ * Builds placeholder knockout fixtures for ALL rounds up to and including the Final.
+ * No 3rd-place match is generated.
+ *
+ * Round 1 slots come from group positions ("Group A-1", "Group B-2" …).
+ * Each subsequent round's slots reference the previous round's winners
+ * using the pattern "{RoundName}{n} uzvarētājs", e.g. "SF1 uzvarētājs".
  */
 function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams) {
   if (totalPlayoffTeams < 2) return []
 
-  // Build structured placeholder codes decoded by UI via i18n: G{group}P{pos}
-  // e.g. for 2 groups, 2 advancing: ["G1P1", "G2P1", "G1P2", "G2P2"]
+  // Build round-1 placeholder codes: ordered by position then group so that
+  // standard seeding pairs 1st-place teams against lowest seeds.
+  // Format: "Group A-1" (group letter + position number).
   const placeholders = []
   for (let pos = 1; pos <= teamsAdvancing; pos++) {
     for (let g = 0; g < groupsCount; g++) {
-      placeholders.push(`G${g + 1}P${pos}`)
+      placeholders.push(`Group ${String.fromCharCode(65 + g)}-${pos}`)
     }
   }
 
   const totalSlots = nextPowerOf2(totalPlayoffTeams)
-  // Pad with nulls for BYE slots
   while (placeholders.length < totalSlots) placeholders.push(null)
 
+  const numRounds = Math.log2(totalSlots)
   const fixtures = []
+
+  // Round 1: pair by group-position codes using standard seeding
   const half = totalSlots / 2
-  let round = 1
-
   for (let i = 0; i < half; i++) {
-    const homePlaceholder = placeholders[i]
-    const awayPlaceholder = placeholders[totalSlots - 1 - i]
-
     fixtures.push({
       homeTeamId: null,
       awayTeamId: null,
-      round,
+      round: 1,
       group: null,
-      home_placeholder: homePlaceholder,
-      away_placeholder: awayPlaceholder,
+      home_placeholder: placeholders[i],
+      away_placeholder: placeholders[totalSlots - 1 - i],
     })
+  }
+
+  // Rounds 2 … numRounds: pair winners of the previous round sequentially
+  for (let r = 2; r <= numRounds; r++) {
+    const prevRoundName = getRoundName(totalSlots, r - 1)
+    const matchCount = totalSlots / Math.pow(2, r)
+    for (let i = 0; i < matchCount; i++) {
+      fixtures.push({
+        homeTeamId: null,
+        awayTeamId: null,
+        round: r,
+        group: null,
+        home_placeholder: `${prevRoundName}${2 * i + 1} uzvarētājs`,
+        away_placeholder: `${prevRoundName}${2 * i + 2} uzvarētājs`,
+      })
+    }
   }
 
   return fixtures

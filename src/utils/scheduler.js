@@ -2,7 +2,7 @@
 
 /** Parse "HH:MM" → minutes since midnight */
 function parseTime(str) {
-  const [h, m] = str.split(":").map(Number);
+  const [h, m] = str.split(':').map(Number);
   return h * 60 + m;
 }
 
@@ -10,7 +10,7 @@ function parseTime(str) {
 function formatTime(mins) {
   const h = Math.floor(mins / 60);
   const m = mins % 60;
-  return `${String(h).padStart(2, "0")}:${String(m).padStart(2, "0")}`;
+  return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
 /** Round up to the nearest 5-minute boundary */
@@ -21,7 +21,6 @@ function roundUp5(mins) {
 /**
  * Format minutes-since-midnight as an ISO datetime string with local timezone offset.
  * e.g. date="2026-04-17", mins=540, tz=+03:00 → "2026-04-17T09:00:00+03:00"
- * Including the offset ensures Supabase stores the correct absolute time.
  */
 function toISO(date, mins) {
   const h = Math.floor(mins / 60);
@@ -34,36 +33,68 @@ function toISO(date, mins) {
   return `${date}T${pad(h)}:${pad(m)}:00${sign}${pad(oh)}:${pad(om)}`;
 }
 
-/**
- * Advance a proposed kickoff time past the lunch window if needed.
- * A game must not *start* during [lunchStart, lunchEnd).
- * Returns the adjusted kickoff (already a multiple of 5).
- */
+/** Advance kickoff past the lunch window if needed. */
 function skipLunch(kickoff, lunchStartMins, lunchEndMins) {
   if (lunchStartMins === null || lunchEndMins === null) return kickoff;
-  if (kickoff >= lunchStartMins && kickoff < lunchEndMins) {
-    return lunchEndMins; // lunchEnd is already on a 5-min boundary by convention
-  }
+  if (kickoff >= lunchStartMins && kickoff < lunchEndMins) return lunchEndMins;
   return kickoff;
+}
+
+/**
+ * Numeric sort key for a playoff fixture derived from its placeholder content.
+ *
+ * Round-1 playoffs reference group positions ("Group A-1" or legacy "G1P1") → key 0.
+ * Later rounds reference previous-round winners ("SF1 uzvarētājs") → the round
+ * name embedded in the placeholder maps to an increasing key so the Final
+ * (which references SF winners) sorts after the Semis.
+ *
+ * Order: Group*-* (0) < R64 (1) < R32 (2) < R16 (3) < QF (4) < SF (5) < F (6)
+ */
+const PLAYOFF_NAME_ORDER = { F: 6, SF: 5, QF: 4, R16: 3, R32: 2, R64: 1 };
+function playoffSortKey(f) {
+  const ph = (f.home_placeholder ?? f.home_placeholder_label)
+          ?? (f.away_placeholder ?? f.away_placeholder_label)
+          ?? '';
+  if (!ph || /^G\d+P\d+$/.test(ph) || /^Group [A-Z]-\d+$/.test(ph)) return 0;
+  const match = ph.match(/^(F|SF|QF|R\d+)/);
+  if (!match) return 0;
+  const name = match[1];
+  if (PLAYOFF_NAME_ORDER[name] !== undefined) return PLAYOFF_NAME_ORDER[name];
+  // Generic R{n}: larger bracket = earlier round = smaller key
+  const n = parseInt(name.slice(1));
+  return isNaN(n) ? 0 : Math.max(1, 7 - Math.log2(n));
 }
 
 /**
  * Generate a schedule for a set of football fixtures.
  *
+ * Group fixtures are scheduled first across all pitches from firstGameTime,
+ * interleaved by round (relies on fixtures being pre-sorted by round from the DB).
+ *
+ * Playoff fixtures are scheduled after all group fixtures, one round-tier at a
+ * time. Before each tier all pitches are synchronised to the same start time so
+ * no idle pitch can jump ahead and host a later round while an earlier one is
+ * still running. Playoff games are allowed past lastGameTime (a warning is
+ * emitted) so the bracket is never silently truncated.
+ *
  * @param {object} params
- * @param {{ id: string, homeTeamId: string, awayTeamId: string }[]} params.fixtures
+ * @param {{ id: string, homeTeamId: string|null, awayTeamId: string|null,
+ *           home_placeholder?: string|null, home_placeholder_label?: string|null,
+ *           away_placeholder?: string|null, away_placeholder_label?: string|null,
+ *           round?: number }[]} params.fixtures
+ *   Playoff fixtures are detected automatically by placeholder presence.
  * @param {number}  params.pitchCount    - number of available fields
  * @param {number}  params.gameDuration  - minutes per game
  * @param {string}  params.firstGameTime - "09:00"
  * @param {string}  params.lastGameTime  - "18:00"
- * @param {string|null} params.lunchStart - "13:00" or null
- * @param {string|null} params.lunchEnd   - "14:00" or null
+ * @param {string|null} params.lunchStart
+ * @param {string|null} params.lunchEnd
  * @param {string}  params.date          - "2026-04-17"
- * @param {number}  [params.pitchGap=5]  - turnaround gap on same pitch (minutes)
- * @param {number|null} [params.teamRest=null] - minimum rest between a team's games;
- *   defaults to gameDuration + pitchGap so back-to-back games are impossible
+ * @param {number}  [params.pitchGap=5]
+ * @param {number|null} [params.teamRest=null]
+ * @param {string[]|null} [params.pitchIds=null]
  *
- * @returns {{ schedule: { fixtureId: string, pitchIndex: number, kickoff: string }[], warnings: string[] }}
+ * @returns {{ schedule: object[], warnings: string[] }}
  */
 export function generateSchedule({
   fixtures,
@@ -78,181 +109,165 @@ export function generateSchedule({
   teamRest = null,
   pitchIds = null,
 }) {
-  // --- Parse boundary times ---
   const firstMins = parseTime(firstGameTime);
-  const lastMins = parseTime(lastGameTime);
+  const lastMins  = parseTime(lastGameTime);
   const lunchStartMins = lunchStart ? parseTime(lunchStart) : null;
-  const lunchEndMins = lunchEnd ? parseTime(lunchEnd) : null;
+  const lunchEndMins   = lunchEnd   ? parseTime(lunchEnd)   : null;
 
-  // Turnaround gap between consecutive games on the same pitch (minutes).
   const PITCH_GAP = pitchGap;
-  // Hard physical minimum: a team's game must finish before they can play again.
-  const MIN_REST = gameDuration + PITCH_GAP;
-  // Preferred minimum rest. Defaults to MIN_REST so back-to-back is never allowed.
+  const MIN_REST  = gameDuration + PITCH_GAP;
   const TEAM_REST = teamRest ?? MIN_REST;
 
   const resolvedPitchCount = pitchIds ? pitchIds.length : pitchCount;
-
-  // Track earliest available start time for each pitch (minutes since midnight).
-  // All pitches start at firstMins.
   const pitchAvailable = Array.from({ length: resolvedPitchCount }, () => firstMins);
-
-  // Track each team's last game end time (kickoff + gameDuration).
-  // key: teamId, value: minutes since midnight when their last game ends.
   const teamLastEnd = {};
-
   const schedule = [];
   const warnings = [];
 
-  // Latest end time of any group-stage fixture — used to gate playoff start.
-  let lastGroupEnd = firstMins;
-  let playoffStarted = false;
+  // --- Split and order fixtures ---
+  // Playoff detection: any fixture with a placeholder set is a playoff fixture.
+  // This avoids relying on an `isPlayoff` flag that callers may omit.
+  const hasPlaceholder = f =>
+    !!(f.home_placeholder || f.away_placeholder ||
+       f.home_placeholder_label || f.away_placeholder_label);
 
-  for (const fixture of fixtures) {
-    const { id: fixtureId, homeTeamId, awayTeamId, isPlayoff } = fixture;
+  // Group fixtures are sorted by round so fixtures from all groups interleave
+  // (e.g. all Round-1 games across groups first, then Round-2, etc.) which
+  // distributes groups across pitches simultaneously rather than serially.
+  const groupFixtures = fixtures
+    .filter(f => !hasPlaceholder(f))
+    .sort((a, b) => (a.round ?? 0) - (b.round ?? 0));
 
-    // Before the first playoff fixture, advance all pitches past the last group game.
-    if (isPlayoff && !playoffStarted) {
-      playoffStarted = true;
-      for (let p = 0; p < resolvedPitchCount; p++) {
-        pitchAvailable[p] = Math.max(pitchAvailable[p], roundUp5(lastGroupEnd + PITCH_GAP));
-      }
+  // Playoff fixtures are sorted by round-tier using placeholder content as proxy,
+  // ensuring correct bracket order regardless of any upstream shuffle.
+  const playoffFixtures = fixtures
+    .filter(f => hasPlaceholder(f))
+    .sort((a, b) => playoffSortKey(a) - playoffSortKey(b));
+
+  // Collect playoff tiers keyed by sort-key value.
+  const playoffTiers = {};
+  for (const f of playoffFixtures) {
+    const key = playoffSortKey(f);
+    (playoffTiers[key] = playoffTiers[key] ?? []).push(f);
+  }
+  const tierKeys = Object.keys(playoffTiers).map(Number).sort((a, b) => a - b);
+
+  // --- Helpers ---
+
+  function applyLunch(candidate) {
+    candidate = skipLunch(candidate, lunchStartMins, lunchEndMins);
+    if (lunchStartMins !== null && candidate < lunchStartMins && candidate + gameDuration > lunchStartMins) {
+      candidate = lunchEndMins;
     }
+    return candidate;
+  }
 
+  /** Find the best pitch slot. strict=true rejects slots that end past lastMins. */
+  function findSlot(homeTeamId, awayTeamId, strict) {
     const homeLastEnd = homeTeamId != null ? (teamLastEnd[homeTeamId] ?? null) : null;
     const awayLastEnd = awayTeamId != null ? (teamLastEnd[awayTeamId] ?? null) : null;
 
-    // Earliest kickoff satisfying team-rest constraints (before lunch/pitch checks).
-    // A team can kick off at: lastEnd + TEAM_REST (rounded up to 5).
-    const teamEarliestKickoff = Math.max(
+    const teamEarliest = Math.max(
       homeLastEnd !== null ? roundUp5(homeLastEnd + TEAM_REST) : firstMins,
       awayLastEnd !== null ? roundUp5(awayLastEnd + TEAM_REST) : firstMins,
       firstMins
     );
 
-    // Try each pitch in round-robin order (by earliest availability) and pick
-    // the one that yields the earliest valid kickoff for this fixture.
     let bestPitch = null;
     let bestKickoff = Infinity;
 
     for (let p = 0; p < resolvedPitchCount; p++) {
-      // Earliest this pitch is free.
-      const pitchFree = pitchAvailable[p];
-
-      // Candidate kickoff: later of pitch availability and team rest requirement.
-      let candidate = roundUp5(Math.max(pitchFree, teamEarliestKickoff));
-
-      // Skip lunch window — also push past lunch if game starts before but would end inside it.
-      candidate = skipLunch(candidate, lunchStartMins, lunchEndMins);
-      if (lunchStartMins !== null && candidate < lunchStartMins && candidate + gameDuration > lunchStartMins) {
-        candidate = lunchEndMins
-      }
-
-      // Ensure game fits before lastGameTime.
-      if (candidate + gameDuration > lastMins) continue;
-
-      if (candidate < bestKickoff) {
-        bestKickoff = candidate;
-        bestPitch = p;
-      }
+      let candidate = applyLunch(roundUp5(Math.max(pitchAvailable[p], teamEarliest)));
+      if (strict && candidate + gameDuration > lastMins) continue;
+      if (candidate < bestKickoff) { bestKickoff = candidate; bestPitch = p; }
     }
 
-    // --- Handle case where no pitch slot is valid before lastGameTime ---
-    if (bestPitch === null) {
-      // Try to find any slot ignoring team-rest (to minimise back-to-back games),
-      // scheduling as early as possible even if team rest is violated.
-      let fallbackPitch = null;
-      let fallbackKickoff = Infinity;
-      let minRest = null; // smallest rest achieved across both teams
+    return bestPitch !== null ? { pitch: bestPitch, kickoff: bestKickoff } : null;
+  }
 
-      for (let p = 0; p < resolvedPitchCount; p++) {
-        let candidate = roundUp5(Math.max(pitchAvailable[p], firstMins));
-        candidate = skipLunch(candidate, lunchStartMins, lunchEndMins);
-        if (lunchStartMins !== null && candidate < lunchStartMins && candidate + gameDuration > lunchStartMins) {
-          candidate = lunchEndMins
-        }
+  /** Commit a slot to the schedule and update tracking state. */
+  function commitSlot(fixtureId, homeTeamId, awayTeamId, pitch, kickoff) {
+    schedule.push({
+      fixtureId,
+      pitchIndex: pitch,
+      pitchId: pitchIds ? pitchIds[pitch] : null,
+      kickoff: toISO(date, kickoff),
+    });
+    const endTime = kickoff + gameDuration;
+    pitchAvailable[pitch] = roundUp5(endTime + PITCH_GAP);
+    if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
+    if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
+    return endTime;
+  }
 
-        if (candidate + gameDuration > lastMins) continue;
+  // --- Schedule group fixtures ---
+  let lastGroupEnd = firstMins;
 
-        // Calculate actual rest times for both teams at this slot.
-        const homeRest =
-          homeLastEnd !== null ? candidate - homeLastEnd : Infinity;
-        const awayRest =
-          awayLastEnd !== null ? candidate - awayLastEnd : Infinity;
-        const worstRest = Math.min(homeRest, awayRest);
+  for (const fixture of groupFixtures) {
+    const { id: fixtureId, homeTeamId, awayTeamId } = fixture;
+    const slot = findSlot(homeTeamId, awayTeamId, true);
 
-        // Prefer the slot with the most rest (closest to satisfying TEAM_REST),
-        // and among equal rest prefer the earliest kickoff.
-        if (
-          fallbackPitch === null ||
-          worstRest > minRest ||
-          (worstRest === minRest && candidate < fallbackKickoff)
-        ) {
-          fallbackPitch = p;
-          fallbackKickoff = candidate;
-          minRest = worstRest;
-        }
-      }
-
-      if (fallbackPitch === null) {
-        // Truly impossible to schedule this fixture.
-        warnings.push(
-          `Spēle (fixture ${fixtureId}) nevar tikt ieplānota — nav brīvu laika nišu pirms ${lastGameTime}`
-        );
-        continue;
-      }
-
-      // Schedule with insufficient rest; warn whenever rest < MIN_REST.
-      const kickoff = fallbackKickoff;
-
-      if (homeLastEnd !== null) {
-        const actualRest = kickoff - homeLastEnd;
-        if (actualRest < MIN_REST) {
-          warnings.push(
-            `Komanda '${homeTeamId}' atpūšas tikai ${actualRest} min starp spēlēm (min. ${MIN_REST} min)`
-          );
-        }
-      }
-      if (awayLastEnd !== null) {
-        const actualRest = kickoff - awayLastEnd;
-        if (actualRest < MIN_REST) {
-          warnings.push(
-            `Komanda '${awayTeamId}' atpūšas tikai ${actualRest} min starp spēlēm (min. ${MIN_REST} min)`
-          );
-        }
-      }
-
-      schedule.push({
-        fixtureId,
-        pitchIndex: fallbackPitch,
-        pitchId: pitchIds ? pitchIds[fallbackPitch] : null,
-        kickoff: toISO(date, kickoff),
-      });
-
-      // Update state.
-      const endTime = kickoff + gameDuration;
-      pitchAvailable[fallbackPitch] = roundUp5(endTime + PITCH_GAP);
-      if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
-      if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
-      if (!isPlayoff) lastGroupEnd = Math.max(lastGroupEnd, endTime);
-
+    if (slot) {
+      const endTime = commitSlot(fixtureId, homeTeamId, awayTeamId, slot.pitch, slot.kickoff);
+      lastGroupEnd = Math.max(lastGroupEnd, endTime);
       continue;
     }
 
-    // --- Happy path: valid slot found ---
-    schedule.push({
-      fixtureId,
-      pitchIndex: bestPitch,
-      pitchId: pitchIds ? pitchIds[bestPitch] : null,
-      kickoff: toISO(date, bestKickoff),
-    });
+    // Fallback: no slot respects team rest — pick the slot with most rest.
+    const homeLastEnd = homeTeamId != null ? (teamLastEnd[homeTeamId] ?? null) : null;
+    const awayLastEnd = awayTeamId != null ? (teamLastEnd[awayTeamId] ?? null) : null;
+    let fallbackPitch = null, fallbackKickoff = Infinity, bestRest = null;
 
-    // Update state.
-    const endTime = bestKickoff + gameDuration;
-    pitchAvailable[bestPitch] = roundUp5(endTime + PITCH_GAP);
-    if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
-    if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
-    if (!isPlayoff) lastGroupEnd = Math.max(lastGroupEnd, endTime);
+    for (let p = 0; p < resolvedPitchCount; p++) {
+      let candidate = applyLunch(roundUp5(Math.max(pitchAvailable[p], firstMins)));
+      if (candidate + gameDuration > lastMins) continue;
+      const worstRest = Math.min(
+        homeLastEnd !== null ? candidate - homeLastEnd : Infinity,
+        awayLastEnd !== null ? candidate - awayLastEnd : Infinity
+      );
+      if (fallbackPitch === null || worstRest > bestRest || (worstRest === bestRest && candidate < fallbackKickoff)) {
+        fallbackPitch = p; fallbackKickoff = candidate; bestRest = worstRest;
+      }
+    }
+
+    if (fallbackPitch === null) {
+      warnings.push(`Spēle (fixture ${fixtureId}) nevar tikt ieplānota — nav brīvu laika nišu pirms ${lastGameTime}`);
+      continue;
+    }
+
+    if (homeLastEnd !== null && fallbackKickoff - homeLastEnd < MIN_REST)
+      warnings.push(`Komanda '${homeTeamId}' atpūšas tikai ${fallbackKickoff - homeLastEnd} min starp spēlēm (min. ${MIN_REST} min)`);
+    if (awayLastEnd !== null && fallbackKickoff - awayLastEnd < MIN_REST)
+      warnings.push(`Komanda '${awayTeamId}' atpūšas tikai ${fallbackKickoff - awayLastEnd} min starp spēlēm (min. ${MIN_REST} min)`);
+
+    const endTime = commitSlot(fixtureId, homeTeamId, awayTeamId, fallbackPitch, fallbackKickoff);
+    lastGroupEnd = Math.max(lastGroupEnd, endTime);
+  }
+
+  // --- Schedule playoff tiers sequentially ---
+  // Before each tier, synchronise all pitches to the same time so no idle pitch
+  // can host a later-round game while an earlier-round game is still running.
+  for (let ti = 0; ti < tierKeys.length; ti++) {
+    // First tier: start after all group games end (+ turnaround gap).
+    // Later tiers: start after all games in the previous tier end.
+    const syncTime = ti === 0
+      ? roundUp5(lastGroupEnd + PITCH_GAP)
+      : Math.max(...pitchAvailable);
+    for (let p = 0; p < resolvedPitchCount; p++) {
+      pitchAvailable[p] = Math.max(pitchAvailable[p], syncTime);
+    }
+
+    for (const fixture of playoffTiers[tierKeys[ti]]) {
+      const { id: fixtureId, homeTeamId, awayTeamId } = fixture;
+      const slot = findSlot(homeTeamId, awayTeamId, false); // strict=false: allow past lastMins
+      if (!slot) continue;
+
+      if (slot.kickoff + gameDuration > lastMins) {
+        warnings.push(`Brīdinājums: izslēgšanas spēle beidzas pēc ${lastGameTime}`);
+      }
+
+      commitSlot(fixtureId, homeTeamId, awayTeamId, slot.pitch, slot.kickoff);
+    }
   }
 
   return { schedule, warnings };
