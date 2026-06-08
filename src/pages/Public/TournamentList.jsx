@@ -28,16 +28,16 @@ const STATUS_CONFIG = {
 // ── Component ─────────────────────────────────────────────────
 export default function TournamentList() {
   const { t } = useTranslation()
+  const [tournaments, setTournaments] = useState([])
+  const [teamCounts, setTeamCounts] = useState({})
+  const [loading, setLoading] = useState(true)
+  const [search, setSearch] = useState('')
 
   useEffect(() => {
     document.title = t('tournamentList.pageTitle')
     const metaDesc = document.querySelector('meta[name="description"]')
     if (metaDesc) metaDesc.setAttribute('content', t('tournamentList.metaDesc'))
   }, [t])
-  const [tournaments, setTournaments] = useState([])
-  const [teamCounts, setTeamCounts] = useState({})
-  const [loading, setLoading] = useState(true)
-  const [search, setSearch] = useState('')
 
   useEffect(() => {
     async function load() {
@@ -61,7 +61,9 @@ export default function TournamentList() {
           .select('id, tournament_id')
           .in('tournament_id', tIds)
 
-        if (!agsErr && ags && ags.length > 0) {
+        if (agsErr) { setLoading(false); return }
+
+        if (ags && ags.length > 0) {
           const agIds = ags.map(g => g.id)
           const agToTournament = Object.fromEntries(ags.map(g => [g.id, g.tournament_id]))
 
