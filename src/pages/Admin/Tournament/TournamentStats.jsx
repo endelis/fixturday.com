@@ -38,7 +38,7 @@ export default function TournamentStats() {
       const { data: fixtures, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
-          id, status, round, group_label, stage_id,
+          id, status, round, group_label, stage_id, home_team_id, away_team_id,
           home_team:teams!home_team_id(id, name),
           away_team:teams!away_team_id(id, name)
         `)
