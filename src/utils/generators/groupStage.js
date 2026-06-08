@@ -98,12 +98,15 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, t
 }
 
 /**
- * Builds placeholder knockout fixtures for ALL rounds up to and including the Final.
- * No 3rd-place match is generated.
+ * Builds placeholder knockout fixtures for ALL rounds up to and including the Final,
+ * plus a 3rd place match whenever semi-finals exist (totalSlots ≥ 4).
  *
  * Round 1 slots come from group positions ("Group A-1", "Group B-2" …).
  * Each subsequent round's slots reference the previous round's winners
  * using the pattern "{RoundName}{n} uzvarētājs", e.g. "SF1 uzvarētājs".
+ * The 3rd place fixture uses "SF1/SF2 zaudētājs" and shares the same round
+ * number as the Final so the scheduler assigns it to a free pitch at Final
+ * time (parallel if pitches allow, before the Final if only one pitch).
  */
 function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams) {
   if (totalPlayoffTeams < 2) return []
@@ -141,6 +144,24 @@ function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffT
   for (let r = 2; r <= numRounds; r++) {
     const prevRoundName = getRoundName(totalSlots, r - 1)
     const matchCount = totalSlots / Math.pow(2, r)
+
+    // 3rd place match: pushed before the Final so that with a single pitch it
+    // runs before the Final, and with multiple pitches it runs in parallel.
+    // Only added in the Final round of brackets that have semi-finals (matchCount === 1
+    // is always true when r === numRounds, so this guards on numRounds ≥ 2).
+    if (r === numRounds && numRounds >= 2) {
+      fixtures.push({
+        homeTeamId: null,
+        awayTeamId: null,
+        round: r,
+        group: null,
+        home_placeholder: 'SF1 zaudētājs',
+        away_placeholder: 'SF2 zaudētājs',
+        round_name: 'Spēle par 3. vietu',
+        bracket_label: null,
+      })
+    }
+
     for (let i = 0; i < matchCount; i++) {
       fixtures.push({
         homeTeamId: null,

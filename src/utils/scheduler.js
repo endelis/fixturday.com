@@ -200,7 +200,7 @@ export function generateSchedule({
     return endTime;
   }
 
-  // --- Schedule group fixtures ---
+  // --- PASS 1: Schedule group fixtures ---
   let lastGroupEnd = firstMins;
 
   for (const fixture of groupFixtures) {
@@ -244,15 +244,19 @@ export function generateSchedule({
     lastGroupEnd = Math.max(lastGroupEnd, endTime);
   }
 
-  // --- Schedule playoff tiers sequentially ---
-  // Before each tier, synchronise all pitches to the same time so no idle pitch
-  // can host a later-round game while an earlier-round game is still running.
+  // After PASS 1: reset every pitch to playoffStart so no pitch carries
+  // a position from the group phase that would silently delay playoff tiers.
+  const playoffStart = roundUp5(lastGroupEnd + PITCH_GAP);
+  for (let p = 0; p < resolvedPitchCount; p++) {
+    pitchAvailable[p] = playoffStart;
+  }
+
+  // --- PASS 2: Schedule playoff tiers sequentially ---
+  // pitchAvailable is already synchronised to playoffStart.
+  // Re-sync to the slowest pitch before each tier so no idle pitch can host
+  // a later-round game while an earlier-round game is still running.
   for (let ti = 0; ti < tierKeys.length; ti++) {
-    // First tier: start after all group games end (+ turnaround gap).
-    // Later tiers: start after all games in the previous tier end.
-    const syncTime = ti === 0
-      ? roundUp5(lastGroupEnd + PITCH_GAP)
-      : Math.max(...pitchAvailable);
+    const syncTime = Math.max(...pitchAvailable);
     for (let p = 0; p < resolvedPitchCount; p++) {
       pitchAvailable[p] = Math.max(pitchAvailable[p], syncTime);
     }

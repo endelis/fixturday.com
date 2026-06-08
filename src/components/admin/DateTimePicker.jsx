@@ -46,7 +46,7 @@ export default function DateTimePicker({ value, onChange, onBlur, dateOnly = fal
         type="date"
         value={datePart}
         onChange={e => onChange?.(assembled(e.target.value, timePart))}
-        onBlur={() => onBlur?.(assembled(datePart, timePart))}
+        onBlur={e => onBlur?.(assembled(e.target.value || datePart, timePart))}
         style={{ ...controlStyle, flex: 1 }}
       />
       {!dateOnly && (

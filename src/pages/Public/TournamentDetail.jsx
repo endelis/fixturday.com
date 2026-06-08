@@ -591,7 +591,7 @@ export default function TournamentDetail() {
           .in('age_group_id', agIds)
           .eq('status', 'confirmed'),
       ])
-      if (stErr || tmErr) { setLoading(false); return }
+      if (stErr || tmErr) { console.error('TournamentDetail stages/teams fetch error:', { stErr, tmErr }); setLoading(false); return }
 
       setTeams(teamsData ?? [])
 
@@ -605,23 +605,26 @@ export default function TournamentDetail() {
         return
       }
 
-      // 4. Fixtures
+      // 4. Fixtures — teams are looked up from teamsData (already fetched above)
+      // to avoid a PostgREST embedded-join issue with column-level SELECT grants
+      // on the teams table (migration 025 revokes table-level SELECT from anon).
       const { data: fxData, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
           id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id,
-          home_team:teams!home_team_id(id, name),
-          away_team:teams!away_team_id(id, name),
           pitch:pitches(name, venues(name)),
           fixture_results(home_goals, away_goals)
         `)
         .in('stage_id', stageIds)
         .order('kickoff_time', { ascending: true })
-      if (fxErr) { setLoading(false); return }
+      if (fxErr) { console.error('TournamentDetail fixture fetch error:', fxErr); setLoading(false); return }
 
+      const teamMap = Object.fromEntries((teamsData ?? []).map(t => [t.id, t]))
       const fxWithStage = (fxData ?? []).map(f => ({
         ...f,
         stage: stageMap[f.stage_id] ?? null,
+        home_team: teamMap[f.home_team_id] ?? null,
+        away_team: teamMap[f.away_team_id] ?? null,
       }))
 
       setFixtures(fxWithStage)
