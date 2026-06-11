@@ -379,7 +379,8 @@
     "noDate": "Datums nav norādīts",
     "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā.",
     "title": "Spēļu grafiks",
-    "backToStandings": "← Tabula"
+    "backToStandings": "← Tabula",
+    "gameNumber": "#{{n}}"
   },
   "dashboard": {
     "loadError": "Kļūda ielādējot turnīrus",

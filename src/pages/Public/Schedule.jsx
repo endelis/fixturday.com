@@ -110,6 +110,11 @@ export default function Schedule() {
     return '?'
   }
 
+  // Sequential game numbers across all scheduled fixtures (sorted by kickoff, which is query order)
+  const gameNumbers = Object.fromEntries(
+    fixtures.filter(f => f.kickoff_time).map((f, i) => [f.id, i + 1])
+  )
+
   const grouped = fixtures.reduce((acc, f) => {
     const day = f.kickoff_time ? format(new Date(f.kickoff_time), 'yyyy-MM-dd') : '__NO_DATE__'
     ;(acc[day] = acc[day] ?? []).push(f)
@@ -153,6 +158,11 @@ export default function Schedule() {
                 const result = f.fixture_results?.[0]
                 return (
                   <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
+                    {gameNumbers[f.id] && (
+                      <span style={{ color: 'var(--color-muted)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0, minWidth: '2rem' }}>
+                        {t('schedule.gameNumber', { n: gameNumbers[f.id] })}
+                      </span>
+                    )}
                     {f.kickoff_time && (
                       <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
                         {formatTime(f.kickoff_time)}
@@ -199,6 +209,11 @@ export default function Schedule() {
                 const result = f.fixture_results?.[0]
                 return (
                   <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
+                    {gameNumbers[f.id] && (
+                      <span style={{ color: 'var(--color-muted)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0, minWidth: '2rem' }}>
+                        {t('schedule.gameNumber', { n: gameNumbers[f.id] })}
+                      </span>
+                    )}
                     {f.kickoff_time && (
                       <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
                         {formatTime(f.kickoff_time)}
