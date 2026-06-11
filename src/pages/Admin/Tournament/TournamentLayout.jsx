@@ -185,14 +185,14 @@ export default function TournamentLayout() {
               {t(item.labelKey)}
             </NavLink>
           ))}
-          <Link
-            to="/admin/matchday"
-            style={navLinkStyle({ isActive: false })}
+          <NavLink
+            to={`/admin/tournaments/${id}/matchday`}
+            style={navLinkStyle}
             onClick={() => setSidebarOpen(false)}
           >
             <span style={{ width: '1.25rem', textAlign: 'center' }}>⚽</span>
             {t('workspace.navMatchday')}
-          </Link>
+          </NavLink>
         </nav>
 
         <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>

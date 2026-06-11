@@ -54,14 +54,33 @@ export default function Schedule() {
           home_team:teams!home_team_id(id, name, logo_path),
           away_team:teams!away_team_id(id, name, logo_path),
           pitch:pitches(name, venues(name)),
-          fixture_results(home_goals, away_goals),
           stages!inner(age_group_id)
         `)
         .eq('stages.age_group_id', selectedAgeGroupId ?? ageGroupId)
         .order('kickoff_time', { ascending: true })
 
       if (fxErr) { setLoading(false); return }
-      setFixtures(fx ?? [])
+
+      // Fetch fixture_results separately — embedded joins silently drop rows
+      const fixtureList = fx ?? []
+      let fixtureData = fixtureList.map(f => ({ ...f, fixture_results: [] }))
+
+      if (fixtureList.length > 0) {
+        const fixtureIds = fixtureList.map(f => f.id)
+        const { data: results } = await supabase
+          .from('fixture_results')
+          .select('fixture_id, home_goals, away_goals')
+          .in('fixture_id', fixtureIds)
+        if (results?.length) {
+          const resultMap = Object.fromEntries(results.map(r => [r.fixture_id, r]))
+          fixtureData = fixtureList.map(f => ({
+            ...f,
+            fixture_results: resultMap[f.id] ? [resultMap[f.id]] : [],
+          }))
+        }
+      }
+
+      setFixtures(fixtureData)
       setLastUpdated(new Date())
       setLoading(false)
     }

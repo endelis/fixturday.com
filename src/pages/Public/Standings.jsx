@@ -91,7 +91,17 @@ export default function Standings() {
   const knockoutFixtures = fixtures.filter(f => f.stages?.type === 'knockout')
   const hasKnockoutFixtures = knockoutFixtures.length > 0
 
-  // Group knockout fixtures by round number; generate fallback round name when round_name is null
+  function resolveRoundName(matches) {
+    const rn = matches[0]?.round_name
+    if (rn === '3rd_place') return t('playoff.thirdPlace')
+    if (rn) return rn
+    return matches.length === 1 ? t('playoff.final')
+      : matches.length === 2 ? t('playoff.semiFinal')
+      : matches.length === 4 ? t('playoff.quarterFinal')
+      : t('standings.knockoutPhase')
+  }
+
+  // Group knockout fixtures by round number; split rounds that mix 3rd-place and final
   const knockoutByRound = knockoutFixtures.reduce((acc, f) => {
     const key = f.round ?? 999
     if (!acc[key]) acc[key] = []
@@ -100,13 +110,16 @@ export default function Standings() {
   }, {})
   const knockoutRoundList = Object.entries(knockoutByRound)
     .sort(([a], [b]) => Number(a) - Number(b))
-    .map(([, matches]) => {
-      const roundName = matches[0]?.round_name
-        ?? (matches.length === 1 ? t('playoff.final')
-           : matches.length === 2 ? t('playoff.semiFinal')
-           : matches.length === 4 ? t('playoff.quarterFinal')
-           : t('standings.knockoutPhase'))
-      return { roundName, matches }
+    .flatMap(([, matches]) => {
+      const named = matches.filter(f => f.round_name)
+      const unnamed = matches.filter(f => !f.round_name)
+      if (named.length > 0 && unnamed.length > 0) {
+        return [
+          { roundName: resolveRoundName(named), matches: named },
+          { roundName: resolveRoundName(unnamed), matches: unnamed },
+        ]
+      }
+      return [{ roundName: resolveRoundName(matches), matches }]
     })
 
   return (
@@ -209,8 +222,8 @@ export default function Standings() {
                 <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
                   {t('standings.knockoutPhase')}
                 </h2>
-                {knockoutRoundList.map(({ roundName, matches }) => (
-                  <div key={roundName} style={{ marginBottom: '1.5rem' }}>
+                {knockoutRoundList.map(({ roundName, matches }, idx) => (
+                  <div key={idx} style={{ marginBottom: '1.5rem' }}>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
                       {roundName}
                     </h3>

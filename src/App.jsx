@@ -115,6 +115,7 @@ export default function App() {
             <Route path="settings"   element={<TournamentEdit />} />
             <Route path="info"          element={<TournamentInfo />} />
             <Route path="registrations" element={<AdminRegistrations />} />
+            <Route path="matchday"      element={<Matchday />} />
           </Route>
 
           <Route path="*" element={<NotFound />} />

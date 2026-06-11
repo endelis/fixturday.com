@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link, Navigate } from 'react-router-dom'
+import { Link, Navigate, useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { formatTime } from '../../utils/dateFormat'
@@ -19,6 +19,7 @@ const inputSx = {
 export default function Matchday() {
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
+  const { id: urlTournamentId } = useParams()
   const [fixtures, setFixtures] = useState([])
   const [scores, setScores] = useState({})
   const [saving, setSaving] = useState({})
@@ -57,7 +58,9 @@ export default function Matchday() {
 
     if (error) { toast(t('common.error'), 'error'); setLoading(false); return }
 
-    const allFx = fx ?? []
+    const allFx = (fx ?? []).filter(f =>
+      !urlTournamentId || f.stages?.age_groups?.tournaments?.id === urlTournamentId
+    )
     const fixtureIds = allFx.map(f => f.id)
 
     // Fetch fixture_results separately — embedded joins silently drop rows for authenticated users

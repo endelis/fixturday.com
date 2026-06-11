@@ -70,7 +70,7 @@ export default function Fixtures() {
           home_team_id: null,
           away_team_id: null,
           round: f.round,
-          round_name: null,
+          round_name: f.round_name ?? null,
           group_label: null,
           home_placeholder: f.home_placeholder,
           away_placeholder: f.away_placeholder,
