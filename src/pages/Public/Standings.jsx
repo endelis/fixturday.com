@@ -119,6 +119,17 @@ export default function Standings() {
           { roundName: resolveRoundName(unnamed), matches: unnamed },
         ]
       }
+      // Fallback for older data where round_name was not persisted:
+      // detect the 3rd-place fixture by its placeholder text ('zaudētājs' = loser)
+      const is3rd = f => f.home_placeholder?.includes('zaudētājs') || f.away_placeholder?.includes('zaudētājs')
+      const thirdPlace = matches.filter(is3rd)
+      const finals = matches.filter(f => !is3rd(f))
+      if (thirdPlace.length > 0 && finals.length > 0) {
+        return [
+          { roundName: t('playoff.thirdPlace'), matches: thirdPlace },
+          { roundName: t('playoff.final'), matches: finals },
+        ]
+      }
       return [{ roundName: resolveRoundName(matches), matches }]
     })
 
