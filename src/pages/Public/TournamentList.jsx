@@ -249,17 +249,19 @@ export default function TournamentList() {
 
                       {/* Text info */}
                       <div style={{ flex: 1, minWidth: 0 }}>
-                        <h2 style={{
-                          fontFamily: 'var(--font-heading)',
-                          fontSize: '1.25rem',
-                          fontWeight: 700,
-                          color: 'var(--color-text)',
-                          lineHeight: 1.15,
-                          marginBottom: '0.4rem',
-                          overflow: 'hidden',
-                          textOverflow: 'ellipsis',
-                          whiteSpace: 'nowrap',
-                        }}>
+                        <h2
+                          title={tournament.name}
+                          style={{
+                            fontFamily: 'var(--font-heading)',
+                            fontSize: '1.25rem',
+                            fontWeight: 700,
+                            color: 'var(--color-text)',
+                            lineHeight: 1.15,
+                            marginBottom: '0.4rem',
+                            overflow: 'hidden',
+                            textOverflow: 'ellipsis',
+                            whiteSpace: 'nowrap',
+                          }}>
                           {tournament.name}
                         </h2>
 
@@ -321,7 +323,7 @@ export default function TournamentList() {
                           color: 'var(--color-success)',
                           border: '1px solid rgba(34, 197, 94, 0.3)',
                         }}>
-                          {tournament.sport}
+                          {t(`sports.${tournament.sport}`, { defaultValue: tournament.sport })}
                         </span>
                       )}
 

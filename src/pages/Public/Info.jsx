@@ -54,7 +54,7 @@ export default function Info() {
         {!hasContent ? (
           <p style={{ color: 'var(--color-muted)' }}>{t('info.noContent')}</p>
         ) : (
-          <pre style={{
+          <div style={{
             whiteSpace: 'pre-wrap',
             fontFamily: 'inherit',
             maxWidth: '72ch',
@@ -65,7 +65,7 @@ export default function Info() {
             marginBottom: hasContact ? '2rem' : 0,
           }}>
             {info.content_md}
-          </pre>
+          </div>
         )}
 
         {/* Contact */}
