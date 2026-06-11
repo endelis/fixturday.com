@@ -167,6 +167,12 @@ export default function TournamentNew() {
             {errors.slug && <span className="error-message">{errors.slug.message}</span>}
           </div>
 
+          {/* Country */}
+          <div className="form-group">
+            <label>{t('tournament.country')}</label>
+            <input {...register('country')} placeholder="Latvia" />
+          </div>
+
           {/* Sport card selector */}
           <div className="form-group">
             <label>{t('tournament.sport')}</label>

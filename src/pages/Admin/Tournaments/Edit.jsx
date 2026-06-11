@@ -180,6 +180,12 @@ export default function TournamentEdit() {
             <input {...register('slug')} />
           </div>
 
+          {/* Country */}
+          <div className="form-group">
+            <label>{t('tournament.country')}</label>
+            <input {...register('country')} />
+          </div>
+
           {/* Sport card selector */}
           <div className="form-group">
             <label>{t('tournament.sport')}</label>

@@ -74,6 +74,7 @@
     "sportRequired": "Lūdzu izvēlieties sporta veidu",
     "organizerEmail": "Rīkotāja e-pasts",
     "organizerPhone": "Rīkotāja tālrunis",
+    "country": "Valsts",
     "registerCTA": "Pieteikt komandu →",
     "status": {
       "ongoing": "Notiek",
@@ -451,7 +452,9 @@
     "rulesSection": "Nolikums",
     "tagNow": "TAGAD",
     "regBtn": "Reģistrēties",
-    "regOpen": "Reģ. atvērta"
+    "regOpen": "Reģ. atvērta",
+    "allSports": "Visi sporta veidi",
+    "allCountries": "Visas valstis"
   },
   "landing": {
     "badge": "Latvijas turnīru platforma",

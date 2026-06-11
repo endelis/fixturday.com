@@ -74,6 +74,7 @@
     "sportRequired": "Please select a sport",
     "organizerEmail": "Organiser email",
     "organizerPhone": "Organiser phone",
+    "country": "Country",
     "registerCTA": "Register team →",
     "status": {
       "ongoing": "Ongoing",
@@ -451,7 +452,9 @@
     "rulesSection": "Rules",
     "tagNow": "NOW",
     "regBtn": "Register",
-    "regOpen": "Reg. open"
+    "regOpen": "Reg. open",
+    "allSports": "All sports",
+    "allCountries": "All countries"
   },
   "landing": {
     "badge": "Free tournament platform",

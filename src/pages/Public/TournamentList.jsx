@@ -25,6 +25,8 @@ const STATUS_CONFIG = {
   finished: { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
 }
 
+const SPORT_ICONS = { football: '⚽', volleyball: '🏐', beach_volleyball: '🏖️', rugby: '🏉', table_tennis: '🏓' }
+
 // ── Component ─────────────────────────────────────────────────
 export default function TournamentList() {
   const { t } = useTranslation()
@@ -33,6 +35,8 @@ export default function TournamentList() {
   const [teamCounts, setTeamCounts] = useState({})
   const [loading, setLoading] = useState(true)
   const [search, setSearch] = useState('')
+  const [filterSport, setFilterSport] = useState('')
+  const [filterCountry, setFilterCountry] = useState('')
 
   useEffect(() => {
     document.title = t('tournamentList.pageTitle')
@@ -44,7 +48,7 @@ export default function TournamentList() {
     async function load() {
       const { data, error } = await supabase
         .from('tournaments')
-        .select('id, name, slug, sport, start_date, end_date, logo_url, venues(name), age_groups(id, name, registration_open)')
+        .select('id, name, slug, sport, country, start_date, end_date, logo_url, venues(name), age_groups(id, name, registration_open)')
         .eq('is_active', true)
         .order('start_date', { ascending: false })
 
@@ -85,8 +89,13 @@ export default function TournamentList() {
     load()
   }, [])
 
+  const availableSports = [...new Set(tournaments.map(t => t.sport).filter(Boolean))]
+  const availableCountries = [...new Set(tournaments.map(t => t.country).filter(Boolean))].sort()
+
   const filtered = tournaments.filter(t =>
-    t.name.toLowerCase().includes(search.toLowerCase())
+    t.name.toLowerCase().includes(search.toLowerCase()) &&
+    (!filterSport || t.sport === filterSport) &&
+    (!filterCountry || t.country === filterCountry)
   )
 
   // ── Loading state ─────────────────────────────────────────
@@ -181,6 +190,68 @@ export default function TournamentList() {
       </section>
 
       <div style={{ flex: 1, padding: '2.5rem 1.5rem 4rem', maxWidth: '1100px', margin: '0 auto', width: '100%', boxSizing: 'border-box' }}>
+
+        {/* Sport filter pills */}
+        {availableSports.length > 1 && (
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+            <button
+              onClick={() => setFilterSport('')}
+              style={{
+                padding: '0.3rem 0.85rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
+                border: `1px solid ${!filterSport ? '#f0a500' : 'rgba(255,255,255,0.12)'}`,
+                background: !filterSport ? 'rgba(240,165,0,0.12)' : 'transparent',
+                color: !filterSport ? '#f0a500' : '#8fa3bc', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              {t('public.allSports')}
+            </button>
+            {availableSports.map(sport => (
+              <button
+                key={sport}
+                onClick={() => setFilterSport(filterSport === sport ? '' : sport)}
+                style={{
+                  padding: '0.3rem 0.85rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
+                  border: `1px solid ${filterSport === sport ? '#f0a500' : 'rgba(255,255,255,0.12)'}`,
+                  background: filterSport === sport ? 'rgba(240,165,0,0.12)' : 'transparent',
+                  color: filterSport === sport ? '#f0a500' : '#8fa3bc', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                {SPORT_ICONS[sport] ?? ''} {t(`sports.${sport}`, { defaultValue: sport })}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Country filter pills */}
+        {availableCountries.length > 1 && (
+          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.5rem', overflowX: 'auto', paddingBottom: '0.25rem' }}>
+            <button
+              onClick={() => setFilterCountry('')}
+              style={{
+                padding: '0.3rem 0.85rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
+                border: `1px solid ${!filterCountry ? 'rgba(143,163,188,0.5)' : 'rgba(255,255,255,0.12)'}`,
+                background: !filterCountry ? 'rgba(143,163,188,0.08)' : 'transparent',
+                color: !filterCountry ? '#8fa3bc' : 'rgba(143,163,188,0.6)', cursor: 'pointer', whiteSpace: 'nowrap',
+              }}
+            >
+              {t('public.allCountries')}
+            </button>
+            {availableCountries.map(country => (
+              <button
+                key={country}
+                onClick={() => setFilterCountry(filterCountry === country ? '' : country)}
+                style={{
+                  padding: '0.3rem 0.85rem', borderRadius: '999px', fontSize: '0.8rem', fontWeight: 600,
+                  border: `1px solid ${filterCountry === country ? 'rgba(143,163,188,0.5)' : 'rgba(255,255,255,0.12)'}`,
+                  background: filterCountry === country ? 'rgba(143,163,188,0.08)' : 'transparent',
+                  color: filterCountry === country ? '#8fa3bc' : 'rgba(143,163,188,0.4)', cursor: 'pointer', whiteSpace: 'nowrap',
+                }}
+              >
+                {country}
+              </button>
+            ))}
+          </div>
+        )}
 
         {/* Empty state */}
         {filtered.length === 0 ? (
@@ -282,7 +353,7 @@ export default function TournamentList() {
                           </div>
                         )}
 
-                        {venueName && (
+                        {(venueName || tournament.country) && (
                           <div style={{
                             display: 'flex',
                             alignItems: 'center',
@@ -292,7 +363,7 @@ export default function TournamentList() {
                           }}>
                             <MapPin size={13} style={{ flexShrink: 0 }} />
                             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                              {venueName}
+                              {[venueName, tournament.country].filter(Boolean).join(' · ')}
                             </span>
                           </div>
                         )}
