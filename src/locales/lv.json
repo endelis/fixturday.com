@@ -380,7 +380,9 @@
     "noScheduleYet": "Grafiks vēl nav publicēts. Spēļu laiki tiks pievienoti drīzumā.",
     "title": "Spēļu grafiks",
     "backToStandings": "← Tabula",
-    "gameNumber": "#{{n}}"
+    "gameNumber": "#{{n}}",
+    "groupStage": "Grupu posms",
+    "playoffStage": "Izslēgšanas posms"
   },
   "dashboard": {
     "loadError": "Kļūda ielādējot turnīrus",

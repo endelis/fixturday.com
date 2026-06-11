@@ -379,7 +379,10 @@
     "noDate": "Date not set",
     "noScheduleYet": "Schedule not yet published. Kick-off times will be added soon.",
     "title": "Fixture schedule",
-    "backToStandings": "← Standings"
+    "backToStandings": "← Standings",
+    "gameNumber": "#{{n}}",
+    "groupStage": "Group Stage",
+    "playoffStage": "Playoff"
   },
   "dashboard": {
     "loadError": "Error loading tournaments",
