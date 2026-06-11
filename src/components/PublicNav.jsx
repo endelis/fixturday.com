@@ -63,8 +63,8 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                 {tournament.name}
               </Link>
 
-              {/* Age group tab switcher */}
-              {ageGroups.length > 0 && (
+              {/* Age group tab switcher — only when multiple groups */}
+              {ageGroups.length > 1 && (
                 <div style={{
                   display: 'flex',
                   gap: '0.4rem',
@@ -152,27 +152,34 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               paddingBottom: '0.3rem',
             }}
           >
-            <NavLink
-              to={activeAgeGroupId ? `/t/${tournament.slug}/${activeAgeGroupId}/fixtures` : `/t/${tournament.slug}`}
-              end
-              style={tourNavLink}
-            >
-              {t('nav.schedule')}
-            </NavLink>
-            <NavLink
-              to={activeAgeGroupId ? `/t/${tournament.slug}/${activeAgeGroupId}` : `/t/${tournament.slug}`}
-              end
-              style={tourNavLink}
-            >
-              {t('nav.standings')}
-            </NavLink>
-            <NavLink
-              to={`/${tournament.slug}/info`}
-              end
-              style={tourNavLink}
-            >
-              {t('nav.info')}
-            </NavLink>
+            {(() => {
+              const agId = activeAgeGroupId ?? ageGroups[0]?.id
+              return (
+                <>
+                  <NavLink
+                    to={agId ? `/t/${tournament.slug}/${agId}/fixtures` : `/t/${tournament.slug}`}
+                    end
+                    style={tourNavLink}
+                  >
+                    {t('nav.schedule')}
+                  </NavLink>
+                  <NavLink
+                    to={agId ? `/t/${tournament.slug}/${agId}` : `/t/${tournament.slug}`}
+                    end
+                    style={tourNavLink}
+                  >
+                    {t('nav.standings')}
+                  </NavLink>
+                  <NavLink
+                    to={`/${tournament.slug}/info`}
+                    end
+                    style={tourNavLink}
+                  >
+                    {t('nav.info')}
+                  </NavLink>
+                </>
+              )
+            })()}
           </div>
         )}
       </nav>

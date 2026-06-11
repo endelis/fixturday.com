@@ -1,6 +1,8 @@
+import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Mail, Phone } from 'lucide-react'
+import { supabase } from '../../lib/supabase'
 import { useTournamentInfo } from '../../hooks/useTournamentInfo'
 import TournamentLogo from '../../components/TournamentLogo'
 import PublicNav from '../../components/PublicNav'
@@ -9,6 +11,13 @@ export default function Info() {
   const { slug } = useParams()
   const { t } = useTranslation()
   const { tournament, info, loading, error } = useTournamentInfo(slug)
+  const [ageGroups, setAgeGroups] = useState([])
+
+  useEffect(() => {
+    if (!tournament?.id) return
+    supabase.from('age_groups').select('id, name').eq('tournament_id', tournament.id).order('name')
+      .then(({ data }) => setAgeGroups(data ?? []))
+  }, [tournament?.id])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (error || !tournament) return <div className="loading">{t('common.error')}</div>
@@ -18,7 +27,7 @@ export default function Info() {
 
   return (
     <div>
-      <PublicNav tournament={tournament} />
+      <PublicNav tournament={tournament} ageGroups={ageGroups} activeAgeGroupId={ageGroups[0]?.id} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
 
         {/* Breadcrumb */}
