@@ -591,9 +591,9 @@ export default function TournamentDetail() {
           .in('age_group_id', agIds)
           .eq('status', 'confirmed'),
       ])
-      if (stErr || tmErr) { console.error('TournamentDetail stages/teams fetch error:', { stErr, tmErr }); setLoading(false); return }
-
       setTeams(teamsData ?? [])
+
+      if (stErr || tmErr) { console.error('TournamentDetail stages/teams fetch error:', { stErr, tmErr }); setLoading(false); return }
 
       const stages = stagesData ?? []
       const stageIds = stages.map(s => s.id)
@@ -612,12 +612,12 @@ export default function TournamentDetail() {
         .from('fixtures')
         .select(`
           id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id,
-          pitch:pitches(name, venues(name)),
+          pitch:pitches(name),
           fixture_results(home_goals, away_goals)
         `)
         .in('stage_id', stageIds)
         .order('kickoff_time', { ascending: true })
-      if (fxErr) { console.error('TournamentDetail fixture fetch error:', fxErr); setLoading(false); return }
+      if (fxErr) { console.error('TournamentDetail fixture fetch error:', fxErr) }
 
       const teamMap = Object.fromEntries((teamsData ?? []).map(t => [t.id, t]))
       const fxWithStage = (fxData ?? []).map(f => ({

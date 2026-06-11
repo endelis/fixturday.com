@@ -111,18 +111,38 @@ export default function TournamentPlayoff() {
 
         if (fixError || !fixtures || fixtures.length === 0) continue
 
-        // Group fixtures by round number
-        const roundMap = new Map()
+        // Group into virtual rounds — 3rd-place and Final share a round number
+        // but must display as separate columns in the bracket
+        const vMap = new Map()
         for (const fix of fixtures) {
           const round = fix.round ?? 0
-          if (!roundMap.has(round)) roundMap.set(round, [])
-          roundMap.get(round).push(fix)
+          const is3rd =
+            fix.round_name === t('playoff.thirdPlace') ||
+            (fix.home_placeholder ?? '').includes('zaudētājs') ||
+            (fix.away_placeholder ?? '').includes('zaudētājs')
+          const key = is3rd ? `${round}:3` : `${round}:m`
+          if (!vMap.has(key)) vMap.set(key, { round, is3rd, matches: [] })
+          vMap.get(key).matches.push(fix)
         }
 
-        // Sort rounds
-        const rounds = Array.from(roundMap.entries())
-          .sort((a, b) => a[0] - b[0])
-          .map(([roundNum, matches]) => ({ roundNum, roundName: matches[0]?.round_name ?? `${t('fixture.round')} ${roundNum}`, matches }))
+        const rounds = [...vMap.values()]
+          .sort((a, b) => a.round !== b.round ? a.round - b.round : (a.is3rd ? -1 : 1))
+          .map(({ round, is3rd, matches }) => {
+            let roundName
+            if (is3rd) {
+              roundName = t('playoff.thirdPlace')
+            } else if (matches[0]?.round_name) {
+              roundName = matches[0].round_name
+            } else {
+              const n = matches.length
+              roundName = n === 1
+                ? t('playoff.final')
+                : n === 2 ? t('playoff.semiFinal')
+                : n === 4 ? t('playoff.quarterFinal')
+                : `${t('fixture.round')} ${round}`
+            }
+            return { roundNum: round, roundName, matches }
+          })
 
         if (rounds.length > 0) {
           brackets.push({ ageGroup: ag, rounds })
@@ -199,7 +219,7 @@ export default function TournamentPlayoff() {
                       {matches.map((match) => {
                         const decodePlaceholder = (p) => {
                           if (!p) return '?'
-                          const m = p.match(/^G(\d+)P(\d+)$/)
+                          const m = p.match(/^Group ([A-Z])-(\d+)$/) ?? p.match(/^G(\d+)P(\d+)$/)
                           return m ? t('standings.groupPlaceholder', { group: m[1], pos: m[2] }) : p
                         }
                         const homeTeam = match.home_team?.name ?? decodePlaceholder(match.home_placeholder)

@@ -250,6 +250,12 @@
     "connecting": "Savienojas...",
     "groupPlaceholder": "{{group}}. grupas {{pos}}. vieta"
   },
+  "playoff": {
+    "final": "Fināls",
+    "semiFinal": "Pusfināls",
+    "quarterFinal": "Ceturtdaļfināls",
+    "thirdPlace": "Spēle par 3. vietu"
+  },
   "venue": {
     "title": "Spēļu vietas",
     "new": "Jauna vieta",
