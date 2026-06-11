@@ -448,7 +448,8 @@
     "tabTeams": "Teams",
     "rulesSection": "Rules",
     "tagNow": "NOW",
-    "regBtn": "Register"
+    "regBtn": "Register",
+    "regOpen": "Reg. open"
   },
   "landing": {
     "badge": "Free tournament platform",

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Link } from 'react-router-dom'
+import { Link, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { formatDate } from '../../utils/dateFormat'
@@ -28,6 +28,7 @@ const STATUS_CONFIG = {
 // ── Component ─────────────────────────────────────────────────
 export default function TournamentList() {
   const { t } = useTranslation()
+  const navigate = useNavigate()
   const [tournaments, setTournaments] = useState([])
   const [teamCounts, setTeamCounts] = useState({})
   const [loading, setLoading] = useState(true)
@@ -43,7 +44,7 @@ export default function TournamentList() {
     async function load() {
       const { data, error } = await supabase
         .from('tournaments')
-        .select('id, name, slug, sport, start_date, end_date, logo_url, venues(name)')
+        .select('id, name, slug, sport, start_date, end_date, logo_url, venues(name), age_groups(id, name, registration_open)')
         .eq('is_active', true)
         .order('start_date', { ascending: false })
 
@@ -52,21 +53,17 @@ export default function TournamentList() {
       const list = data ?? []
       setTournaments(list)
 
-      // Load team counts: tournaments → age_groups → teams
+      // Load team counts using embedded age_groups (no extra round-trip)
       if (list.length > 0) {
-        const tIds = list.map(t => t.id)
+        const agToTournament = {}
+        for (const tour of list) {
+          for (const ag of tour.age_groups ?? []) {
+            agToTournament[ag.id] = tour.id
+          }
+        }
+        const agIds = Object.keys(agToTournament)
 
-        const { data: ags, error: agsErr } = await supabase
-          .from('age_groups')
-          .select('id, tournament_id')
-          .in('tournament_id', tIds)
-
-        if (agsErr) { setLoading(false); return }
-
-        if (ags && ags.length > 0) {
-          const agIds = ags.map(g => g.id)
-          const agToTournament = Object.fromEntries(ags.map(g => [g.id, g.tournament_id]))
-
+        if (agIds.length > 0) {
           const { data: teams, error: teamsErr } = await supabase
             .from('teams')
             .select('id, age_group_id')
@@ -213,12 +210,13 @@ export default function TournamentList() {
                 : tournament.venues?.name
 
               const teamCount = teamCounts[tournament.id] ?? 0
+              const hasOpenReg = (tournament.age_groups ?? []).some(ag => ag.registration_open)
 
               return (
-                <Link
+                <div
                   key={tournament.id}
-                  to={`/t/${tournament.slug}`}
-                  style={{ textDecoration: 'none', display: 'block' }}
+                  style={{ cursor: 'pointer', display: 'block' }}
+                  onClick={() => navigate(`/t/${tournament.slug}`)}
                 >
                   <article className="t-card">
                     {/* Top: logo + title + meta */}
@@ -298,6 +296,29 @@ export default function TournamentList() {
                             </span>
                           </div>
                         )}
+
+                        {(tournament.age_groups?.length ?? 0) > 0 && (
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.25rem', marginTop: '0.45rem' }}>
+                            {tournament.age_groups.slice(0, 5).map(ag => (
+                              <span key={ag.id} style={{
+                                fontSize: '0.68rem',
+                                color: 'var(--color-text-muted)',
+                                background: 'rgba(255,255,255,0.04)',
+                                border: '1px solid rgba(255,255,255,0.08)',
+                                borderRadius: '4px',
+                                padding: '0.1rem 0.45rem',
+                                lineHeight: 1.4,
+                              }}>
+                                {ag.name}
+                              </span>
+                            ))}
+                            {tournament.age_groups.length > 5 && (
+                              <span style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)', alignSelf: 'center' }}>
+                                +{tournament.age_groups.length - 5}
+                              </span>
+                            )}
+                          </div>
+                        )}
                       </div>
                     </div>
 
@@ -333,20 +354,47 @@ export default function TournamentList() {
                         </span>
                       )}
 
-                      <div style={{
-                        marginLeft: 'auto',
-                        display: 'flex',
-                        alignItems: 'center',
-                        gap: '0.3rem',
-                        color: 'var(--color-text-muted)',
-                        fontSize: '0.8125rem',
-                      }}>
-                        <Users size={14} />
-                        <span>{teamCount} {t('public.teamsLabel')}</span>
+                      {hasOpenReg && (
+                        <span style={{
+                          padding: '0.18rem 0.65rem',
+                          borderRadius: '999px',
+                          fontSize: '0.72rem',
+                          fontWeight: 600,
+                          background: 'rgba(240,165,0,0.12)',
+                          color: '#f0a500',
+                          border: '1px solid rgba(240,165,0,0.3)',
+                        }}>
+                          {t('public.regOpen')}
+                        </span>
+                      )}
+
+                      <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', color: 'var(--color-text-muted)', fontSize: '0.8125rem' }}>
+                          <Users size={14} />
+                          <span>{teamCount} {t('public.teamsLabel')}</span>
+                        </div>
+                        {hasOpenReg && (
+                          <Link
+                            to={`/t/${tournament.slug}/register`}
+                            onClick={e => e.stopPropagation()}
+                            style={{
+                              padding: '0.3rem 0.75rem',
+                              background: '#f0a500',
+                              color: '#0a1628',
+                              borderRadius: '6px',
+                              fontSize: '0.75rem',
+                              fontWeight: 700,
+                              textDecoration: 'none',
+                              whiteSpace: 'nowrap',
+                            }}
+                          >
+                            {t('public.regBtn')} →
+                          </Link>
+                        )}
                       </div>
                     </div>
                   </article>
-                </Link>
+                </div>
               )
             })}
           </div>
