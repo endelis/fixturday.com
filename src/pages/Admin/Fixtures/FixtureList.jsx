@@ -72,7 +72,13 @@ export default function FixtureList({ byRound, pitches, teams, updateFixture, ga
                     <span style={{ flex: 1, textAlign: 'right', fontWeight: 600 }}>
                       {f.home_team?.name ?? f.home_placeholder ?? '?'}
                     </span>
-                    <span style={{ color: 'var(--color-text-muted)' }}>{t('fixture.vs')}</span>
+                    {f.fixture_results?.[0] != null ? (
+                      <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.05rem', color: 'var(--color-accent)', minWidth: '4rem', textAlign: 'center' }}>
+                        {f.fixture_results[0].home_goals} : {f.fixture_results[0].away_goals}
+                      </span>
+                    ) : (
+                      <span style={{ color: 'var(--color-text-muted)' }}>{t('fixture.vs')}</span>
+                    )}
                     <span style={{ flex: 1, fontWeight: 600 }}>
                       {f.away_team?.name ?? f.away_placeholder ?? '?'}
                     </span>

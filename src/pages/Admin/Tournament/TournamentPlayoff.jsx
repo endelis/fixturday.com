@@ -101,20 +101,29 @@ export default function TournamentPlayoff() {
             id, round, round_name, home_placeholder, away_placeholder,
             home_team:teams!home_team_id(id, name),
             away_team:teams!away_team_id(id, name),
-            fixture_results(home_goals, away_goals),
-            stages!inner(age_group_id, type, age_groups(id, name, tournament_id))
+            stages!inner(age_group_id, type)
           `)
-          .eq('stages.age_groups.tournament_id', tournamentId)
-          .eq('stages.type', 'knockout')
           .eq('stages.age_group_id', ag.id)
+          .eq('stages.type', 'knockout')
           .order('round')
 
         if (fixError || !fixtures || fixtures.length === 0) continue
 
+        // Fetch fixture_results separately (embedded joins can silently drop results)
+        const fixIds = fixtures.map(f => f.id)
+        const { data: results } = fixIds.length > 0
+          ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fixIds)
+          : { data: [] }
+        const resultMap = Object.fromEntries((results ?? []).map(r => [r.fixture_id, r]))
+        const fixturesWithResults = fixtures.map(f => ({
+          ...f,
+          result: resultMap[f.id] ?? null,
+        }))
+
         // Group into virtual rounds — 3rd-place and Final share a round number
         // but must display as separate columns in the bracket
         const vMap = new Map()
-        for (const fix of fixtures) {
+        for (const fix of fixturesWithResults) {
           const round = fix.round ?? 0
           const is3rd =
             fix.round_name === t('playoff.thirdPlace') ||
@@ -224,7 +233,7 @@ export default function TournamentPlayoff() {
                         }
                         const homeTeam = match.home_team?.name ?? decodePlaceholder(match.home_placeholder)
                         const awayTeam = match.away_team?.name ?? decodePlaceholder(match.away_placeholder)
-                        const result = match.fixture_results?.[0]
+                        const result = match.result ?? null
                         const hasResult = result != null
                         const homeGoals = hasResult ? result.home_goals : null
                         const awayGoals = hasResult ? result.away_goals : null

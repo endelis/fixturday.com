@@ -583,46 +583,35 @@ export default function TournamentDetail() {
 
       const agIds = ags.map(g => g.id)
 
-      // 3. Stages + Teams in parallel
-      const [{ data: stagesData, error: stErr }, { data: teamsData, error: tmErr }] = await Promise.all([
-        supabase.from('stages').select('id, age_group_id, type').in('age_group_id', agIds),
-        supabase.from('teams')
-          .select('id, name, club, age_group_id, status')
-          .in('age_group_id', agIds)
-          .eq('status', 'confirmed'),
-      ])
+      // 3. Teams
+      const { data: teamsData, error: tmErr } = await supabase
+        .from('teams')
+        .select('id, name, club, age_group_id, status')
+        .in('age_group_id', agIds)
+        .eq('status', 'confirmed')
+
       setTeams(teamsData ?? [])
 
-      if (stErr || tmErr) { console.error('TournamentDetail stages/teams fetch error:', { stErr, tmErr }); setLoading(false); return }
+      if (tmErr) { console.error('TournamentDetail teams fetch error:', tmErr); setLoading(false); return }
 
-      const stages = stagesData ?? []
-      const stageIds = stages.map(s => s.id)
-      const stageMap = Object.fromEntries(stages.map(s => [s.id, s]))
-
-      if (stageIds.length === 0) {
-        if (!tabInitialized.current) { tabInitialized.current = true; setActiveTab('info') }
-        setLoading(false)
-        return
-      }
-
-      // 4. Fixtures — teams are looked up from teamsData (already fetched above)
-      // to avoid a PostgREST embedded-join issue with column-level SELECT grants
-      // on the teams table (migration 025 revokes table-level SELECT from anon).
+      // 4. Fixtures — embed stages!inner so we filter by age_group_id via the join
+      // (same proven pattern as Schedule.jsx; avoids a separate stageIds pre-fetch).
       const { data: fxData, error: fxErr } = await supabase
         .from('fixtures')
         .select(`
-          id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id,
+          id, kickoff_time, status, home_team_id, away_team_id, group_label,
           pitch:pitches(name),
-          fixture_results(home_goals, away_goals)
+          fixture_results(home_goals, away_goals),
+          stages!inner(id, age_group_id, type)
         `)
-        .in('stage_id', stageIds)
+        .in('stages.age_group_id', agIds)
         .order('kickoff_time', { ascending: true })
       if (fxErr) { console.error('TournamentDetail fixture fetch error:', fxErr) }
 
       const teamMap = Object.fromEntries((teamsData ?? []).map(t => [t.id, t]))
       const fxWithStage = (fxData ?? []).map(f => ({
         ...f,
-        stage: stageMap[f.stage_id] ?? null,
+        stage: f.stages ?? null,
         home_team: teamMap[f.home_team_id] ?? null,
         away_team: teamMap[f.away_team_id] ?? null,
       }))
