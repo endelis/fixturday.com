@@ -417,12 +417,12 @@ export default function Landing() {
 
       <style>{`
         .landing-nav-links {
-          display: flex; align-items: center; gap: 1.25rem;
+          display: none; align-items: center; gap: 1.25rem;
         }
-        .landing-hamburger { display: none; }
-        @media (max-width: 767px) {
-          .landing-nav-links { display: none; }
-          .landing-hamburger { display: block; }
+        .landing-hamburger { display: block; }
+        @media (min-width: 768px) {
+          .landing-nav-links { display: flex; }
+          .landing-hamburger { display: none; }
         }
         .landing-features-grid {
           display: grid; grid-template-columns: 1fr; gap: 1.25rem;

@@ -83,6 +83,7 @@ export default function Schedule() {
   }, [ageGroupId, selectedAgeGroupId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
+  if (!ag) return <div className="loading">{t('common.error')}</div>
 
   function teamName(teamId, name, placeholder) {
     if (teamId) return name ?? '?'
