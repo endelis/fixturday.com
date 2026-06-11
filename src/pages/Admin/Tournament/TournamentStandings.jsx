@@ -198,11 +198,11 @@ export default function TournamentStandings() {
     try {
       const teamsAdvancing = agData.ag.teams_advancing ?? 2
 
-      // Build G{groupNum}P{pos} → teamId map
+      // Build "Group A-1" → teamId map (matches generateKnockoutPlaceholders format)
       const placeholderMap = {}
-      agData.perGroup.forEach(({ rows }, groupIndex) => {
+      agData.perGroup.forEach(({ label, rows }) => {
         rows.slice(0, teamsAdvancing).forEach((row, posIndex) => {
-          placeholderMap[`G${groupIndex + 1}P${posIndex + 1}`] = row.team.id
+          placeholderMap[`Group ${label}-${posIndex + 1}`] = row.team.id
         })
       })
 

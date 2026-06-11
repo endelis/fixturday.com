@@ -1,33 +1,35 @@
 /**
- * Full tournament lifecycle E2E test.
+ * Full tournament lifecycle E2E test — group_knockout format with playoffs.
  *
- * Covers the complete admin + public journey:
+ * Flow:
  *   1.  Create tournament
- *   2.  Add U10 age group (round_robin)
- *   3.  Add 4 teams
+ *   2.  Add U10 age group (group_knockout, 2 groups of 3)
+ *   2b. Create venue + pitch
+ *   3.  Add 6 teams
  *   4.  Bulk-confirm teams
- *   5.  Generate fixtures (6 round-robin matches)
- *   6.  Assign kickoff times (today) so Matchday can load them
- *   7.  Enter scores via Matchday page
- *   8.  Verify admin standings table
- *   9.  Public tournament page loads
- *  10.  Public standings show 4 teams
- *  11.  Public schedule shows fixtures
- *
- * The tournament is LEFT in the database after the run so it can be reviewed.
+ *   5.  Generate fixtures (10 total: 6 group + 4 knockout placeholders)
+ *   6.  Set kickoff + pitch for 6 group-stage fixtures
+ *   7.  Enter group-stage scores via Matchday (home wins 2:0)
+ *   7b. Admin standings: click "Virzīt komandas uz playoff" → SF fixtures get real teams
+ *   7c. sbNode: seed 3rd-place and Final fixtures with SF winners/losers
+ *   7d. Set kickoff + pitch for 4 knockout fixtures
+ *   8.  Enter knockout scores via Matchday (home wins 2:0)
+ *   9.  Admin standings shows 6 teams across 2 groups (3 rows each)
+ *  10.  Public Grafiks tab shows team names on main tournament page
+ *  11.  Public Tabula tab shows 6 standings rows
+ *  12.  Public schedule route shows fixtures with pitch info
  */
 
 import { expect, test } from '@playwright/test'
+import { createClient } from '@supabase/supabase-js'
 
-// ── Shared state (serial run inside one browser context) ──────────────────────
 const TODAY = new Date().toISOString().split('T')[0] // yyyy-MM-dd
-const RUN_ID = Date.now().toString().slice(-5)        // 5-digit suffix, unique per run
+const RUN_ID = Date.now().toString().slice(-5)
 const TOURNAMENT_NAME = `E2E Test ${TODAY} ${RUN_ID}`
 
-let context, page
+let context, page, sbNode
 let tournamentId, tournamentSlug, u10Id
 
-// ── slugify mirrors src/pages/Admin/Tournaments/New.jsx ──────────────────────
 function slugify(text) {
   return text
     .toString().toLowerCase().trim()
@@ -39,24 +41,25 @@ function slugify(text) {
     .replace(/[^\w-]/g, '').replace(/--+/g, '-')
 }
 
-test.describe.serial('Full Tournament Lifecycle', () => {
+test.describe.serial('Full Tournament Lifecycle — group_knockout with playoffs', () => {
   test.beforeAll(async ({ browser }) => {
     context = await browser.newContext()
-
-    // Pre-set cookie consent so the fixed bottom banner never appears and
-    // blocks button clicks during the test.
     await context.addInitScript(() => {
       localStorage.setItem('fixturday_cookie_consent', 'all')
     })
-
     page = await context.newPage()
 
-    // Inline login — do NOT use the loginAsAdmin helper here because it calls
-    // page.addInitScript to clear localStorage, which would fire on every
-    // subsequent navigation in this shared context and log the user out.
     const email = process.env.PLAYWRIGHT_ADMIN_EMAIL
     const password = process.env.PLAYWRIGHT_ADMIN_PASSWORD
     if (!email || !password) throw new Error('Set PLAYWRIGHT_ADMIN_EMAIL and PLAYWRIGHT_ADMIN_PASSWORD')
+
+    // Node.js Supabase client for direct DB operations (seeding Final/3rd-place teams)
+    sbNode = createClient(
+      process.env.VITE_SUPABASE_URL,
+      process.env.VITE_SUPABASE_ANON_KEY,
+    )
+    const { error: authErr } = await sbNode.auth.signInWithPassword({ email, password })
+    if (authErr) throw authErr
 
     await page.goto('/admin')
     await page.getByLabel('E-pasts').fill(email)
@@ -73,8 +76,6 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   test('01 · create tournament', async () => {
     await page.goto('/admin/tournaments/new')
     await page.locator('input[name="name"]').fill(TOURNAMENT_NAME)
-
-    // Slug auto-fills via onChange — wait for it
     await expect(page.locator('input[name="slug"]')).not.toHaveValue('', { timeout: 3000 })
 
     await page.getByRole('button', { name: 'Izveidot turnīru' }).click()
@@ -86,26 +87,22 @@ test.describe.serial('Full Tournament Lifecycle', () => {
     tournamentSlug = slugify(TOURNAMENT_NAME)
 
     await expect(page.getByText(TOURNAMENT_NAME).first()).toBeVisible()
-
-    // Pre-dismiss the setup wizard — it's keyed by tournament ID in localStorage
-    // and would block all click interactions on tournament sub-pages.
     await page.evaluate((id) => {
       localStorage.setItem(`fixturday_wizard_dismissed_${id}`, 'true')
     }, tournamentId)
   })
 
-  // ── 02: Add U10 age group ─────────────────────────────────────────────────
-  test('02 · add U10 age group (round_robin)', async () => {
+  // ── 02: Add U10 age group (group_knockout) ────────────────────────────────
+  test('02 · add U10 age group (group_knockout)', async () => {
     await page.goto(`/admin/tournaments/${tournamentId}/age-groups`)
     await page.getByRole('button', { name: /Jauna vecuma grupa/i }).click()
 
     await page.locator('input[placeholder="U10"]').fill('U10')
-    // format select defaults to round_robin — leave as-is
+    await page.locator('select').selectOption('group_knockout')
     await page.getByRole('button', { name: 'Saglabāt' }).click()
 
     await expect(page.getByText('U10')).toBeVisible({ timeout: 8000 })
 
-    // Capture the age-group UUID from the Teams link href
     const teamsHref = await page
       .locator('a[href*="/admin/age-groups/"][href*="/teams"]')
       .first()
@@ -118,114 +115,185 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   // ── 02b: Create venue + pitch ─────────────────────────────────────────────
   test('02b · create venue and pitch', async () => {
     await page.goto(`/admin/tournaments/${tournamentId}/venues`)
-
-    // Create venue
     await page.getByRole('button', { name: /Jauna vieta/i }).click()
     await page.locator('input[name="name"]').fill('E2E Test Stadion')
     await page.getByRole('button', { name: 'Pievienot vietu' }).click()
     await expect(page.getByText('E2E Test Stadion')).toBeVisible({ timeout: 8000 })
 
-    // Add pitch to the venue
     await page.getByRole('button', { name: /Jauns laukums/i }).click()
     await page.locator('input[placeholder="Laukuma nosaukums"]').fill('Galvenais laukums')
     await page.getByRole('button', { name: 'Pievienot' }).click()
     await expect(page.getByText('Galvenais laukums')).toBeVisible({ timeout: 8000 })
   })
 
-  // ── 03: Add 4 teams ───────────────────────────────────────────────────────
-  test('03 · add 7 teams to U10', async () => {
+  // ── 03: Add 6 teams ───────────────────────────────────────────────────────
+  test('03 · add 6 teams to U10', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/teams`)
 
-    for (const name of ['Alpha FC', 'Beta FC', 'Gamma FC', 'Delta FC', 'Epsilon FC', 'Zeta FC', 'Eta FC']) {
+    for (const name of ['Alpha FC', 'Beta FC', 'Gamma FC', 'Delta FC', 'Epsilon FC', 'Zeta FC']) {
       await page.getByRole('button', { name: /\+ Jauna komanda/i }).click()
-      // react-hook-form registers this as name="name" — no htmlFor/id association
       await page.locator('input[name="name"]').fill(name)
       await page.getByRole('button', { name: 'Pievienot' }).click()
       await expect(page.getByText(name, { exact: true })).toBeVisible({ timeout: 8000 })
     }
   })
 
-  // ── 04: Bulk-confirm all teams ────────────────────────────────────────────
-  test('04 · bulk-confirm all 7 teams', async () => {
+  // ── 04: Bulk-confirm 6 teams ──────────────────────────────────────────────
+  test('04 · bulk-confirm all 6 teams', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/teams`)
-
-    // Accept the native confirm() dialog that bulkApprove() triggers
     page.once('dialog', d => d.accept())
     await page.getByRole('button', { name: 'Apstiprināt visas' }).click()
-
-    // All 7 cards should flip to "Apstiprināta" (badge-success)
-    await expect(page.locator('.badge-success')).toHaveCount(7, { timeout: 10000 })
+    await expect(page.locator('.badge-success')).toHaveCount(6, { timeout: 10000 })
   })
 
-  // ── 05: Generate round-robin fixtures ────────────────────────────────────
-  test('05 · generate 21 round-robin fixtures', async () => {
+  // ── 05: Generate group_knockout fixtures ──────────────────────────────────
+  test('05 · generate group_knockout fixtures (10 total)', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/fixtures`)
     await page.getByRole('button', { name: /Ģenerēt spēles/i }).click()
 
-    // 7-team round robin = 21 fixtures (7*6/2) across 7 rounds (1 bye per round)
+    // 6 teams, 2 groups of 3 → 6 group fixtures + 4 knockout placeholders = 10
     await expect(page.getByText(/Kārta/i).first()).toBeVisible({ timeout: 10000 })
     const fixCards = page.locator('.card').filter({ hasText: /pret/i })
-    await expect(fixCards).toHaveCount(21, { timeout: 10000 })
+    await expect(fixCards).toHaveCount(10, { timeout: 10000 })
   })
 
-  // ── 06: Set kickoff times + pitch on all fixtures ────────────────────────
-  test('06 · set kickoff times and pitch on all fixtures', async () => {
+  // ── 06: Set kickoff + pitch for 6 group-stage fixtures ────────────────────
+  test('06 · set kickoff and pitch on group-stage fixtures', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/fixtures`)
 
-    // Use fixture cards (contains "pret") rather than bare date inputs so we
-    // can also select the pitch select that follows each DateTimePicker.
     const fixCards = page.locator('.card').filter({ hasText: /pret/i })
     await expect(fixCards.first()).toBeVisible({ timeout: 5000 })
-    const count = await fixCards.count()
-    expect(count, 'should have 21 fixture cards').toBe(21)
+    await expect(fixCards).toHaveCount(10, { timeout: 5000 })
 
-    for (let i = 0; i < count; i++) {
+    // Cards 0-5 are group-stage (FixtureList sorts groups before knockout rounds)
+    for (let i = 0; i < 6; i++) {
       const card = fixCards.nth(i)
       await card.locator('input[type="date"]').fill(TODAY)
-      await page.waitForTimeout(400)  // give the PATCH time to land
-
-      // Assign pitch — nth(0) = time-slot select, nth(1) = pitch select
-      await card.locator('select').nth(1).selectOption({
-        label: 'E2E Test Stadion — Galvenais laukums',
-      })
+      await page.waitForTimeout(400)
+      await card.locator('select').nth(1).selectOption({ label: 'E2E Test Stadion — Galvenais laukums' })
       await page.waitForTimeout(400)
     }
-    await page.waitForTimeout(500)  // drain any in-flight PATCHes
+    await page.waitForTimeout(500)
   })
 
-  // ── 07: Enter scores via Matchday ─────────────────────────────────────────
-  test('07 · enter scores on Matchday (home wins 2-1 everywhere)', async () => {
+  // ── 07: Enter group-stage scores via Matchday ─────────────────────────────
+  test('07 · enter group-stage scores (home wins 2:0)', async () => {
     await page.goto('/admin/matchday')
-
-    // Matchday defaults to today; U10 group heading should appear
     await expect(page.getByRole('heading', { name: 'U10' })).toBeVisible({ timeout: 12000 })
 
-    // Each fixture card has two input[type="number"] (home : away).
-    // Matchday shows ALL admin fixtures for today — previous partial runs may have
-    // left extra fixtures, so assert at least 6 and score them all.
     const fixtureCards = page.locator('.card').filter({
       has: page.locator('input[type="number"]'),
     })
     await expect(fixtureCards.first()).toBeVisible({ timeout: 8000 })
     const totalCards = await fixtureCards.count()
-    expect(totalCards, 'should have at least 21 fixture cards').toBeGreaterThanOrEqual(21)
+    // Matchday shows all today's admin fixtures — previous runs may add extras
+    expect(totalCards, 'should have at least 6 group-stage fixtures').toBeGreaterThanOrEqual(6)
 
-    // Fill all visible cards: home = 2, away = 1
     for (let i = 0; i < totalCards; i++) {
       const card = fixtureCards.nth(i)
       await card.locator('input[type="number"]').first().fill('2')
-      await card.locator('input[type="number"]').nth(1).fill('1')
+      await card.locator('input[type="number"]').nth(1).fill('0')
     }
 
-    // Save all at once
     await page.getByRole('button', { name: 'Saglabāt visas' }).click()
-    await expect(
-      page.getByText('Visi rezultāti saglabāti!'),
-    ).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Visi rezultāti saglabāti!')).toBeVisible({ timeout: 10000 })
   })
 
-  // ── 08: Admin standings ───────────────────────────────────────────────────
-  test('08 · admin standings show 7 teams with points', async () => {
+  // ── 07b: Advance teams to knockout stage via admin standings ───────────────
+  test('07b · advance group winners to playoff via standings button', async () => {
+    await page.goto(`/admin/tournaments/${tournamentId}/standings`)
+    await expect(page.getByText('U10')).toBeVisible({ timeout: 10000 })
+
+    // Wait for advance button to be enabled (all group games completed)
+    const advBtn = page.getByRole('button', { name: 'Virzīt komandas uz playoff' })
+    await expect(advBtn).toBeEnabled({ timeout: 12000 })
+    await advBtn.click()
+
+    // handleAdvance sets real team IDs on SF fixtures; success state appears
+    await expect(page.getByText('Komandas jau virzītas uz playoff')).toBeVisible({ timeout: 15000 })
+  })
+
+  // ── 07c: sbNode — seed 3rd-place and Final with SF winners/losers ─────────
+  test('07c · seed Final and 3rd-place fixtures via sbNode', async () => {
+    const { data: stages, error: stErr } = await sbNode.from('stages')
+      .select('id, type')
+      .eq('age_group_id', u10Id)
+    if (stErr) throw stErr
+
+    const knockoutStage = stages.find(s => s.type === 'knockout')
+    expect(knockoutStage, 'knockout stage must exist').toBeTruthy()
+
+    const { data: knockFx, error: kfErr } = await sbNode.from('fixtures')
+      .select('id, home_team_id, away_team_id, home_placeholder')
+      .eq('stage_id', knockoutStage.id)
+    if (kfErr) throw kfErr
+
+    // handleAdvance sets real teams on round-1 SF fixtures; home wins = home is winner
+    const sf1 = knockFx.find(f => f.home_placeholder === 'Group A-1')
+    const sf2 = knockFx.find(f => f.home_placeholder === 'Group B-1')
+    expect(sf1?.home_team_id, 'SF1 home team must be set after advance').toBeTruthy()
+    expect(sf2?.home_team_id, 'SF2 home team must be set after advance').toBeTruthy()
+
+    const thirdPlace = knockFx.find(f => f.home_placeholder === 'SF1 zaudētājs')
+    const final_ = knockFx.find(f => f.home_placeholder === 'SF1 uzvarētājs')
+    expect(thirdPlace, '3rd-place fixture must exist').toBeTruthy()
+    expect(final_, 'Final fixture must exist').toBeTruthy()
+
+    // SF home wins → home_team_id = winner, away_team_id = loser
+    const { error: tpErr } = await sbNode.from('fixtures')
+      .update({ home_team_id: sf1.away_team_id, away_team_id: sf2.away_team_id })
+      .eq('id', thirdPlace.id)
+    if (tpErr) throw tpErr
+
+    const { error: fErr } = await sbNode.from('fixtures')
+      .update({ home_team_id: sf1.home_team_id, away_team_id: sf2.home_team_id })
+      .eq('id', final_.id)
+    if (fErr) throw fErr
+  })
+
+  // ── 07d: Set kickoff + pitch for 4 knockout fixtures ─────────────────────
+  test('07d · set kickoff and pitch on knockout fixtures', async () => {
+    await page.goto(`/admin/age-groups/${u10Id}/fixtures`)
+
+    const fixCards = page.locator('.card').filter({ hasText: /pret/i })
+    await expect(fixCards.first()).toBeVisible({ timeout: 5000 })
+    await expect(fixCards).toHaveCount(10, { timeout: 5000 })
+
+    // Cards 6-9 are knockout fixtures (sorted after group rounds by FixtureList)
+    for (let i = 6; i < 10; i++) {
+      const card = fixCards.nth(i)
+      await card.locator('input[type="date"]').fill(TODAY)
+      await page.waitForTimeout(400)
+      await card.locator('select').nth(1).selectOption({ label: 'E2E Test Stadion — Galvenais laukums' })
+      await page.waitForTimeout(400)
+    }
+    await page.waitForTimeout(500)
+  })
+
+  // ── 08: Enter knockout scores via Matchday ────────────────────────────────
+  test('08 · enter knockout scores (home wins 2:0)', async () => {
+    await page.goto('/admin/matchday')
+    await expect(page.getByRole('heading', { name: 'U10' })).toBeVisible({ timeout: 12000 })
+
+    const fixtureCards = page.locator('.card').filter({
+      has: page.locator('input[type="number"]'),
+    })
+    await expect(fixtureCards.first()).toBeVisible({ timeout: 8000 })
+    const totalCards = await fixtureCards.count()
+    expect(totalCards, 'should have at least 4 knockout fixtures').toBeGreaterThanOrEqual(4)
+
+    for (let i = 0; i < totalCards; i++) {
+      const card = fixtureCards.nth(i)
+      await card.locator('input[type="number"]').first().fill('2')
+      await card.locator('input[type="number"]').nth(1).fill('0')
+    }
+
+    await page.getByRole('button', { name: 'Saglabāt visas' }).click()
+    await expect(page.getByText('Visi rezultāti saglabāti!')).toBeVisible({ timeout: 10000 })
+  })
+
+  // ── 09: Admin standings — 6 teams across 2 groups ────────────────────────
+  test('09 · admin standings show 6 teams across 2 groups', async () => {
     await page.goto(`/admin/tournaments/${tournamentId}/standings`)
 
     await expect(page.getByText('Alpha FC', { exact: true })).toBeVisible({ timeout: 10000 })
@@ -234,34 +302,37 @@ test.describe.serial('Full Tournament Lifecycle', () => {
     await expect(page.getByText('Delta FC', { exact: true })).toBeVisible()
     await expect(page.getByText('Epsilon FC', { exact: true })).toBeVisible()
     await expect(page.getByText('Zeta FC', { exact: true })).toBeVisible()
-    await expect(page.getByText('Eta FC', { exact: true })).toBeVisible()
 
-    // 7-team round robin; each team plays 6 games (1 bye per team)
+    // Group A (3 rows) + Group B (3 rows) = 6 total tbody rows
     const rows = page.locator('table tbody tr')
-    await expect(rows).toHaveCount(7, { timeout: 8000 })
+    await expect(rows).toHaveCount(6, { timeout: 8000 })
   })
 
-  // ── 09: Public tournament page ────────────────────────────────────────────
-  test('09 · public tournament page loads', async () => {
+  // ── 10: Public main page — Grafiks tab shows fixtures ─────────────────────
+  test('10 · public Grafiks tab shows fixtures', async () => {
     await page.goto(`/t/${tournamentSlug}`)
     await expect(page.getByText(TOURNAMENT_NAME).first()).toBeVisible({ timeout: 12000 })
+
+    // Default tab is Grafiks when fixtures have kickoff times
+    await expect(page.getByText('Alpha FC').first()).toBeVisible({ timeout: 8000 })
   })
 
-  // ── 10: Public standings ──────────────────────────────────────────────────
-  test('10 · public standings for U10 show 7 rows', async () => {
-    // The public standings route uses the age-group UUID: /t/:slug/:ageGroupId
-    await page.goto(`/t/${tournamentSlug}/${u10Id}`)
+  // ── 11: Public main page — Tabula tab shows 6 standings rows ─────────────
+  test('11 · public Tabula tab shows 6 standings rows', async () => {
+    await page.goto(`/t/${tournamentSlug}`)
+    await expect(page.getByText(TOURNAMENT_NAME).first()).toBeVisible({ timeout: 12000 })
 
-    await expect(page.getByText('Alpha FC')).toBeVisible({ timeout: 12000 })
+    // Click Tabula tab
+    await page.getByText(/Tabula/i).first().click()
+
+    await expect(page.getByText('Alpha FC').first()).toBeVisible({ timeout: 8000 })
     const rows = page.locator('table tbody tr')
-    await expect(rows).toHaveCount(7, { timeout: 8000 })
+    await expect(rows).toHaveCount(6, { timeout: 8000 })
   })
 
-  // ── 11: Public schedule ───────────────────────────────────────────────────
-  test('11 · public schedule shows fixtures with pitch info', async () => {
+  // ── 12: Public schedule route shows fixtures with pitch info ──────────────
+  test('12 · public schedule shows fixtures', async () => {
     await page.goto(`/t/${tournamentSlug}/${u10Id}/fixtures`)
-
-    // At least one team name and the pitch info should be visible
     await expect(page.getByText('Alpha FC').first()).toBeVisible({ timeout: 12000 })
     await expect(page.getByText(/E2E Test Stadion/i).first()).toBeVisible({ timeout: 8000 })
   })
