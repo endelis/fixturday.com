@@ -133,10 +133,10 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   })
 
   // ── 03: Add 4 teams ───────────────────────────────────────────────────────
-  test('03 · add 4 teams to U10', async () => {
+  test('03 · add 7 teams to U10', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/teams`)
 
-    for (const name of ['Alpha FC', 'Beta FC', 'Gamma FC', 'Delta FC']) {
+    for (const name of ['Alpha FC', 'Beta FC', 'Gamma FC', 'Delta FC', 'Epsilon FC', 'Zeta FC', 'Eta FC']) {
       await page.getByRole('button', { name: /\+ Jauna komanda/i }).click()
       // react-hook-form registers this as name="name" — no htmlFor/id association
       await page.locator('input[name="name"]').fill(name)
@@ -146,28 +146,26 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   })
 
   // ── 04: Bulk-confirm all teams ────────────────────────────────────────────
-  test('04 · bulk-confirm all 4 teams', async () => {
+  test('04 · bulk-confirm all 7 teams', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/teams`)
 
     // Accept the native confirm() dialog that bulkApprove() triggers
     page.once('dialog', d => d.accept())
     await page.getByRole('button', { name: 'Apstiprināt visas' }).click()
 
-    // All 4 cards should flip to "Apstiprināta" (badge-success)
-    await expect(page.locator('.badge-success')).toHaveCount(4, { timeout: 10000 })
+    // All 7 cards should flip to "Apstiprināta" (badge-success)
+    await expect(page.locator('.badge-success')).toHaveCount(7, { timeout: 10000 })
   })
 
   // ── 05: Generate round-robin fixtures ────────────────────────────────────
-  test('05 · generate 6 round-robin fixtures', async () => {
+  test('05 · generate 21 round-robin fixtures', async () => {
     await page.goto(`/admin/age-groups/${u10Id}/fixtures`)
     await page.getByRole('button', { name: /Ģenerēt spēles/i }).click()
 
-    // 4-team round robin = 6 fixtures across 3 rounds
+    // 7-team round robin = 21 fixtures (7*6/2) across 7 rounds (1 bye per round)
     await expect(page.getByText(/Kārta/i).first()).toBeVisible({ timeout: 10000 })
-    // Each fixture card contains the "vs" text "pret" between team name spans;
-    // JSX adjacent spans produce no whitespace, so match without surrounding spaces.
     const fixCards = page.locator('.card').filter({ hasText: /pret/i })
-    await expect(fixCards).toHaveCount(6, { timeout: 10000 })
+    await expect(fixCards).toHaveCount(21, { timeout: 10000 })
   })
 
   // ── 06: Set kickoff times + pitch on all fixtures ────────────────────────
@@ -179,7 +177,7 @@ test.describe.serial('Full Tournament Lifecycle', () => {
     const fixCards = page.locator('.card').filter({ hasText: /pret/i })
     await expect(fixCards.first()).toBeVisible({ timeout: 5000 })
     const count = await fixCards.count()
-    expect(count, 'should have 6 fixture cards').toBe(6)
+    expect(count, 'should have 21 fixture cards').toBe(21)
 
     for (let i = 0; i < count; i++) {
       const card = fixCards.nth(i)
@@ -216,7 +214,7 @@ test.describe.serial('Full Tournament Lifecycle', () => {
     })
     await expect(fixtureCards.first()).toBeVisible({ timeout: 8000 })
     const totalCards = await fixtureCards.count()
-    expect(totalCards, 'should have at least 6 fixture cards').toBeGreaterThanOrEqual(6)
+    expect(totalCards, 'should have at least 21 fixture cards').toBeGreaterThanOrEqual(21)
 
     // Fill all visible cards: home = 2, away = 1
     for (let i = 0; i < totalCards; i++) {
@@ -233,18 +231,20 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   })
 
   // ── 08: Admin standings ───────────────────────────────────────────────────
-  test('08 · admin standings show 4 teams with points', async () => {
+  test('08 · admin standings show 7 teams with points', async () => {
     await page.goto(`/admin/tournaments/${tournamentId}/standings`)
 
     await expect(page.getByText('Alpha FC')).toBeVisible({ timeout: 10000 })
     await expect(page.getByText('Beta FC')).toBeVisible()
     await expect(page.getByText('Gamma FC')).toBeVisible()
     await expect(page.getByText('Delta FC')).toBeVisible()
+    await expect(page.getByText('Epsilon FC')).toBeVisible()
+    await expect(page.getByText('Zeta FC')).toBeVisible()
+    await expect(page.getByText('Eta FC')).toBeVisible()
 
-    // Each team played 3 games; home team wins each → leaders have 9 pts
-    // Just verify the table has 4 rows
+    // 7-team round robin; each team plays 6 games (1 bye per team)
     const rows = page.locator('table tbody tr')
-    await expect(rows).toHaveCount(4, { timeout: 8000 })
+    await expect(rows).toHaveCount(7, { timeout: 8000 })
   })
 
   // ── 09: Public tournament page ────────────────────────────────────────────
@@ -254,13 +254,13 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   })
 
   // ── 10: Public standings ──────────────────────────────────────────────────
-  test('10 · public standings for U10 show 4 rows', async () => {
+  test('10 · public standings for U10 show 7 rows', async () => {
     // The public standings route uses the age-group UUID: /t/:slug/:ageGroupId
     await page.goto(`/t/${tournamentSlug}/${u10Id}`)
 
     await expect(page.getByText('Alpha FC')).toBeVisible({ timeout: 12000 })
     const rows = page.locator('table tbody tr')
-    await expect(rows).toHaveCount(4, { timeout: 8000 })
+    await expect(rows).toHaveCount(7, { timeout: 8000 })
   })
 
   // ── 11: Public schedule ───────────────────────────────────────────────────

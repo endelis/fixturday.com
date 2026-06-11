@@ -5,6 +5,7 @@ dotenv.config();
 
 export default defineConfig({
   testDir: './tests/e2e',
+  timeout: 120_000,
   use: {
     baseURL: 'https://www.fixturday.com',
     ignoreHTTPSErrors: true,
