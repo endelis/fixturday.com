@@ -44,6 +44,7 @@ export default function AgeGroups() {
     setValue('format', ag.format)
     setValue('max_teams', ag.max_teams ?? '')
     setValue('registration_open', ag.registration_open)
+    setValue('auto_approve', ag.auto_approve ?? false)
     setShowForm(true)
   }
 
@@ -169,6 +170,11 @@ export default function AgeGroups() {
                     <span className={`badge ${ag.registration_open ? 'badge-success' : 'badge-muted'}`}>
                       {ag.registration_open ? t('ageGroup.regOpen') : t('ageGroup.regClosed_label')}
                     </span>
+                    {ag.auto_approve && (
+                      <span className="badge badge-warning" title={t('ageGroup.autoApprove')}>
+                        ⚡ {t('ageGroup.autoApprove')}
+                      </span>
+                    )}
                     <button className="btn-secondary btn-sm" onClick={() => toggleRegistration(ag)}>
                       {ag.registration_open ? t('ageGroup.closeReg') : t('ageGroup.openReg')}
                     </button>
@@ -239,9 +245,15 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, onSubmit, 
           <input type="number" {...register('max_teams')} min="2" />
         </div>
       </div>
-      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-        <input type="checkbox" id="reg_open" {...register('registration_open')} />
-        <label htmlFor="reg_open">{t('ageGroup.registrationOpen')}</label>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <input type="checkbox" id="reg_open" {...register('registration_open')} />
+          <label htmlFor="reg_open">{t('ageGroup.registrationOpen')}</label>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+          <input type="checkbox" id="auto_approve" {...register('auto_approve')} />
+          <label htmlFor="auto_approve">{t('ageGroup.autoApprove')}</label>
+        </div>
       </div>
       <div style={{ display: 'flex', gap: '0.75rem' }}>
         <button type="submit" className="btn-primary" disabled={isSubmitting}>

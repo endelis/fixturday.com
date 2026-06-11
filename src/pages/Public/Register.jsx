@@ -34,6 +34,7 @@ export default function Register() {
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [autoApproved, setAutoApproved] = useState(false)
   const [submitError, setSubmitError] = useState('')
   const [playersOpen, setPlayersOpen] = useState(false)
   const [players, setPlayers] = useState([])
@@ -104,6 +105,9 @@ export default function Register() {
   async function onSubmit(values) {
     setSubmitError('')
     try {
+      const selectedAg = allAgeGroups.find(ag => ag.id === values.age_group_id)
+      const isAutoApprove = selectedAg?.auto_approve ?? false
+
       const { data: team, error: teamError } = await supabase
         .from('teams')
         .insert({
@@ -113,7 +117,7 @@ export default function Register() {
           contact_name: values.contact_name,
           contact_email: values.contact_email,
           contact_phone: values.contact_phone,
-          status: 'pending',
+          status: isAutoApprove ? 'confirmed' : 'pending',
         })
         .select()
         .single()
@@ -138,6 +142,7 @@ export default function Register() {
         }
       }
 
+      setAutoApproved(isAutoApprove)
       setSubmitted(true)
     } catch (err) {
       setSubmitError(t('register.error'))
@@ -163,20 +168,23 @@ export default function Register() {
           style={{ paddingTop: '4rem', textAlign: 'center', maxWidth: '480px' }}
         >
           <div className="card" style={{ padding: '2rem' }}>
+            <div style={{ fontSize: '2.5rem', marginBottom: '0.75rem' }}>
+              {autoApproved ? '✅' : '📬'}
+            </div>
             <h2
               style={{
                 fontFamily: 'var(--font-heading)',
                 fontSize: '2rem',
-                color: 'var(--color-accent)',
+                color: autoApproved ? 'var(--color-success)' : 'var(--color-accent)',
                 marginBottom: '1rem',
               }}
             >
               {t('register.successTitle')}
             </h2>
             <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
-              {t('register.successBody')}
+              {autoApproved ? t('register.successBodyApproved') : t('register.successBody')}
             </p>
-            <Link to={`/t/${slug}`} className="btn-secondary">
+            <Link to={`/t/${slug}`} className={autoApproved ? 'btn-primary' : 'btn-secondary'}>
               {t('register.backToTournament')}
             </Link>
           </div>
