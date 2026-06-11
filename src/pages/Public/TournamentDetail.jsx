@@ -529,7 +529,7 @@ export default function TournamentDetail() {
       // 2. Age groups
       const { data: groups, error: groupsErr } = await supabase
         .from('age_groups')
-        .select('id, name, format, game_duration, registration_open')
+        .select('id, name, format, registration_open')
         .eq('tournament_id', tourney.id)
         .order('name')
       if (groupsErr) { setLoading(false); return }
