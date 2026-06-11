@@ -141,7 +141,7 @@ test.describe.serial('Full Tournament Lifecycle', () => {
       // react-hook-form registers this as name="name" — no htmlFor/id association
       await page.locator('input[name="name"]').fill(name)
       await page.getByRole('button', { name: 'Pievienot' }).click()
-      await expect(page.getByText(name)).toBeVisible({ timeout: 8000 })
+      await expect(page.getByText(name, { exact: true })).toBeVisible({ timeout: 8000 })
     }
   })
 
@@ -234,13 +234,13 @@ test.describe.serial('Full Tournament Lifecycle', () => {
   test('08 · admin standings show 7 teams with points', async () => {
     await page.goto(`/admin/tournaments/${tournamentId}/standings`)
 
-    await expect(page.getByText('Alpha FC')).toBeVisible({ timeout: 10000 })
-    await expect(page.getByText('Beta FC')).toBeVisible()
-    await expect(page.getByText('Gamma FC')).toBeVisible()
-    await expect(page.getByText('Delta FC')).toBeVisible()
-    await expect(page.getByText('Epsilon FC')).toBeVisible()
-    await expect(page.getByText('Zeta FC')).toBeVisible()
-    await expect(page.getByText('Eta FC')).toBeVisible()
+    await expect(page.getByText('Alpha FC', { exact: true })).toBeVisible({ timeout: 10000 })
+    await expect(page.getByText('Beta FC', { exact: true })).toBeVisible()
+    await expect(page.getByText('Gamma FC', { exact: true })).toBeVisible()
+    await expect(page.getByText('Delta FC', { exact: true })).toBeVisible()
+    await expect(page.getByText('Epsilon FC', { exact: true })).toBeVisible()
+    await expect(page.getByText('Zeta FC', { exact: true })).toBeVisible()
+    await expect(page.getByText('Eta FC', { exact: true })).toBeVisible()
 
     // 7-team round robin; each team plays 6 games (1 bye per team)
     const rows = page.locator('table tbody tr')
