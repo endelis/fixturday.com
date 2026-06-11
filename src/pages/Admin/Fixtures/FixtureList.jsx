@@ -78,7 +78,10 @@ export default function FixtureList({ byRound, pitches, teams, updateFixture, ga
                     </span>
                     <DateTimePicker
                       value={kickoffDrafts[f.id] ?? (f.kickoff_time ? format(new Date(f.kickoff_time.replace('Z', '')), "yyyy-MM-dd'T'HH:mm") : '')}
-                      onChange={v => setKickoffDrafts(d => ({ ...d, [f.id]: v ?? '' }))}
+                      onChange={v => {
+                        setKickoffDrafts(d => ({ ...d, [f.id]: v ?? '' }))
+                        if (v) updateFixture(f.id, { kickoff_time: v })
+                      }}
                       onBlur={v => handleKickoffBlur(f, v)}
                     />
                     <select

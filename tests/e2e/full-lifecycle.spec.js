@@ -185,17 +185,20 @@ test.describe.serial('Full Tournament Lifecycle', () => {
       const card = fixCards.nth(i)
       const di = card.locator('input[type="date"]')
       await di.fill(TODAY)
-      // Tab triggers onBlur on the date input — DateTimePicker reads e.target.value
-      // (fixed stale-closure bug) so the date is correctly assembled and persisted.
-      await di.press('Tab')
-      await page.waitForTimeout(500)
+      // onChange fires immediately and saves kickoff via updateFixture.
+      // Wait for the Supabase round-trip + load() re-render to settle before
+      // the next control — a mid-loop load() clears kickoffDrafts and can reset
+      // the controlled input value before onBlur fires.
+      await page.waitForTimeout(800)
       // Assign pitch — nth(0) is the time-slot select (inside DateTimePicker),
       // nth(1) is the pitch select that follows it.
       await card.locator('select').nth(1).selectOption({
         label: 'E2E Test Stadion — Galvenais laukums',
       })
-      await page.waitForTimeout(400)
+      await page.waitForTimeout(800)
     }
+    // Buffer so the last pitch save + load() fully completes before Matchday
+    await page.waitForTimeout(500)
   })
 
   // ── 07: Enter scores via Matchday ─────────────────────────────────────────
