@@ -77,7 +77,14 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     if (!isValid(parse(schedDateDisplay, 'dd/MM/yyyy', new Date()))) {
       toast(t('tournament.invalidDate'), 'error'); return
     }
-    let mapped = fixtures.map(f => ({ id: f.id, homeTeamId: f.home_team_id, awayTeamId: f.away_team_id, isPlayoff: !!(f.home_placeholder || f.away_placeholder) }))
+    let mapped = fixtures.map(f => ({
+      id: f.id,
+      homeTeamId: f.home_team_id,
+      awayTeamId: f.away_team_id,
+      home_placeholder: f.home_placeholder ?? null,
+      away_placeholder: f.away_placeholder ?? null,
+      round: f.round ?? null,
+    }))
     if (shuffle) {
       for (let i = mapped.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
