@@ -36,22 +36,30 @@ export default function ClassFilter({ tournamentId, value, onChange }) {
     load()
   }, [tournamentId])
 
-  if (loading || ageGroups.length === 0) return null
+  if (loading || ageGroups.length <= 1) return null
 
   return (
-    <div
-      style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}
-      aria-label={t('classFilter.label')}
-      role="toolbar"
-    >
-      <button style={pillStyle(value === null)} onClick={() => onChange(null)}>
-        {t('classFilter.all')}
-      </button>
-      {ageGroups.map(ag => (
-        <button key={ag.id} style={pillStyle(value === ag.id)} onClick={() => onChange(ag.id)}>
-          {ag.name}
+    <div style={{ position: 'relative' }}>
+      <div
+        style={{ overflowX: 'auto', WebkitOverflowScrolling: 'touch', whiteSpace: 'nowrap' }}
+        aria-label={t('classFilter.label')}
+        role="toolbar"
+      >
+        <button style={pillStyle(value === null)} onClick={() => onChange(null)}>
+          {t('classFilter.all')}
         </button>
-      ))}
+        {ageGroups.map(ag => (
+          <button key={ag.id} style={pillStyle(value === ag.id)} onClick={() => onChange(ag.id)}>
+            {ag.name}
+          </button>
+        ))}
+      </div>
+      <div style={{
+        position: 'absolute', top: 0, right: 0, bottom: 0,
+        width: '2.5rem',
+        background: 'linear-gradient(to right, transparent, var(--color-primary))',
+        pointerEvents: 'none',
+      }} />
     </div>
   )
 }

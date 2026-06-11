@@ -38,6 +38,7 @@ export default function Schedule() {
 
       if (agErr) { setLoading(false); return }
       setAg(agData)
+      document.title = `${agData.tournaments.name} — ${agData.name} — Grafiks — Fixturday`
 
       if (agData?.tournaments?.id) {
         const { data: sibs, error: sibErr } = await supabase
@@ -77,6 +78,7 @@ export default function Schedule() {
     return () => {
       supabase.removeChannel(channel)
       clearInterval(poll)
+      document.title = 'Fixturday'
     }
   }, [ageGroupId, selectedAgeGroupId])
 

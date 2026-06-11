@@ -57,6 +57,7 @@ export default function Standings() {
 
       setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
       setLastUpdated(new Date())
+      document.title = `${ag.tournaments.name} — ${ag.name} — Fixturday`
       setLoading(false)
     }
     load()
@@ -73,6 +74,7 @@ export default function Standings() {
     return () => {
       supabase.removeChannel(channel)
       clearInterval(poll)
+      document.title = 'Fixturday'
     }
   }, [ageGroupId, selectedAgeGroupId])
 
@@ -130,7 +132,11 @@ export default function Standings() {
                 background: realtimeStatus === 'connected' ? 'var(--color-success)' : '#4a5568',
                 boxShadow: realtimeStatus === 'connected' ? '0 0 6px var(--color-success)' : 'none',
               }} />
-              {realtimeStatus === 'connected' ? t('standings.live') : t('standings.connecting')}
+              {realtimeStatus === 'connected'
+                ? t('standings.live')
+                : lastUpdated
+                  ? t('common.lastUpdated', { time: formatTime(lastUpdated) })
+                  : t('standings.connecting')}
             </span>
             <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
               {t('standings.scheduleLink')}
@@ -217,11 +223,11 @@ export default function Standings() {
                         const awayWon = result && result.away_goals > result.home_goals
                         return (
                           <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}>
-                            <span style={{ flex: 1, textAlign: 'right', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--color-accent)' : 'inherit' }}>{homeName}</span>
+                            <span style={{ flex: 1, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--color-accent)' : 'inherit' }}>{homeName}</span>
                             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
                               {result ? `${result.home_goals} : ${result.away_goals}` : (f.home_team ? t('fixture.vs') : '—')}
                             </span>
-                            <span style={{ flex: 1, fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--color-accent)' : 'inherit' }}>{awayName}</span>
+                            <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--color-accent)' : 'inherit' }}>{awayName}</span>
                           </div>
                         )
                       })}
