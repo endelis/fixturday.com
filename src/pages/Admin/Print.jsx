@@ -5,8 +5,9 @@
 // 4. Verify all content fits without cutoff
 
 import { useEffect, useState } from 'react'
-import { useParams } from 'react-router-dom'
+import { useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { useDateLocale } from '../../hooks/useDateLocale'
@@ -97,6 +98,7 @@ const PRINT_STYLE = `
 export default function Print() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
+  const { user, loading: authLoading } = useAuth()
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
   const [loading, setLoading] = useState(true)
@@ -166,13 +168,14 @@ export default function Print() {
     }
   }, [loading, tournament])
 
-  if (loading) {
+  if (authLoading || loading) {
     return (
       <div style={{ padding: '2rem', fontFamily: 'Inter, sans-serif', color: '#000' }}>
         {t('print.preparing')}
       </div>
     )
   }
+  if (!user) return <Navigate to="/admin" replace />
   if (!tournament) {
     return (
       <div style={{ padding: '2rem', fontFamily: 'Inter, sans-serif', color: '#000' }}>

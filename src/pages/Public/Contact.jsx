@@ -24,7 +24,7 @@ export default function Contact() {
       email: values.email,
       message: values.message,
     })
-    if (error) { toast(t('common.error'), 'error'); return }
+    if (error) { toast(`${t('common.error')}: ${error.message}`, 'error'); return }
     toast(t('contact.success'))
     reset()
     setSubmitted(true)

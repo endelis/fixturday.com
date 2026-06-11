@@ -86,9 +86,9 @@ export default function Standings() {
   const tournament = ag.tournaments
 
   // Group-knockout: derive per-group data
-  const groupFixtures = fixtures.filter(f => f.stages?.type === 'group_stage' && f.group_label)
+  const groupFixtures = fixtures.filter(f => f.group_label)
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
-  const knockoutFixtures = fixtures.filter(f => f.stages?.type === 'knockout')
+  const knockoutFixtures = fixtures.filter(f => !f.group_label)
   const hasKnockoutFixtures = knockoutFixtures.length > 0
 
   function resolveRoundName(matches) {
@@ -157,7 +157,7 @@ export default function Standings() {
           </div>
         </div>
 
-        <div style={{ position: 'sticky', top: 0, background: 'var(--color-primary)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
+        <div style={{ position: 'sticky', top: 0, background: 'var(--color-bg)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
           <ClassFilter
             tournamentId={tournament.id}
             value={selectedAgeGroupId}
@@ -167,7 +167,7 @@ export default function Standings() {
 
         {standings.length === 0 ? (
           <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.noTeams')}</p>
-        ) : ag.format === 'group_knockout' && groupLabels.length > 0 ? (
+        ) : ag.format === 'group_knockout' ? (
           <>
             {groupLabels.map(label => {
               const groupTeamIds = new Set()

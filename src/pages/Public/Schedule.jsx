@@ -134,7 +134,7 @@ export default function Schedule() {
           </div>
         </div>
 
-        <div style={{ position: 'sticky', top: 0, background: 'var(--color-primary)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
+        <div style={{ position: 'sticky', top: 0, background: 'var(--color-bg)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
           <ClassFilter
             tournamentId={ag?.tournaments?.id}
             value={selectedAgeGroupId}

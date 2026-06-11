@@ -57,7 +57,7 @@ export default function ClassFilter({ tournamentId, value, onChange }) {
       <div style={{
         position: 'absolute', top: 0, right: 0, bottom: 0,
         width: '2.5rem',
-        background: 'linear-gradient(to right, transparent, var(--color-primary))',
+        background: 'linear-gradient(to right, transparent, var(--color-bg))',
         pointerEvents: 'none',
       }} />
     </div>

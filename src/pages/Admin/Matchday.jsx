@@ -157,7 +157,8 @@ export default function Matchday() {
 
     if (resErr) { toast(`${t('common.error')}: ${resErr.message}`, 'error'); setSaving(prev => ({ ...prev, [f.id]: false })); return }
 
-    await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+    const { error: statusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+    if (statusErr) toast(`${t('common.error')}: ${statusErr.message}`, 'error')
     toast(t('common.saved'))
     setSaving(prev => ({ ...prev, [f.id]: false }))
     load()
@@ -178,7 +179,10 @@ export default function Matchday() {
           : await supabase
               .from('fixture_results')
               .insert({ fixture_id: f.id, home_goals: score.home, away_goals: score.away })
-        if (!resErr) await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+        if (!resErr) {
+          const { error: statusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+          return statusErr
+        }
         return resErr
       })
     const results = await Promise.all(updates)
@@ -235,10 +239,11 @@ export default function Matchday() {
 
     // Auto red card for second yellow
     if (extraRedCard) {
-      await supabase.from('fixture_events').insert({
+      const { error: redErr } = await supabase.from('fixture_events').insert({
         ...row,
         event_type: 'red_card',
       })
+      if (redErr) toast(`${t('common.error')}: ${redErr.message}`, 'error')
     }
 
     // Auto-update score for goals
@@ -256,11 +261,15 @@ export default function Matchday() {
       setScores(prev => ({ ...prev, [f.id]: { home: newHome, away: newAway } }))
 
       // Persist to fixture_results — upsert avoids stale-closure double-insert
-      await supabase.from('fixture_results').upsert(
+      const { error: upsertErr } = await supabase.from('fixture_results').upsert(
         { fixture_id: f.id, home_goals: newHome, away_goals: newAway },
         { onConflict: 'fixture_id' }
       )
-      await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+      if (upsertErr) { toast(`${t('common.error')}: ${upsertErr.message}`, 'error') }
+      else {
+        const { error: goalStatusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+        if (goalStatusErr) toast(`${t('common.error')}: ${goalStatusErr.message}`, 'error')
+      }
     }
 
     // Reset minute only, keep team/type for quick repeat entry

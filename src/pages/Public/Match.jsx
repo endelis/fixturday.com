@@ -18,7 +18,7 @@ function StatusPill({ status, t }) {
   const styles = {
     scheduled: { background: 'var(--color-surface)', color: 'var(--color-muted)', border: '1px solid var(--color-muted)' },
     live:      { background: 'var(--color-success)', color: '#fff' },
-    completed: { background: 'var(--color-primary)', color: 'var(--color-muted)', border: '1px solid var(--color-muted)' },
+    completed: { background: 'var(--color-bg)', color: 'var(--color-muted)', border: '1px solid var(--color-muted)' },
     postponed: { background: 'var(--color-danger)',  color: '#fff' },
   }
   const label = {
