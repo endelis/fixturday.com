@@ -1,19 +1,20 @@
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { format, isToday } from 'date-fns'
-import { lv } from 'date-fns/locale'
+import { useDateLocale } from '../hooks/useDateLocale'
 import { useNextMatches } from '../hooks/useNextMatches'
 import TeamLogo from './TeamLogo'
 
-function formatKickoff(kickoffTime) {
+function formatKickoff(kickoffTime, locale) {
   if (!kickoffTime) return '—'
   const dt = new Date(kickoffTime)
   if (isToday(dt)) return format(dt, 'HH:mm')
-  return format(dt, 'dd. MMM HH:mm', { locale: lv })
+  return format(dt, 'dd. MMM HH:mm', { locale })
 }
 
 export default function NextMatchesWidget({ tournamentId, slug, limit = 10 }) {
   const { t } = useTranslation()
+  const dateLocale = useDateLocale()
   const { matches, loading } = useNextMatches(tournamentId, limit)
 
   if (loading || matches.length === 0) return null
@@ -60,7 +61,7 @@ export default function NextMatchesWidget({ tournamentId, slug, limit = 10 }) {
                   color: 'var(--color-text)',
                   letterSpacing: '0.02em',
                 }}>
-                  {formatKickoff(match.kickoff_time)}
+                  {formatKickoff(match.kickoff_time, dateLocale)}
                 </span>
                 {match.stage?.age_group?.name && (
                   <span style={{

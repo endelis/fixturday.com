@@ -9,7 +9,7 @@ import { useParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
-import { lv } from 'date-fns/locale'
+import { useDateLocale } from '../../hooks/useDateLocale'
 import { formatDate } from '../../utils/dateFormat'
 import { calculateStandings } from '../../utils/standings'
 import { Printer } from 'lucide-react'
@@ -100,7 +100,8 @@ export default function Print() {
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
   const [loading, setLoading] = useState(true)
-  const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: lv })
+  const dateLocale = useDateLocale()
+  const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: dateLocale })
 
   useEffect(() => {
     async function load() {
@@ -315,7 +316,7 @@ export default function Print() {
                             <td style={tdStyle}>{f.round ?? '—'}</td>
                             <td style={{ ...tdStyle, whiteSpace: 'nowrap' }}>
                               {f.kickoff_time
-                                ? format(new Date(f.kickoff_time), 'dd.MM HH:mm', { locale: lv })
+                                ? format(new Date(f.kickoff_time), 'dd.MM HH:mm', { locale: dateLocale })
                                 : '—'}
                             </td>
                             <td style={tdStyle}>

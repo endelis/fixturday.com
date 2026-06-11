@@ -24,10 +24,10 @@ export default function Footer() {
             <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '22px', opacity: 0.85 }} />
           </Link>
           <div style={{ display: 'flex', gap: '1.5rem', flexWrap: 'wrap' }}>
-            <Link to="/turniri"   style={navLink}>{t('nav.tournaments')}</Link>
-            <Link to="/pamaciba"  style={navLink}>{t('nav.guide')}</Link>
-            <Link to="/par-mums"  style={navLink}>{t('nav.about')}</Link>
-            <Link to="/kontakti"  style={navLink}>{t('nav.contact')}</Link>
+            <Link to="/tournaments" style={navLink}>{t('nav.tournaments')}</Link>
+            <Link to="/guide"       style={navLink}>{t('nav.guide')}</Link>
+            <Link to="/about"       style={navLink}>{t('nav.about')}</Link>
+            <Link to="/contact"     style={navLink}>{t('nav.contact')}</Link>
           </div>
         </div>
 
@@ -70,10 +70,10 @@ export default function Footer() {
             {t('footer.copyright')}
           </p>
           <div style={{ display: 'flex', gap: '1.25rem', flexWrap: 'wrap' }}>
-            <Link to="/privatuma-politika"    style={legalLink}>{t('footer.privacy')}</Link>
-            <Link to="/lietosanas-noteikumi"  style={legalLink}>{t('footer.terms')}</Link>
-            <Link to="/sikdatnu-politika"     style={legalLink}>{t('footer.cookies')}</Link>
-            <Link to="/datu-dzesana"          style={legalLink}>{t('footer.dataDeletion')}</Link>
+            <Link to="/privacy-policy"  style={legalLink}>{t('footer.privacy')}</Link>
+            <Link to="/terms-of-use"    style={legalLink}>{t('footer.terms')}</Link>
+            <Link to="/cookie-policy"   style={legalLink}>{t('footer.cookies')}</Link>
+            <Link to="/data-deletion"   style={legalLink}>{t('footer.dataDeletion')}</Link>
           </div>
         </div>
 

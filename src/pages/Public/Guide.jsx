@@ -800,7 +800,7 @@ export default function Guide() {
               </h2>
               <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap', position: 'relative' }}>
                 <Link to="/admin/register" style={ctaPrimaryBtn}>{t('guide.ctaPrimary')}</Link>
-                <Link to="/turniri" style={ctaSecondaryBtn}>{t('guide.ctaSecondary')}</Link>
+                <Link to="/tournaments" style={ctaSecondaryBtn}>{t('guide.ctaSecondary')}</Link>
               </div>
             </section>
 

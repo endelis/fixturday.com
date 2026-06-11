@@ -56,23 +56,34 @@ export default function App() {
         <Routes>
           {/* Public routes */}
           <Route path="/"                                    element={<Landing />} />
-          <Route path="/turniri"                             element={<TournamentList />} />
-          <Route path="/par-mums"                            element={<About />} />
-          <Route path="/kontakti"                            element={<Contact />} />
+          <Route path="/tournaments"                         element={<TournamentList />} />
+          <Route path="/about"                               element={<About />} />
+          <Route path="/contact"                             element={<Contact />} />
+          <Route path="/guide"                               element={<Guide />} />
+          <Route path="/privacy-policy"                      element={<Privacy />} />
+          <Route path="/terms-of-use"                        element={<Terms />} />
+          <Route path="/cookie-policy"                       element={<CookiesPage />} />
+          <Route path="/data-deletion"                       element={<DataDeletion />} />
+
+          {/* Latvian slug redirects — keep old URLs working */}
+          <Route path="/turniri"              element={<Navigate to="/tournaments" replace />} />
+          <Route path="/par-mums"             element={<Navigate to="/about" replace />} />
+          <Route path="/kontakti"             element={<Navigate to="/contact" replace />} />
+          <Route path="/pamaciba"             element={<Navigate to="/guide" replace />} />
+          <Route path="/privatuma-politika"   element={<Navigate to="/privacy-policy" replace />} />
+          <Route path="/lietosanas-noteikumi" element={<Navigate to="/terms-of-use" replace />} />
+          <Route path="/sikdatnu-politika"    element={<Navigate to="/cookie-policy" replace />} />
+          <Route path="/datu-dzesana"         element={<Navigate to="/data-deletion" replace />} />
+
           <Route path="/t/:slug"                             element={<TournamentDetail />} />
           <Route path="/t/:slug/:ageGroup"                   element={<Standings />} />
           <Route path="/t/:slug/:ageGroup/fixtures"          element={<Schedule />} />
           <Route path="/t/:slug/:ageGroup/teams/:teamId"     element={<TeamRoster />} />
           <Route path="/t/:slug/register"                    element={<Register />} />
           <Route path="/:slug/matches/:matchId"              element={<Match />} />
-          <Route path="/:slug/teams/:teamId"                element={<Team />} />
-          <Route path="/:slug/info"                        element={<PublicInfo />} />
-          <Route path="/:slug/registration"              element={<Registration />} />
-          <Route path="/pamaciba"                            element={<Guide />} />
-          <Route path="/privatuma-politika"                  element={<Privacy />} />
-          <Route path="/lietosanas-noteikumi"                element={<Terms />} />
-          <Route path="/sikdatnu-politika"                   element={<CookiesPage />} />
-          <Route path="/datu-dzesana"                        element={<DataDeletion />} />
+          <Route path="/:slug/teams/:teamId"                 element={<Team />} />
+          <Route path="/:slug/info"                          element={<PublicInfo />} />
+          <Route path="/:slug/registration"                  element={<Registration />} />
 
           {/* Admin: top-level */}
           <Route path="/admin"          element={<Login />} />

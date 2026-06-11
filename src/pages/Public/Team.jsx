@@ -2,7 +2,7 @@ import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useEffect } from 'react'
 import { format } from 'date-fns'
-import { lv } from 'date-fns/locale'
+import { useDateLocale } from '../../hooks/useDateLocale'
 import { useTeamProfile, getLogoUrl } from '../../hooks/useTeamProfile'
 import { toast } from '../../components/Toast'
 import { formatTime } from '../../utils/dateFormat'
@@ -15,9 +15,9 @@ function countryFlag(code) {
   )
 }
 
-function dayHeader(dateKey) {
+function dayHeader(dateKey, locale) {
   if (!dateKey || dateKey === '__NO_DATE__') return '—'
-  const s = format(new Date(dateKey + 'T00:00:00'), "EEEE, dd. MMMM yyyy", { locale: lv })
+  const s = format(new Date(dateKey + 'T00:00:00'), "EEEE, dd. MMMM yyyy", { locale })
   return s.charAt(0).toUpperCase() + s.slice(1)
 }
 
@@ -73,6 +73,7 @@ function StatCell({ label, value }) {
 
 export default function Team() {
   const { t } = useTranslation()
+  const dateLocale = useDateLocale()
   const { slug, teamId } = useParams()
   const { team, tournament, fixtures, record, loading, error } = useTeamProfile(slug, teamId)
 
@@ -131,7 +132,7 @@ export default function Team() {
 
         {/* Breadcrumb */}
         <nav style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--color-muted)' }}>
-          <Link to="/turniri" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>
+          <Link to="/tournaments" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>
             {t('match.breadcrumbAll')}
           </Link>
           {tournament && (
@@ -211,7 +212,7 @@ export default function Team() {
                 marginBottom: '0.6rem',
                 letterSpacing: '0.02em',
               }}>
-                {dayHeader(day)}
+                {dayHeader(day, dateLocale)}
               </h2>
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                 {grouped[day].map(f => {

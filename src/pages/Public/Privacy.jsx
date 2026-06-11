@@ -1,4 +1,5 @@
 import { useEffect } from 'react'
+import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
@@ -140,7 +141,7 @@ export default function Privacy() {
           <Section title="7. Sīkdatnes">
             <p style={body}>
               Fixturday izmanto funkcionālās un analītiskās sīkdatnes. Sīkāku informāciju skatiet mūsu{' '}
-              <a href="/sikdatnu-politika" style={link}>Sīkdatņu politikā</a>.
+              <Link to="/cookie-policy" style={link}>{t('footer.cookies')}</Link>.
             </p>
           </Section>
 

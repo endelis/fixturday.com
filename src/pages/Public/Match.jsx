@@ -1,7 +1,7 @@
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
-import { lv } from 'date-fns/locale'
+import { useDateLocale } from '../../hooks/useDateLocale'
 import { useMatch, getLogoUrl } from '../../hooks/useMatch'
 import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
@@ -92,6 +92,7 @@ function TeamBlock({ team, t }) {
 
 export default function Match() {
   const { t } = useTranslation()
+  const dateLocale = useDateLocale()
   const { matchId } = useParams()
   const { match, loading, error } = useMatch(matchId)
 
@@ -140,7 +141,7 @@ export default function Match() {
 
         {/* Breadcrumb */}
         <nav style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--color-muted)' }}>
-          <Link to="/turniri" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>
+          <Link to="/tournaments" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>
             {t('match.breadcrumbAll')}
           </Link>
           <span>›</span>
@@ -248,7 +249,7 @@ export default function Match() {
             {match.kickoff_time && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <span style={{ minWidth: '5rem', fontWeight: 500, color: 'var(--color-text)' }}>{t('match.kickoff')}</span>
-                <span>{format(new Date(match.kickoff_time), "dd. MMMM yyyy, HH:mm", { locale: lv })}</span>
+                <span>{format(new Date(match.kickoff_time), "dd. MMMM yyyy, HH:mm", { locale: dateLocale })}</span>
               </div>
             )}
             {match.pitch && (

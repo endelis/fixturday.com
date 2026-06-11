@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, NavLink, useNavigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { X, Menu } from 'lucide-react'
+import LanguageSwitcher from './LanguageSwitcher'
 
 /**
  * Public navigation bar.
@@ -104,10 +105,11 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
             <>
               {/* Desktop nav links */}
               <div className="pub-nav-desktop" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                <Link to="/turniri" style={navLink}>{t('nav.tournaments')}</Link>
-                <Link to="/pamaciba" style={navLink}>{t('nav.guide')}</Link>
-                <Link to="/par-mums" style={navLink}>{t('nav.about')}</Link>
-                <Link to="/kontakti" style={navLink}>{t('nav.contact')}</Link>
+                <Link to="/tournaments" style={navLink}>{t('nav.tournaments')}</Link>
+                <Link to="/guide" style={navLink}>{t('nav.guide')}</Link>
+                <Link to="/about" style={navLink}>{t('nav.about')}</Link>
+                <Link to="/contact" style={navLink}>{t('nav.contact')}</Link>
+                <LanguageSwitcher />
                 <Link to="/admin" style={{
                   ...navLink,
                   border: '1px solid rgba(240,165,0,0.4)',
@@ -227,10 +229,10 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         {/* Primary links */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
           {[
-            { to: '/turniri', label: t('nav.tournaments') },
-            { to: '/pamaciba', label: t('nav.guide') },
-            { to: '/par-mums', label: t('nav.about') },
-            { to: '/kontakti', label: t('nav.contact') },
+            { to: '/tournaments', label: t('nav.tournaments') },
+            { to: '/guide', label: t('nav.guide') },
+            { to: '/about', label: t('nav.about') },
+            { to: '/contact', label: t('nav.contact') },
           ].map(item => (
             <Link
               key={item.to}
@@ -272,10 +274,13 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
 
         {/* Legal links at bottom */}
         <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+          <div style={{ paddingBottom: '0.75rem' }}>
+            <LanguageSwitcher />
+          </div>
           {[
-            { to: '/privatuma-politika', label: t('footer.privacy') },
-            { to: '/lietosanas-noteikumi', label: t('footer.terms') },
-            { to: '/sikdatnu-politika', label: t('footer.cookies') },
+            { to: '/privacy-policy', label: t('footer.privacy') },
+            { to: '/terms-of-use', label: t('footer.terms') },
+            { to: '/cookie-policy', label: t('footer.cookies') },
           ].map(item => (
             <Link
               key={item.to}

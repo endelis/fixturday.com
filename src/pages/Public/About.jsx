@@ -112,7 +112,7 @@ export default function About() {
           }}>
             {t('about.ctaTitle')}
           </h2>
-          <Link to="/kontakti" style={{
+          <Link to="/contact" style={{
             display: 'inline-flex',
             alignItems: 'center',
             background: '#f0a500',

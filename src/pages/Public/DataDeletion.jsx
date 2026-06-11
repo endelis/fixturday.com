@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { Link } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
@@ -111,7 +112,7 @@ export default function DataDeletion() {
 
               <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
                 {t('legal.dataDeletionConsentText')}{' '}
-                <a href="/privatuma-politika" style={link}>Privātuma politiku</a>.
+                <Link to="/privacy-policy" style={link}>{t('footer.privacy')}</Link>.
               </p>
 
               <button

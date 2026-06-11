@@ -46,11 +46,11 @@ export default function CookieBanner() {
           lineHeight: 1.55,
         }}>
           {t('cookies.bannerText')}{' '}
-          <Link to="/privatuma-politika" style={{ color: '#f0a500', textDecoration: 'underline' }}>
+          <Link to="/privacy-policy" style={{ color: '#f0a500', textDecoration: 'underline' }}>
             {t('cookies.privacyLink')}
           </Link>
           {' · '}
-          <Link to="/sikdatnu-politika" style={{ color: '#f0a500', textDecoration: 'underline' }}>
+          <Link to="/cookie-policy" style={{ color: '#f0a500', textDecoration: 'underline' }}>
             {t('cookies.cookiesLink')}
           </Link>
         </p>
