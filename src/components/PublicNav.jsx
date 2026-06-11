@@ -141,7 +141,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           )}
         </div>
 
-        {tournament && (
+        {tournament && ageGroups.length > 0 && (
           <div
             className="container"
             style={{

@@ -180,7 +180,7 @@ function InfoTab({ tournament, rulesOpen, setRulesOpen, attachments, t }) {
   )
 }
 
-function GrafiksTab({ fixtures, t }) {
+function GrafiksTab({ fixtures, ageGroups, t }) {
   if (fixtures.length === 0) {
     return (
       <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem' }}>
@@ -189,129 +189,91 @@ function GrafiksTab({ fixtures, t }) {
     )
   }
 
-  const blocks = groupByTimeBlock(fixtures)
-  const blockKeys = Object.keys(blocks).sort()
-  const distinctDates = new Set(
-    blockKeys.filter(k => k !== 'no-time').map(k => k.split('_')[0])
-  )
-  const hasMultipleDays = distinctDates.size > 1
+  const hasMultipleAgeGroups = ageGroups.length > 1
+
+  function renderFixtureRow(f) {
+    const result = f.fixture_results?.[0]
+    const isCompleted = f.status === 'completed'
+    return (
+      <div
+        key={f.id}
+        className="fx-row"
+        style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: '8px', padding: '0.625rem 1rem' }}
+      >
+        <div style={{ display: 'grid', gridTemplateColumns: '3.25rem 1fr auto 1fr', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', fontWeight: 700, color: 'var(--color-text)', letterSpacing: '0.02em' }}>
+            {f.kickoff_time ? formatTime(f.kickoff_time) : '—'}
+          </span>
+          <span style={{ textAlign: 'right', fontWeight: isCompleted ? 600 : 400, color: 'var(--color-text)', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {f.home_team?.name ?? '?'}
+          </span>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: isCompleted ? '1.125rem' : '0.85rem', fontWeight: 700, color: isCompleted ? 'var(--color-text)' : 'var(--color-text-muted)', textAlign: 'center', minWidth: '4rem', letterSpacing: isCompleted ? '0.04em' : 0 }}>
+            {isCompleted && result ? `${result.home_goals} : ${result.away_goals}` : t('fixture.vs')}
+          </span>
+          <span style={{ fontWeight: isCompleted ? 600 : 400, color: 'var(--color-text)', fontSize: '0.9rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {f.away_team?.name ?? '?'}
+          </span>
+        </div>
+        {(f.group_label || f.pitch?.name) && (
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', marginTop: '0.2rem', paddingLeft: '3.75rem', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+            {f.group_label && (
+              <span style={{ background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', borderRadius: '3px', padding: '0 0.35rem', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.03em' }}>
+                {t('standings.group')} {f.group_label}
+              </span>
+            )}
+            {f.pitch?.name && <span>{f.group_label ? '· ' : ''}{f.pitch.name}</span>}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  function renderTimeBlocks(fxList) {
+    const blocks = groupByTimeBlock(fxList)
+    const blockKeys = Object.keys(blocks).sort()
+    const distinctDates = new Set(blockKeys.filter(k => k !== 'no-time').map(k => k.split('_')[0]))
+    const hasMultipleDays = distinctDates.size > 1
+    return blockKeys.map(blockKey => {
+      const isNow = isCurrentBlock(blockKey)
+      return (
+        <div key={blockKey}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.75rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-text-muted)', letterSpacing: '0.05em', textTransform: 'uppercase' }}>
+              {blockLabel(blockKey, hasMultipleDays, t)}
+            </h3>
+            {isNow && <span className="live-badge">{t('public.tagNow')}</span>}
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+            {blocks[blockKey].map(f => renderFixtureRow(f))}
+          </div>
+        </div>
+      )
+    })
+  }
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
-      {blockKeys.map(blockKey => {
-        const blockFixtures = blocks[blockKey]
-        const isNow = isCurrentBlock(blockKey)
-
-        return (
-          <div key={blockKey}>
-            {/* Block header */}
-            <div style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              marginBottom: '0.75rem',
-            }}>
-              <h2 style={{
-                fontFamily: 'var(--font-heading)',
-                fontSize: '1.125rem',
-                color: 'var(--color-text-muted)',
-                letterSpacing: '0.05em',
-                textTransform: 'uppercase',
-              }}>
-                {blockLabel(blockKey, hasMultipleDays, t)}
-              </h2>
-              {isNow && (
-                <span className="live-badge">{t('public.tagNow')}</span>
-              )}
-            </div>
-
-            {/* Fixture rows */}
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-              {blockFixtures.map(f => {
-                const result = f.fixture_results?.[0]
-                const isCompleted = f.status === 'completed'
-                const pitchName = f.pitch?.name
-
-                return (
-                  <div
-                    key={f.id}
-                    style={{
-                      background: 'var(--color-surface)',
-                      border: '1px solid var(--color-border)',
-                      borderRadius: '8px',
-                      padding: '0.625rem 1rem',
-                      display: 'grid',
-                      gridTemplateColumns: '3.25rem 1fr auto 1fr',
-                      alignItems: 'center',
-                      gap: '0.5rem',
-                    }}
-                    className="fx-row"
-                  >
-                    {/* Kickoff */}
-                    <span style={{
-                      fontFamily: 'var(--font-heading)',
-                      fontSize: '1rem',
-                      fontWeight: 700,
-                      color: 'var(--color-text)',
-                      letterSpacing: '0.02em',
-                    }}>
-                      {f.kickoff_time ? formatTime(f.kickoff_time) : '—'}
-                    </span>
-
-                    {/* Home team */}
-                    <span style={{
-                      textAlign: 'right',
-                      fontWeight: isCompleted ? 600 : 400,
-                      color: 'var(--color-text)',
-                      fontSize: '0.9rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {f.home_team?.name ?? '?'}
-                    </span>
-
-                    {/* Score / vs */}
-                    <span style={{
-                      fontFamily: 'var(--font-heading)',
-                      fontSize: isCompleted ? '1.125rem' : '0.85rem',
-                      fontWeight: 700,
-                      color: isCompleted ? 'var(--color-text)' : 'var(--color-text-muted)',
-                      textAlign: 'center',
-                      minWidth: '4rem',
-                      letterSpacing: isCompleted ? '0.04em' : 0,
-                    }}>
-                      {isCompleted && result
-                        ? `${result.home_goals} : ${result.away_goals}`
-                        : t('fixture.vs')}
-                    </span>
-
-                    {/* Away team */}
-                    <span style={{
-                      fontWeight: isCompleted ? 600 : 400,
-                      color: 'var(--color-text)',
-                      fontSize: '0.9rem',
-                      overflow: 'hidden',
-                      textOverflow: 'ellipsis',
-                      whiteSpace: 'nowrap',
-                    }}>
-                      {f.away_team?.name ?? '?'}
-                    </span>
-                  </div>
-                )
-              })}
-            </div>
-          </div>
-        )
-      })}
-
+    <div style={{ display: 'flex', flexDirection: 'column', gap: hasMultipleAgeGroups ? '3rem' : '2rem' }}>
+      {hasMultipleAgeGroups
+        ? ageGroups.map(ag => {
+            const agFx = fixtures.filter(f => f.stage?.age_group_id === ag.id)
+            if (agFx.length === 0) return null
+            return (
+              <div key={ag.id}>
+                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'var(--color-accent)', letterSpacing: '0.02em', marginBottom: '1rem' }}>
+                  {ag.name}
+                </h2>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '2rem' }}>
+                  {renderTimeBlocks(agFx)}
+                </div>
+              </div>
+            )
+          })
+        : renderTimeBlocks(fixtures)
+      }
       <style>{`
         @media (max-width: 480px) {
-          .fx-row {
-            grid-template-columns: 2.75rem 1fr 2.75rem 1fr !important;
-            font-size: 0.8rem !important;
-            padding: 0.5rem 0.625rem !important;
-          }
+          .fx-row > div:first-child { grid-template-columns: 2.75rem 1fr 2.75rem 1fr !important; font-size: 0.8rem !important; }
+          .fx-row { padding: 0.5rem 0.625rem !important; }
         }
       `}</style>
     </div>
@@ -594,26 +556,39 @@ export default function TournamentDetail() {
 
       if (tmErr) { console.error('TournamentDetail teams fetch error:', tmErr); setLoading(false); return }
 
-      // 4. Fixtures — embed stages!inner so we filter by age_group_id via the join
-      // (same proven pattern as Schedule.jsx; avoids a separate stageIds pre-fetch).
-      const { data: fxData, error: fxErr } = await supabase
-        .from('fixtures')
-        .select(`
-          id, kickoff_time, status, home_team_id, away_team_id, group_label,
-          pitch:pitches(name),
-          fixture_results(home_goals, away_goals),
-          stages!inner(id, age_group_id, type)
-        `)
-        .in('stages.age_group_id', agIds)
-        .order('kickoff_time', { ascending: true })
+      // 4. Stages — pre-fetch by age_group_id; avoids PostgREST embedded-filter edge cases
+      const { data: stagesData } = await supabase
+        .from('stages')
+        .select('id, age_group_id, type')
+        .in('age_group_id', agIds)
+      const stageIds = (stagesData ?? []).map(s => s.id)
+      const stageMap = Object.fromEntries((stagesData ?? []).map(s => [s.id, s]))
+
+      // 5. Fixtures — filter by stage_id (plain column, works in all PostgREST versions)
+      const { data: fxData, error: fxErr } = stageIds.length > 0
+        ? await supabase
+            .from('fixtures')
+            .select('id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id, pitch:pitches(name)')
+            .in('stage_id', stageIds)
+            .order('kickoff_time', { ascending: true })
+        : { data: [], error: null }
       if (fxErr) { console.error('TournamentDetail fixture fetch error:', fxErr) }
 
+      // 6. Fixture results — fetch separately (embedded joins silently drop rows on some auth states)
+      const fxAll = fxData ?? []
+      const fxIds = fxAll.map(f => f.id)
+      const { data: resultData } = fxIds.length > 0
+        ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fxIds)
+        : { data: [] }
+      const resultMap = Object.fromEntries((resultData ?? []).map(r => [r.fixture_id, r]))
+
       const teamMap = Object.fromEntries((teamsData ?? []).map(t => [t.id, t]))
-      const fxWithStage = (fxData ?? []).map(f => ({
+      const fxWithStage = fxAll.map(f => ({
         ...f,
-        stage: f.stages ?? null,
+        stage: stageMap[f.stage_id] ?? null,
         home_team: teamMap[f.home_team_id] ?? null,
         away_team: teamMap[f.away_team_id] ?? null,
+        fixture_results: resultMap[f.id] ? [resultMap[f.id]] : [],
       }))
 
       setFixtures(fxWithStage)
@@ -864,10 +839,12 @@ export default function TournamentDetail() {
         </div>
       </div>
 
-      {/* ── Next matches widget ───────────────────────────── */}
-      <div className="container" style={{ paddingTop: '1.5rem' }}>
-        <NextMatchesWidget tournamentId={tournament.id} slug={slug} />
-      </div>
+      {/* ── Next matches widget — grafiks tab only ──────────── */}
+      {activeTab === 'grafiks' && (
+        <div className="container" style={{ paddingTop: '1.5rem' }}>
+          <NextMatchesWidget tournamentId={tournament.id} slug={slug} />
+        </div>
+      )}
 
       {/* ── Tab content ───────────────────────────────────── */}
       <div className="container" style={{ paddingTop: '1.25rem', paddingBottom: '4rem' }}>
@@ -882,7 +859,7 @@ export default function TournamentDetail() {
         )}
 
         {activeTab === 'grafiks' && (
-          <GrafiksTab fixtures={fixtures} t={t} />
+          <GrafiksTab fixtures={fixtures} ageGroups={ageGroups} t={t} />
         )}
 
         {activeTab === 'tabula' && (
