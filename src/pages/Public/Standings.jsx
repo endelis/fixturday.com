@@ -43,7 +43,7 @@ export default function Standings() {
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
         supabase.from('teams').select('*').eq('age_group_id', effectiveId).eq('status', 'confirmed'),
         supabase.from('fixtures')
-          .select('id, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
+          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
           .eq('stages.age_group_id', effectiveId),
       ])
       if (sibErr || tmErr || fxErr) { setLoading(false); return }
@@ -88,7 +88,24 @@ export default function Standings() {
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
   const knockoutFixtures = fixtures.filter(f => f.stages?.type === 'knockout')
   const hasKnockoutFixtures = knockoutFixtures.length > 0
-  const knockoutRounds = [...new Set(knockoutFixtures.map(f => f.round_name).filter(Boolean))]
+
+  // Group knockout fixtures by round number; generate fallback round name when round_name is null
+  const knockoutByRound = knockoutFixtures.reduce((acc, f) => {
+    const key = f.round ?? 999
+    if (!acc[key]) acc[key] = []
+    acc[key].push(f)
+    return acc
+  }, {})
+  const knockoutRoundList = Object.entries(knockoutByRound)
+    .sort(([a], [b]) => Number(a) - Number(b))
+    .map(([, matches]) => {
+      const roundName = matches[0]?.round_name
+        ?? (matches.length === 1 ? t('playoff.final')
+           : matches.length === 2 ? t('playoff.semiFinal')
+           : matches.length === 4 ? t('playoff.quarterFinal')
+           : t('standings.knockoutPhase'))
+      return { roundName, matches }
+    })
 
   return (
     <div>
@@ -186,15 +203,13 @@ export default function Standings() {
                 <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
                   {t('standings.knockoutPhase')}
                 </h2>
-                {knockoutRounds.length === 0 ? (
-                  <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.knockoutPending')}</p>
-                ) : knockoutRounds.map(round => (
-                  <div key={round} style={{ marginBottom: '1.5rem' }}>
+                {knockoutRoundList.map(({ roundName, matches }) => (
+                  <div key={roundName} style={{ marginBottom: '1.5rem' }}>
                     <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
-                      {round}
+                      {roundName}
                     </h3>
                     <div style={{ display: 'grid', gap: '0.5rem' }}>
-                      {knockoutFixtures.filter(f => f.round_name === round).map(f => {
+                      {matches.map(f => {
                         const result = results.find(r => r.fixture_id === f.id)
                         const homeName = f.home_team?.name ?? f.home_placeholder ?? '?'
                         const awayName = f.away_team?.name ?? f.away_placeholder ?? '?'
