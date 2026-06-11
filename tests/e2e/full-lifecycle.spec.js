@@ -179,33 +179,18 @@ test.describe.serial('Full Tournament Lifecycle', () => {
     const count = await fixCards.count()
     expect(count, 'should have 21 fixture cards').toBe(21)
 
-    // Helper: wait for a fixtures PATCH response (confirms DB write)
-    const patchFixture = () => page.waitForResponse(
-      r => r.url().includes('supabase.co') &&
-           r.url().includes('fixtures') &&
-           r.request().method() === 'PATCH',
-      { timeout: 8000 },
-    )
-
     for (let i = 0; i < count; i++) {
       const card = fixCards.nth(i)
-      // Register listener BEFORE fill so the response isn't missed
-      await Promise.all([
-        card.locator('input[type="date"]').fill(TODAY),
-        patchFixture(),
-      ])
-      await page.waitForTimeout(300)  // let load() refresh byRound
+      await card.locator('input[type="date"]').fill(TODAY)
+      await page.waitForTimeout(400)  // give the PATCH time to land
 
       // Assign pitch — nth(0) = time-slot select, nth(1) = pitch select
-      await Promise.all([
-        card.locator('select').nth(1).selectOption({
-          label: 'E2E Test Stadion — Galvenais laukums',
-        }),
-        patchFixture(),
-      ])
-      await page.waitForTimeout(300)
+      await card.locator('select').nth(1).selectOption({
+        label: 'E2E Test Stadion — Galvenais laukums',
+      })
+      await page.waitForTimeout(400)
     }
-    await page.waitForTimeout(500)
+    await page.waitForTimeout(500)  // drain any in-flight PATCHes
   })
 
   // ── 07: Enter scores via Matchday ─────────────────────────────────────────

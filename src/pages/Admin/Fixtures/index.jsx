@@ -107,7 +107,8 @@ export default function Fixtures() {
   async function updateFixture(fixtureId, changes) {
     const { error } = await supabase.from('fixtures').update(changes).eq('id', fixtureId)
     if (error) { toast(t('common.error'), 'error'); return }
-    load()
+    // No load() — kickoff draft and uncontrolled pitch select already reflect the
+    // saved state; reloading would clear kickoffDrafts mid-edit via byRound change.
   }
 
   function openScheduler() {
