@@ -545,18 +545,7 @@ export default function TournamentDetail() {
 
       const agIds = ags.map(g => g.id)
 
-      // 3. Teams
-      const { data: teamsData, error: tmErr } = await supabase
-        .from('teams')
-        .select('id, name, club, age_group_id, status')
-        .in('age_group_id', agIds)
-        .eq('status', 'confirmed')
-
-      setTeams(teamsData ?? [])
-
-      if (tmErr) { console.error('TournamentDetail teams fetch error:', tmErr); setLoading(false); return }
-
-      // 4. Stages — pre-fetch by age_group_id; avoids PostgREST embedded-filter edge cases
+      // 3. Stages — pre-fetch by age_group_id; avoids PostgREST embedded-filter edge cases
       const { data: stagesData } = await supabase
         .from('stages')
         .select('id, age_group_id, type')
@@ -564,17 +553,23 @@ export default function TournamentDetail() {
       const stageIds = (stagesData ?? []).map(s => s.id)
       const stageMap = Object.fromEntries((stagesData ?? []).map(s => [s.id, s]))
 
-      // 5. Fixtures — filter by stage_id (plain column, works in all PostgREST versions)
+      // 4. Fixtures — embed teams via FK join (avoids direct teams table query which fails
+      //    for anon after migration 025 revoked table-level SELECT on teams)
       const { data: fxData, error: fxErr } = stageIds.length > 0
         ? await supabase
             .from('fixtures')
-            .select('id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id, pitch:pitches(name)')
+            .select(`
+              id, kickoff_time, status, home_team_id, away_team_id, group_label, stage_id,
+              home_team:teams!home_team_id(id, name, club, age_group_id),
+              away_team:teams!away_team_id(id, name, club, age_group_id),
+              pitch:pitches(name)
+            `)
             .in('stage_id', stageIds)
             .order('kickoff_time', { ascending: true })
         : { data: [], error: null }
       if (fxErr) { console.error('TournamentDetail fixture fetch error:', fxErr) }
 
-      // 6. Fixture results — fetch separately (embedded joins silently drop rows on some auth states)
+      // 5. Fixture results — fetch separately (embedded joins silently drop rows on some auth states)
       const fxAll = fxData ?? []
       const fxIds = fxAll.map(f => f.id)
       const { data: resultData } = fxIds.length > 0
@@ -582,15 +577,19 @@ export default function TournamentDetail() {
         : { data: [] }
       const resultMap = Object.fromEntries((resultData ?? []).map(r => [r.fixture_id, r]))
 
-      const teamMap = Object.fromEntries((teamsData ?? []).map(t => [t.id, t]))
       const fxWithStage = fxAll.map(f => ({
         ...f,
         stage: stageMap[f.stage_id] ?? null,
-        home_team: teamMap[f.home_team_id] ?? null,
-        away_team: teamMap[f.away_team_id] ?? null,
         fixture_results: resultMap[f.id] ? [resultMap[f.id]] : [],
       }))
 
+      // Derive teams from fixtures (all unique teams that appear in the schedule)
+      const teamsSeen = new Map()
+      for (const f of fxWithStage) {
+        if (f.home_team?.id && !teamsSeen.has(f.home_team.id)) teamsSeen.set(f.home_team.id, f.home_team)
+        if (f.away_team?.id && !teamsSeen.has(f.away_team.id)) teamsSeen.set(f.away_team.id, f.away_team)
+      }
+      setTeams([...teamsSeen.values()])
       setFixtures(fxWithStage)
 
       if (!tabInitialized.current) {
