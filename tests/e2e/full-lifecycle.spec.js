@@ -179,23 +179,32 @@ test.describe.serial('Full Tournament Lifecycle', () => {
     const count = await fixCards.count()
     expect(count, 'should have 21 fixture cards').toBe(21)
 
+    // Helper: wait for a fixtures PATCH response (confirms DB write)
+    const patchFixture = () => page.waitForResponse(
+      r => r.url().includes('supabase.co') &&
+           r.url().includes('fixtures') &&
+           r.request().method() === 'PATCH',
+      { timeout: 8000 },
+    )
+
     for (let i = 0; i < count; i++) {
       const card = fixCards.nth(i)
-      const di = card.locator('input[type="date"]')
-      await di.fill(TODAY)
-      // onChange fires immediately and saves kickoff via updateFixture.
-      // Wait for the Supabase round-trip + load() re-render to settle before
-      // the next control — a mid-loop load() clears kickoffDrafts and can reset
-      // the controlled input value before onBlur fires.
-      await page.waitForTimeout(800)
-      // Assign pitch — nth(0) is the time-slot select (inside DateTimePicker),
-      // nth(1) is the pitch select that follows it.
-      await card.locator('select').nth(1).selectOption({
-        label: 'E2E Test Stadion — Galvenais laukums',
-      })
-      await page.waitForTimeout(800)
+      // Register listener BEFORE fill so the response isn't missed
+      await Promise.all([
+        card.locator('input[type="date"]').fill(TODAY),
+        patchFixture(),
+      ])
+      await page.waitForTimeout(300)  // let load() refresh byRound
+
+      // Assign pitch — nth(0) = time-slot select, nth(1) = pitch select
+      await Promise.all([
+        card.locator('select').nth(1).selectOption({
+          label: 'E2E Test Stadion — Galvenais laukums',
+        }),
+        patchFixture(),
+      ])
+      await page.waitForTimeout(300)
     }
-    // Buffer so the last pitch save + load() fully completes before Matchday
     await page.waitForTimeout(500)
   })
 
