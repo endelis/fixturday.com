@@ -1,9 +1,16 @@
+import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
 
 export default function Privacy() {
   const { t } = useTranslation()
+
+  useEffect(() => {
+    document.title = `${t('footer.privacy')} — Fixturday`
+    return () => { document.title = 'Fixturday' }
+  }, [t])
+
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>
       <PublicNav />

@@ -15,6 +15,11 @@ export default function Registration() {
   const [submitError, setSubmitError] = useState(null)
   const intervalRef = useRef(null)
 
+  useEffect(() => {
+    document.title = `${t('registration.title')} — Fixturday`
+    return () => { document.title = 'Fixturday' }
+  }, [t])
+
   useEffect(() => () => clearInterval(intervalRef.current), [])
 
   async function onSubmit(values) {

@@ -99,6 +99,14 @@ export default function Match() {
     if (error) toast(t('errors.loadFailed'), 'error')
   }, [error, t])
 
+  useEffect(() => {
+    if (!match) return
+    const home = match.home_team?.name ?? '?'
+    const away = match.away_team?.name ?? '?'
+    document.title = `${home} – ${away} — Fixturday`
+    return () => { document.title = 'Fixturday' }
+  }, [match])
+
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   if (!match) {

@@ -21,6 +21,7 @@ export default function TeamRoster() {
       ])
       if (tErr) { setLoading(false); return }
       setTeam(t)
+      document.title = `${t.name} — Fixturday`
       setPlayers(pErr ? [] : (p ?? []))
       if (t?.age_groups?.tournaments?.id) {
         const { data: sibs, error: sibErr } = await supabase
@@ -31,6 +32,7 @@ export default function TeamRoster() {
       setLoading(false)
     }
     load()
+    return () => { document.title = 'Fixturday' }
   }, [teamId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>

@@ -66,9 +66,8 @@ export default function DataDeletion() {
 
           <div style={infoBox}>
             <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--color-text-muted)', lineHeight: 1.6 }}>
-              <strong style={{ color: 'var(--color-text)' }}>Kas tiek dzēsts:</strong> jūsu konta informācija,
-              izveidotie turnīri un ar tiem saistītie dati. Publiski pieejami turnīra rezultāti var tikt
-              saglabāti anonimizētā veidā vēsturiskos nolūkos.
+              <strong style={{ color: 'var(--color-text)' }}>{t('legal.dataDeletionWhatDeleted')}</strong>{' '}
+              {t('legal.dataDeletionWhatDeletedBody')}
             </p>
           </div>
 
@@ -82,37 +81,36 @@ export default function DataDeletion() {
               marginTop: '1.5rem',
             }}>
               <p style={{ color: 'var(--color-success)', fontWeight: 600, margin: 0 }}>
-                ✓ Pieprasījums nosūtīts
+                ✓ {t('legal.dataDeletionSubmitted')}
               </p>
               <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginTop: '0.5rem', marginBottom: 0 }}>
-                Mēs sazināsimies ar jums 30 dienu laikā uz norādīto e-pastu.
+                {t('legal.dataDeletionSubmittedDetail')}
               </p>
             </div>
           ) : (
             <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem', marginTop: '1.5rem' }}>
               <div className="form-group">
-                <label>E-pasta adrese *</label>
+                <label>{t('legal.dataDeletionEmailLabel')}</label>
                 <input
                   type="email"
-                  placeholder="jusu@epasts.lv"
+                  placeholder={t('legal.dataDeletionEmailPlaceholder')}
                   {...register('email', { required: t('common.required') })}
                 />
                 {errors.email && <span className="error-message">{errors.email.message}</span>}
               </div>
 
               <div className="form-group">
-                <label>Pieprasījuma apraksts *</label>
+                <label>{t('legal.dataDeletionDescLabel')}</label>
                 <textarea
                   rows={5}
-                  placeholder="Lūdzu aprakstiet, kādus datus vēlaties dzēst (piemēram: visu konta informāciju, konkrētu turnīru, komandu datus u.c.)"
+                  placeholder={t('legal.dataDeletionDescPlaceholder')}
                   {...register('message', { required: t('common.required') })}
                 />
                 {errors.message && <span className="error-message">{errors.message.message}</span>}
               </div>
 
               <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', margin: 0 }}>
-                Nosūtot šo veidlapu, jūs piekrītat, ka jūsu e-pasta adrese tiek apstrādāta
-                pieprasījuma izpildei saskaņā ar mūsu{' '}
+                {t('legal.dataDeletionConsentText')}{' '}
                 <a href="/privatuma-politika" style={link}>Privātuma politiku</a>.
               </p>
 
@@ -122,16 +120,16 @@ export default function DataDeletion() {
                 disabled={isSubmitting}
                 style={{ justifySelf: 'start', marginTop: '0.25rem' }}
               >
-                {isSubmitting ? t('common.saving') : 'Nosūtīt pieprasījumu'}
+                {isSubmitting ? t('common.saving') : t('legal.dataDeletionSubmitBtn')}
               </button>
             </form>
           )}
 
           <div style={{ marginTop: '3rem', paddingTop: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', lineHeight: 1.6 }}>
-              Vai arī rakstiet tieši:{' '}
+              {t('legal.dataDeletionOrEmail')}{' '}
               <a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>
-              {' '}ar tēmu "GDPR datu dzēšana".
+              {' '}ar tēmu &ldquo;{t('legal.dataDeletionEmailSubject')}&rdquo;.
               Sūdzības var iesniegt:{' '}
               <a href="https://www.dvi.gov.lv" target="_blank" rel="noopener noreferrer" style={link}>
                 Datu valsts inspekcija

@@ -23,6 +23,7 @@ const Match           = lazy(() => import('./pages/Public/Match'))
 const Team            = lazy(() => import('./pages/Public/Team'))
 const PublicInfo      = lazy(() => import('./pages/Public/Info'))
 const Registration    = lazy(() => import('./pages/Public/Registration'))
+const NotFound        = lazy(() => import('./pages/Public/NotFound'))
 
 // ── Admin pages ───────────────────────────────────────────────────
 const Login          = lazy(() => import('./pages/Admin/Login'))
@@ -104,6 +105,8 @@ export default function App() {
             <Route path="info"          element={<TournamentInfo />} />
             <Route path="registrations" element={<AdminRegistrations />} />
           </Route>
+
+          <Route path="*" element={<NotFound />} />
         </Routes>
         </Suspense>
     </BrowserRouter>

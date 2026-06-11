@@ -695,14 +695,32 @@
     "pill": "JURIDISKĀ INFORMĀCIJA",
     "updated": "Atjaunots: 01/04/2026",
     "dataDeletionTitle": "Datu dzēšanas pieprasījums",
-    "dataDeletionIntro": "Saskaņā ar VDAR jums ir tiesības pieprasīt savu personas datu dzēšanu no Fixturday platformas. Aizpildiet zemāk esošo veidlapu — mēs apstrādāsim jūsu pieprasījumu 30 dienu laikā."
+    "dataDeletionIntro": "Saskaņā ar VDAR jums ir tiesības pieprasīt savu personas datu dzēšanu no Fixturday platformas. Aizpildiet zemāk esošo veidlapu — mēs apstrādāsim jūsu pieprasījumu 30 dienu laikā.",
+    "dataDeletionWhatDeleted": "Kas tiek dzēsts:",
+    "dataDeletionWhatDeletedBody": "jūsu konta informācija, izveidotie turnīri un ar tiem saistītie dati. Publiski pieejami turnīra rezultāti var tikt saglabāti anonimizētā veidā vēsturiskos nolūkos.",
+    "dataDeletionSubmitted": "Pieprasījums nosūtīts",
+    "dataDeletionSubmittedDetail": "Mēs sazināsimies ar jums 30 dienu laikā uz norādīto e-pastu.",
+    "dataDeletionEmailLabel": "E-pasta adrese *",
+    "dataDeletionEmailPlaceholder": "jusu@epasts.lv",
+    "dataDeletionDescLabel": "Pieprasījuma apraksts *",
+    "dataDeletionDescPlaceholder": "Lūdzu aprakstiet, kādus datus vēlaties dzēst (piemēram: visu konta informāciju, konkrētu turnīru, komandu datus u.c.)",
+    "dataDeletionConsentText": "Nosūtot šo veidlapu, jūs piekrītat, ka jūsu e-pasta adrese tiek apstrādāta pieprasījuma izpildei saskaņā ar mūsu",
+    "dataDeletionOrEmail": "Vai arī rakstiet tieši:",
+    "dataDeletionEmailSubject": "GDPR datu dzēšana",
+    "dataDeletionSubmitBtn": "Nosūtīt pieprasījumu"
   },
   "footer": {
     "copyright": "© 2026 Fixturday. Silvestrs Endelis.",
     "privacy": "Privātuma politika",
     "terms": "Lietošanas noteikumi",
     "cookies": "Sīkdatņu politika",
-    "dataDeletion": "Datu dzēšana"
+    "dataDeletion": "Datu dzēšana",
+    "coffee": "Fixturday ir bezmaksas. Ja noderēja, uzsauc man kafiju!"
+  },
+  "notFound": {
+    "title": "Lapa nav atrasta",
+    "subtitle": "Šādas lapas nav. Iespējams, adrese ir nepareiza.",
+    "back": "← Uz sākumlapu"
   },
   "cookies": {
     "bannerText": "Mēs izmantojam sīkdatnes, lai nodrošinātu pakalpojumu un uzlabotu lietotāja pieredzi.",

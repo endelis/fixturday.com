@@ -48,6 +48,11 @@ export default function Register() {
   const selectedAgeGroupId = watch('age_group_id')
 
   useEffect(() => {
+    document.title = `${t('register.title')} — Fixturday`
+    return () => { document.title = 'Fixturday' }
+  }, [t])
+
+  useEffect(() => {
     async function load() {
       const { data: t, error: tErr } = await supabase
         .from('tournaments')

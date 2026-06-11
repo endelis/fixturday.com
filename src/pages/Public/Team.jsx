@@ -80,6 +80,12 @@ export default function Team() {
     if (error) toast(t('errors.loadFailed'), 'error')
   }, [error, t])
 
+  useEffect(() => {
+    if (!team) return
+    document.title = `${team.name} — Fixturday`
+    return () => { document.title = 'Fixturday' }
+  }, [team])
+
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   if (!team) {
