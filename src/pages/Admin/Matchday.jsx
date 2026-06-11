@@ -49,7 +49,6 @@ export default function Matchday() {
         home_team:teams!home_team_id(id, name),
         away_team:teams!away_team_id(id, name),
         pitch:pitches(name, venues(name)),
-        fixture_results(id, home_goals, away_goals),
         stages(age_groups(name, tournaments(id, name)))
       `)
       .gte('kickoff_time', start)
@@ -59,20 +58,31 @@ export default function Matchday() {
     if (error) { toast(t('common.error'), 'error'); setLoading(false); return }
 
     const allFx = fx ?? []
-    setFixtures(allFx)
+    const fixtureIds = allFx.map(f => f.id)
 
-    const tId = allFx[0]?.stages?.age_groups?.tournaments?.id ?? null
+    // Fetch fixture_results separately — embedded joins silently drop rows for authenticated users
+    const { data: resultData } = fixtureIds.length > 0
+      ? await supabase.from('fixture_results').select('id, fixture_id, home_goals, away_goals').in('fixture_id', fixtureIds)
+      : { data: [] }
+    const resultMap = Object.fromEntries((resultData ?? []).map(r => [r.fixture_id, r]))
+    const allFxWithResults = allFx.map(f => ({
+      ...f,
+      fixture_results: resultMap[f.id] ? [resultMap[f.id]] : [],
+    }))
+
+    setFixtures(allFxWithResults)
+
+    const tId = allFxWithResults[0]?.stages?.age_groups?.tournaments?.id ?? null
     setTournamentId(tId)
 
     const init = {}
-    allFx.forEach(f => {
+    allFxWithResults.forEach(f => {
       const r = f.fixture_results?.[0]
       init[f.id] = { home: r?.home_goals ?? 0, away: r?.away_goals ?? 0 }
     })
     setScores(init)
 
     // Load events for all fixtures
-    const fixtureIds = allFx.map(f => f.id)
     if (fixtureIds.length > 0) {
       const { data: evs } = await supabase
         .from('fixture_events')
