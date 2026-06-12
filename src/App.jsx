@@ -22,6 +22,12 @@ const Guide           = lazy(() => import('./pages/Public/Guide'))
 const Blog            = lazy(() => import('./pages/Public/Blog'))
 const BlogPost        = lazy(() => import('./pages/Public/BlogPost'))
 const Match           = lazy(() => import('./pages/Public/Match'))
+
+// ── Service / landing pages ───────────────────────────────────────
+const FootballTournament        = lazy(() => import('./pages/Public/services/FootballTournament'))
+const BasketballTournament      = lazy(() => import('./pages/Public/services/BasketballTournament'))
+const TournamentBracketGenerator = lazy(() => import('./pages/Public/services/TournamentBracketGenerator'))
+const FreeTournamentSoftware    = lazy(() => import('./pages/Public/services/FreeTournamentSoftware'))
 const Team            = lazy(() => import('./pages/Public/Team'))
 const PublicInfo      = lazy(() => import('./pages/Public/Info'))
 const Registration    = lazy(() => import('./pages/Public/Registration'))
@@ -64,6 +70,12 @@ export default function App() {
           <Route path="/guide"                               element={<Guide />} />
           <Route path="/blog"                                element={<Blog />} />
           <Route path="/blog/:slug"                          element={<BlogPost />} />
+
+          {/* Service / landing pages */}
+          <Route path="/football-tournament-software"        element={<FootballTournament />} />
+          <Route path="/basketball-tournament-software"      element={<BasketballTournament />} />
+          <Route path="/tournament-bracket-generator"        element={<TournamentBracketGenerator />} />
+          <Route path="/free-tournament-software"            element={<FreeTournamentSoftware />} />
           <Route path="/privacy-policy"                      element={<Privacy />} />
           <Route path="/terms-of-use"                        element={<Terms />} />
           <Route path="/cookie-policy"                       element={<CookiesPage />} />

@@ -114,9 +114,9 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               <div className="pub-nav-desktop" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
                 {[
                   { to: '/tournaments', label: t('nav.tournaments') },
+                  { to: '/blog',        label: 'Blog' },
                   { to: '/guide',       label: t('nav.guide') },
                   { to: '/about',       label: t('nav.about') },
-                  { to: '/contact',     label: t('nav.contact') },
                 ].map(item => (
                   <Link key={item.to} to={item.to} style={desktopNavLink}
                     onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
@@ -243,6 +243,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
           {[
             { to: '/tournaments', label: t('nav.tournaments') },
+            { to: '/blog',        label: 'Blog' },
             { to: '/guide',       label: t('nav.guide') },
             { to: '/about',       label: t('nav.about') },
             { to: '/contact',     label: t('nav.contact') },

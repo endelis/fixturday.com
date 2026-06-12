@@ -34,12 +34,38 @@
     <priority>0.6</priority>
   </url>
 
-  <!-- Blog (Phase 3 will populate individual posts) -->
+  <!-- Blog -->
   <url>
     <loc>https://www.fixturday.com/blog</loc>
     <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>0.8</priority>
+  </url>
+
+  <!-- Service / landing pages -->
+  <url>
+    <loc>https://www.fixturday.com/football-tournament-software</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/basketball-tournament-software</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/tournament-bracket-generator</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/free-tournament-software</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.9</priority>
   </url>
 
   <!-- Legal -->
@@ -69,7 +95,6 @@
   </url>
 
   <!-- Dynamic blog + tournament pages appended by scripts/generate-sitemap.mjs at build time -->
-
 
   <!-- BEGIN:dynamic -->
   <url>
