@@ -1,7 +1,6 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { formatDate } from '../../utils/dateFormat'
 import { supabase } from '../../lib/supabase'
 import PublicNav from '../../components/PublicNav'
 
@@ -16,8 +15,8 @@ export default function TeamRoster() {
   useEffect(() => {
     async function load() {
       const [{ data: t, error: tErr }, { data: p, error: pErr }] = await Promise.all([
-        supabase.from('teams').select('*, age_groups(id, name, tournament_id, tournaments(id, name, slug))').eq('id', teamId).single(),
-        supabase.from('team_players').select('*').eq('team_id', teamId).order('number'),
+        supabase.from('teams').select('id, name, club, age_groups(id, name, tournament_id, tournaments(id, name, slug))').eq('id', teamId).single(),
+        supabase.from('team_players').select('id, name, number').eq('team_id', teamId).order('number'),
       ])
       if (tErr) { setLoading(false); return }
       setTeam(t)
@@ -54,14 +53,13 @@ export default function TeamRoster() {
       ) : (
         <table className="table">
           <thead>
-            <tr><th>{t('team.colNumber')}</th><th>{t('team.colName')}</th><th>{t('team.dob')}</th></tr>
+            <tr><th>{t('team.colNumber')}</th><th>{t('team.colName')}</th></tr>
           </thead>
           <tbody>
             {players.map(p => (
               <tr key={p.id}>
                 <td>{p.number ?? '—'}</td>
                 <td>{p.name}</td>
-                <td>{p.date_of_birth ? formatDate(p.date_of_birth) : '—'}</td>
               </tr>
             ))}
           </tbody>

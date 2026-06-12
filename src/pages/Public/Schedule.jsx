@@ -144,7 +144,7 @@ export default function Schedule() {
           </span>
         </span>
         {f.pitch && (
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', width: '100%', textAlign: 'right', marginTop: '-0.25rem' }}>
             {f.pitch.venues?.name} — {f.pitch.name}
           </span>
         )}
