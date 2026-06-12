@@ -4,14 +4,12 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { Zap, BarChart2, Smartphone, CheckCircle, ChevronDown } from 'lucide-react'
 import Footer from '../../components/Footer'
-import LanguageSwitcher from '../../components/LanguageSwitcher'
+import PublicNav from '../../components/PublicNav'
 import { useSEO } from '../../hooks/useSEO'
 
 export default function Landing() {
   const { t } = useTranslation()
   const [stats, setStats] = useState({ tournaments: 0, teams: 0, fixtures: 0 })
-  const [menuOpen, setMenuOpen] = useState(false)
-  const [scrolled, setScrolled] = useState(false)
 
   useSEO({
     title: 'Fixturday — Free Tournament Management Software',
@@ -19,12 +17,6 @@ export default function Landing() {
     path: '/',
     noSuffix: true,
   })
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 8)
-    window.addEventListener('scroll', onScroll, { passive: true })
-    return () => window.removeEventListener('scroll', onScroll)
-  }, [])
 
   useEffect(() => {
     async function loadStats() {
@@ -59,133 +51,13 @@ export default function Landing() {
   return (
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', overflowX: 'hidden' }}>
 
-      {/* ── Landing nav (has "Start" CTA, differs from PublicNav) ──── */}
-      <nav style={{
-        position: 'fixed', top: 0, left: 0, right: 0,
-        zIndex: 'var(--z-modal)',
-        background: scrolled ? 'rgba(10, 15, 30, 0.97)' : 'rgba(10, 15, 30, 0.85)',
-        backdropFilter: 'blur(12px)',
-        borderBottom: '1px solid var(--color-border)',
-        borderTop: '2px solid var(--color-accent)',
-        height: '60px',
-        display: 'flex', alignItems: 'center',
-        transition: 'background var(--transition-base)',
-        boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.5)' : 'none',
-      }}>
-        <div style={{
-          maxWidth: '1200px', margin: '0 auto', padding: '0 1.5rem',
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        }}>
-          <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
-            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '24px' }} />
-          </Link>
-
-          {/* Desktop nav */}
-          <div className="landing-nav-links">
-            {[
-              { to: '/tournaments', key: 'nav.tournaments' },
-              { to: '/about',       key: 'nav.about' },
-              { to: '/contact',     key: 'nav.contact' },
-              { to: '/guide',       key: 'nav.guide' },
-            ].map(item => (
-              <Link key={item.to} to={item.to} style={landingNavLink}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-            <LanguageSwitcher compact />
-            <Link to="/admin" style={loginBtnStyle}
-              onMouseEnter={e => { e.currentTarget.style.background = 'rgba(240,165,0,0.1)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'transparent' }}
-            >
-              {t('nav.login')}
-            </Link>
-            <Link to="/admin/register" style={startBtnStyle}
-              onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-accent-hover)'; e.currentTarget.style.boxShadow = '0 0 16px rgba(240,165,0,0.35)' }}
-              onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.boxShadow = 'none' }}
-            >
-              {t('nav.start')}
-            </Link>
-          </div>
-
-          {/* Mobile hamburger */}
-          <button
-            className="landing-hamburger"
-            onClick={() => setMenuOpen(o => !o)}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              color: 'var(--color-text)', padding: '0.5rem',
-              display: 'flex', alignItems: 'center',
-              borderRadius: 'var(--radius-sm)',
-            }}
-            aria-label={t('nav.openMenu')}
-          >
-            <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
-              {menuOpen ? (
-                <path d="M4 4l14 14M18 4L4 18" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-              ) : (
-                <>
-                  <line x1="3" y1="6" x2="19" y2="6" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="3" y1="11" x2="19" y2="11" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                  <line x1="3" y1="16" x2="19" y2="16" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" />
-                </>
-              )}
-            </svg>
-          </button>
-        </div>
-
-        {/* Mobile dropdown */}
-        {menuOpen && (
-          <div style={{
-            position: 'absolute', top: '60px', left: 0, right: 0,
-            background: 'var(--color-surface)',
-            borderBottom: '1px solid var(--color-border)',
-            padding: '1rem 1.5rem',
-            display: 'flex', flexDirection: 'column', gap: '0.25rem',
-            boxShadow: '0 8px 24px rgba(0,0,0,0.5)',
-          }}>
-            {[
-              { to: '/tournaments', key: 'nav.tournaments' },
-              { to: '/about',       key: 'nav.about' },
-              { to: '/contact',     key: 'nav.contact' },
-              { to: '/guide',       key: 'nav.guide' },
-              { to: '/admin',       key: 'nav.login' },
-            ].map(item => (
-              <Link key={item.to} to={item.to}
-                style={{
-                  color: 'var(--color-text-muted)', textDecoration: 'none',
-                  fontSize: '1rem', fontWeight: 500,
-                  padding: '0.75rem 0.5rem',
-                  borderBottom: '1px solid var(--color-border)',
-                }}
-                onClick={() => setMenuOpen(false)}
-              >
-                {t(item.key)}
-              </Link>
-            ))}
-            <Link to="/admin/register" onClick={() => setMenuOpen(false)} style={{
-              marginTop: '0.75rem',
-              display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'var(--color-accent)', color: '#0a0f1e',
-              borderRadius: 'var(--radius)', padding: '0.875rem',
-              fontFamily: 'var(--font-heading)', fontWeight: 700,
-              fontSize: '1rem', letterSpacing: '0.03em',
-              textDecoration: 'none', textTransform: 'uppercase',
-            }}>
-              {t('nav.start')}
-            </Link>
-            <div style={{ paddingTop: '0.75rem' }}><LanguageSwitcher /></div>
-          </div>
-        )}
-      </nav>
+      <PublicNav />
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section style={{
-        minHeight: '100vh', display: 'flex', flexDirection: 'column',
+        minHeight: 'calc(100vh - 60px)', display: 'flex', flexDirection: 'column',
         alignItems: 'center', justifyContent: 'center',
-        padding: '6rem 1.5rem 4rem',
+        padding: '4rem 1.5rem',
         position: 'relative', textAlign: 'center',
         background: 'radial-gradient(ellipse 80% 60% at 50% 30%, rgba(240,165,0,0.08) 0%, transparent 70%), var(--color-bg)',
       }}>
@@ -475,12 +347,6 @@ export default function Landing() {
       <Footer />
 
       <style>{`
-        .landing-nav-links { display: none; align-items: center; gap: 0.25rem; }
-        .landing-hamburger { display: flex; }
-        @media (min-width: 768px) {
-          .landing-nav-links { display: flex; }
-          .landing-hamburger { display: none !important; }
-        }
         .landing-features-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
         .landing-steps-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
         .landing-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
@@ -495,35 +361,6 @@ export default function Landing() {
       `}</style>
     </div>
   )
-}
-
-const landingNavLink = {
-  color: 'var(--color-text-muted)', textDecoration: 'none',
-  fontSize: '0.875rem', fontWeight: 500, whiteSpace: 'nowrap',
-  padding: '0.3rem 0.6rem', borderRadius: 'var(--radius-sm)',
-  transition: 'color var(--transition-fast)',
-}
-
-const loginBtnStyle = {
-  border: '1px solid rgba(240,165,0,0.4)',
-  borderRadius: 'var(--radius-sm)',
-  padding: '0.35rem 0.875rem',
-  color: 'var(--color-accent)',
-  fontSize: '0.875rem', fontWeight: 600,
-  fontFamily: 'var(--font-heading)', letterSpacing: '0.03em',
-  textDecoration: 'none', background: 'transparent',
-  transition: 'background var(--transition-fast)',
-  textTransform: 'uppercase',
-}
-
-const startBtnStyle = {
-  background: 'var(--color-accent)', color: '#0a0f1e',
-  borderRadius: 'var(--radius-sm)', padding: '0.35rem 1rem',
-  fontFamily: 'var(--font-heading)', fontWeight: 700,
-  fontSize: '0.875rem', textDecoration: 'none',
-  whiteSpace: 'nowrap', letterSpacing: '0.03em',
-  transition: 'background var(--transition-fast), box-shadow var(--transition-fast)',
-  textTransform: 'uppercase',
 }
 
 const heroPrimaryBtn = {
