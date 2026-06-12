@@ -1,5 +1,5 @@
-import { useState } from 'react'
-import { Link, NavLink, useNavigate } from 'react-router-dom'
+import { useState, useEffect } from 'react'
+import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { X, Menu } from 'lucide-react'
 import LanguageSwitcher from './LanguageSwitcher'
@@ -10,65 +10,70 @@ import LanguageSwitcher from './LanguageSwitcher'
  *   tournament        – current tournament object (optional, for breadcrumb)
  *   ageGroups         – sibling age groups (kept for Schedule/Standings compat)
  *   activeAgeGroupId  – active age group id (kept for Schedule/Standings compat)
- *
- * When no tournament is provided, shows standard nav links + hamburger on mobile.
  */
 export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
+  const [scrolled, setScrolled] = useState(false)
+
+  useEffect(() => {
+    const onScroll = () => setScrolled(window.scrollY > 8)
+    window.addEventListener('scroll', onScroll, { passive: true })
+    return () => window.removeEventListener('scroll', onScroll)
+  }, [])
 
   function closeDrawer() { setOpen(false) }
 
   return (
     <>
       <nav style={{
-        background: '#0d1b2e',
-        borderBottom: '1px solid #1e3a5f',
+        background: scrolled
+          ? 'rgba(10, 15, 30, 0.97)'
+          : 'var(--color-bg)',
+        borderBottom: '1px solid var(--color-border)',
+        borderTop: '2px solid var(--color-accent)',
         position: 'sticky',
         top: 0,
-        zIndex: 100,
+        zIndex: 'var(--z-nav)',
+        backdropFilter: scrolled ? 'blur(12px)' : 'none',
+        transition: 'background var(--transition-base), backdrop-filter var(--transition-base)',
+        boxShadow: scrolled ? '0 4px 24px rgba(0,0,0,0.5)' : 'none',
       }}>
         <div
           className="container"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            height: '60px',
-            gap: '0.75rem',
-          }}
+          style={{ display: 'flex', alignItems: 'center', height: '60px', gap: '0.75rem' }}
         >
           {/* Logo */}
-          <Link
-            to="/"
-            style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}
-          >
+          <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
             <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '26px', display: 'block' }} />
           </Link>
 
           {tournament ? (
             <>
-              {/* Tournament breadcrumb */}
-              <span style={{ color: '#2e4a68', fontSize: '1.1rem', flexShrink: 0, lineHeight: 1 }}>›</span>
+              <span style={{ color: 'var(--color-border)', fontSize: '1.1rem', flexShrink: 0, lineHeight: 1 }}>›</span>
               <Link
                 to={`/t/${tournament.slug}`}
                 style={{
-                  color: '#8fa3bc',
+                  color: 'var(--color-text-muted)',
                   fontSize: '0.875rem',
                   overflow: 'hidden',
                   textOverflow: 'ellipsis',
                   whiteSpace: 'nowrap',
                   maxWidth: '180px',
                   textDecoration: 'none',
+                  transition: 'color var(--transition-fast)',
+                  fontWeight: 500,
                 }}
+                onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
+                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
               >
                 {tournament.name}
               </Link>
 
-              {/* Age group tab switcher — only when multiple groups */}
               {ageGroups.length > 1 && (
                 <div style={{
                   display: 'flex',
-                  gap: '0.4rem',
+                  gap: '0.35rem',
                   flexWrap: 'wrap',
                   marginLeft: 'auto',
                   alignItems: 'center',
@@ -80,18 +85,20 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                         key={ag.id}
                         to={`/t/${tournament.slug}/${ag.id}`}
                         style={{
-                          padding: '0.3rem 0.7rem',
-                          borderRadius: '4px',
+                          padding: '0.3rem 0.75rem',
+                          borderRadius: 'var(--radius-sm)',
                           fontSize: '0.8rem',
+                          fontFamily: 'var(--font-heading)',
                           fontWeight: 600,
+                          letterSpacing: '0.03em',
                           textDecoration: 'none',
                           display: 'inline-flex',
                           alignItems: 'center',
-                          minHeight: '36px',
-                          background: isActive ? '#f0a500' : 'transparent',
-                          color: isActive ? '#0d1b2e' : '#8fa3bc',
-                          border: `1px solid ${isActive ? '#f0a500' : '#2e4a68'}`,
-                          transition: 'all 200ms ease',
+                          minHeight: '34px',
+                          background: isActive ? 'var(--color-accent)' : 'transparent',
+                          color: isActive ? '#0a0f1e' : 'var(--color-text-muted)',
+                          border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                          transition: 'all var(--transition-fast)',
                         }}
                       >
                         {ag.name}
@@ -104,19 +111,25 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           ) : (
             <>
               {/* Desktop nav links */}
-              <div className="pub-nav-desktop" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '1.25rem' }}>
-                <Link to="/tournaments" style={navLink}>{t('nav.tournaments')}</Link>
-                <Link to="/guide" style={navLink}>{t('nav.guide')}</Link>
-                <Link to="/about" style={navLink}>{t('nav.about')}</Link>
-                <Link to="/contact" style={navLink}>{t('nav.contact')}</Link>
+              <div className="pub-nav-desktop" style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                {[
+                  { to: '/tournaments', label: t('nav.tournaments') },
+                  { to: '/guide',       label: t('nav.guide') },
+                  { to: '/about',       label: t('nav.about') },
+                  { to: '/contact',     label: t('nav.contact') },
+                ].map(item => (
+                  <Link key={item.to} to={item.to} style={desktopNavLink}
+                    onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
+                    onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+                  >
+                    {item.label}
+                  </Link>
+                ))}
                 <LanguageSwitcher />
-                <Link to="/admin" style={{
-                  ...navLink,
-                  border: '1px solid rgba(240,165,0,0.4)',
-                  borderRadius: '6px',
-                  padding: '0.3rem 0.75rem',
-                  color: '#f0a500',
-                }}>
+                <Link to="/admin" style={loginBtnStyle}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.color = '#0a0f1e' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-accent)' }}
+                >
                   {t('nav.login')}
                 </Link>
               </div>
@@ -129,13 +142,15 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   marginLeft: 'auto',
                   background: 'none',
                   border: 'none',
-                  color: '#e0e8f4',
+                  color: 'var(--color-text)',
                   cursor: 'pointer',
                   padding: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
+                  borderRadius: 'var(--radius-sm)',
+                  transition: 'background var(--transition-fast)',
                 }}
-                aria-label="Atvērt izvēlni"
+                aria-label={t('nav.openMenu')}
               >
                 <Menu size={24} />
               </button>
@@ -143,13 +158,14 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           )}
         </div>
 
+        {/* Tournament sub-nav */}
         {tournament && ageGroups.length > 0 && (
           <div
             className="container"
             style={{
               display: 'flex',
               gap: '0.25rem',
-              borderTop: '1px solid #1e3a5f',
+              borderTop: '1px solid var(--color-border)',
               paddingTop: '0.3rem',
               paddingBottom: '0.3rem',
             }}
@@ -158,25 +174,13 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               const agId = activeAgeGroupId ?? ageGroups[0]?.id
               return (
                 <>
-                  <NavLink
-                    to={agId ? `/t/${tournament.slug}/${agId}/fixtures` : `/t/${tournament.slug}`}
-                    end
-                    style={tourNavLink}
-                  >
+                  <NavLink to={agId ? `/t/${tournament.slug}/${agId}/fixtures` : `/t/${tournament.slug}`} end style={tourNavLink}>
                     {t('nav.schedule')}
                   </NavLink>
-                  <NavLink
-                    to={agId ? `/t/${tournament.slug}/${agId}` : `/t/${tournament.slug}`}
-                    end
-                    style={tourNavLink}
-                  >
+                  <NavLink to={agId ? `/t/${tournament.slug}/${agId}` : `/t/${tournament.slug}`} end style={tourNavLink}>
                     {t('nav.standings')}
                   </NavLink>
-                  <NavLink
-                    to={`/${tournament.slug}/info`}
-                    end
-                    style={tourNavLink}
-                  >
+                  <NavLink to={`/${tournament.slug}/info`} end style={tourNavLink}>
                     {t('nav.info')}
                   </NavLink>
                 </>
@@ -186,66 +190,78 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         )}
       </nav>
 
-      {/* ── Mobile drawer ─────────────────────────────────────────── */}
+      {/* Mobile drawer overlay */}
       {open && (
         <div
           style={{
             position: 'fixed',
             inset: 0,
-            zIndex: 200,
-            background: 'rgba(10,22,40,0.6)',
-            backdropFilter: 'blur(2px)',
+            zIndex: 'var(--z-modal)',
+            background: 'rgba(10, 15, 30, 0.7)',
+            backdropFilter: 'blur(4px)',
           }}
           onClick={closeDrawer}
         />
       )}
+
+      {/* Mobile drawer panel */}
       <div style={{
         position: 'fixed',
         top: 0,
         right: 0,
         bottom: 0,
         width: '280px',
-        background: '#0d1b2e',
-        borderLeft: '1px solid #1e3a5f',
-        zIndex: 300,
+        background: 'var(--color-surface)',
+        borderLeft: '1px solid var(--color-border)',
+        zIndex: 'var(--z-toast)',
         display: 'flex',
         flexDirection: 'column',
         padding: '1.25rem',
         transform: open ? 'translateX(0)' : 'translateX(100%)',
         transition: 'transform 280ms cubic-bezier(0.4,0,0.2,1)',
+        boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
       }}>
-        {/* Close button */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
           <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '22px' }} />
           <button
             onClick={closeDrawer}
-            style={{ background: 'none', border: 'none', color: '#8fa3bc', cursor: 'pointer', padding: '0.25rem' }}
-            aria-label="Aizvērt izvēlni"
+            style={{
+              background: 'none',
+              border: 'none',
+              color: 'var(--color-text-muted)',
+              cursor: 'pointer',
+              padding: '0.25rem',
+              display: 'flex',
+              borderRadius: 'var(--radius-sm)',
+            }}
+            aria-label={t('nav.closeMenu')}
           >
             <X size={22} />
           </button>
         </div>
 
-        {/* Primary links */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', flex: 1 }}>
           {[
             { to: '/tournaments', label: t('nav.tournaments') },
-            { to: '/guide', label: t('nav.guide') },
-            { to: '/about', label: t('nav.about') },
-            { to: '/contact', label: t('nav.contact') },
+            { to: '/guide',       label: t('nav.guide') },
+            { to: '/about',       label: t('nav.about') },
+            { to: '/contact',     label: t('nav.contact') },
           ].map(item => (
             <Link
               key={item.to}
               to={item.to}
               onClick={closeDrawer}
               style={{
-                color: '#e0e8f4',
+                color: 'var(--color-text)',
                 textDecoration: 'none',
                 fontSize: '1.0625rem',
                 fontWeight: 500,
-                padding: '0.75rem 0.5rem',
-                borderBottom: '1px solid rgba(255,255,255,0.05)',
+                padding: '0.875rem 0.5rem',
+                borderBottom: '1px solid var(--color-border)',
+                transition: 'color var(--transition-fast)',
               }}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--color-accent)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text)'}
             >
               {item.label}
             </Link>
@@ -255,38 +271,46 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
             to="/admin"
             onClick={closeDrawer}
             style={{
-              marginTop: '1rem',
-              display: 'inline-flex',
+              marginTop: '1.25rem',
+              display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              background: '#f0a500',
-              color: '#0a1628',
+              background: 'var(--color-accent)',
+              color: '#0a0f1e',
+              fontFamily: 'var(--font-heading)',
               fontWeight: 700,
-              fontSize: '0.9375rem',
-              borderRadius: '8px',
-              padding: '0.75rem 1rem',
+              fontSize: '1rem',
+              letterSpacing: '0.03em',
+              borderRadius: 'var(--radius)',
+              padding: '0.875rem 1rem',
               textDecoration: 'none',
+              textTransform: 'uppercase',
             }}
           >
             {t('nav.login')}
           </Link>
         </div>
 
-        {/* Legal links at bottom */}
-        <div style={{ borderTop: '1px solid rgba(255,255,255,0.07)', paddingTop: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+        <div style={{
+          borderTop: '1px solid var(--color-border)',
+          paddingTop: '1rem',
+          display: 'flex',
+          flexDirection: 'column',
+          gap: '0.5rem',
+        }}>
           <div style={{ paddingBottom: '0.75rem' }}>
             <LanguageSwitcher />
           </div>
           {[
             { to: '/privacy-policy', label: t('footer.privacy') },
-            { to: '/terms-of-use', label: t('footer.terms') },
-            { to: '/cookie-policy', label: t('footer.cookies') },
+            { to: '/terms-of-use',   label: t('footer.terms') },
+            { to: '/cookie-policy',  label: t('footer.cookies') },
           ].map(item => (
             <Link
               key={item.to}
               to={item.to}
               onClick={closeDrawer}
-              style={{ color: '#8fa3bc', fontSize: '0.8rem', textDecoration: 'none' }}
+              style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', textDecoration: 'none' }}
             >
               {item.label}
             </Link>
@@ -305,20 +329,41 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
   )
 }
 
-const navLink = {
-  color: '#8fa3bc',
+const desktopNavLink = {
+  color: 'var(--color-text-muted)',
   fontSize: '0.875rem',
   textDecoration: 'none',
   fontWeight: 500,
   whiteSpace: 'nowrap',
+  padding: '0.3rem 0.6rem',
+  borderRadius: 'var(--radius-sm)',
+  transition: 'color var(--transition-fast)',
+}
+
+const loginBtnStyle = {
+  marginLeft: '0.5rem',
+  border: '1px solid rgba(240,165,0,0.45)',
+  borderRadius: 'var(--radius-sm)',
+  padding: '0.35rem 0.875rem',
+  color: 'var(--color-accent)',
+  fontSize: '0.875rem',
+  fontWeight: 600,
+  fontFamily: 'var(--font-heading)',
+  letterSpacing: '0.03em',
+  textDecoration: 'none',
+  background: 'transparent',
+  transition: 'background var(--transition-fast), color var(--transition-fast)',
+  textTransform: 'uppercase',
 }
 
 const tourNavLink = ({ isActive }) => ({
-  color: isActive ? '#f0a500' : '#8fa3bc',
+  color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
   textDecoration: 'none',
-  fontSize: '0.8rem',
+  fontSize: '0.8125rem',
   fontWeight: isActive ? 600 : 400,
-  padding: '0.3rem 0.6rem',
-  borderRadius: '4px',
+  padding: '0.3rem 0.7rem',
+  borderRadius: 'var(--radius-sm)',
   whiteSpace: 'nowrap',
+  borderBottom: isActive ? '2px solid var(--color-accent)' : '2px solid transparent',
+  transition: 'color var(--transition-fast)',
 })

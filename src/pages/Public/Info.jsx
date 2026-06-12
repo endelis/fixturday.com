@@ -46,13 +46,13 @@ export default function Info() {
               {tournament.name}
             </span>
           </Link>
-          <span style={{ color: 'var(--color-muted)', lineHeight: 1 }}>›</span>
-          <span style={{ color: 'var(--color-muted)', fontSize: '0.9rem' }}>{t('info.title')}</span>
+          <span style={{ color: 'var(--color-text-muted)', lineHeight: 1 }}>›</span>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.9rem' }}>{t('info.title')}</span>
         </div>
 
         {/* Content */}
         {!hasContent ? (
-          <p style={{ color: 'var(--color-muted)' }}>{t('info.noContent')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('info.noContent')}</p>
         ) : (
           <div style={{
             whiteSpace: 'pre-wrap',
@@ -83,7 +83,7 @@ export default function Info() {
             <div style={{
               fontFamily: 'var(--font-heading)',
               fontSize: '0.8rem',
-              color: 'var(--color-muted)',
+              color: 'var(--color-text-muted)',
               letterSpacing: '0.06em',
               textTransform: 'uppercase',
             }}>

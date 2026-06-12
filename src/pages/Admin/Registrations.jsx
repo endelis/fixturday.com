@@ -46,7 +46,7 @@ export default function Registrations() {
     background: 'none',
     border: 'none',
     borderBottom: tab === key ? '2px solid var(--color-accent)' : '2px solid transparent',
-    color: tab === key ? 'var(--color-accent)' : 'var(--color-muted)',
+    color: tab === key ? 'var(--color-accent)' : 'var(--color-text-muted)',
     fontFamily: 'var(--font-body)',
     fontWeight: 600,
     fontSize: '0.9375rem',
@@ -87,7 +87,7 @@ export default function Registrations() {
 
       {/* Content */}
       {displayed.length === 0 ? (
-        <p style={{ color: 'var(--color-muted)' }}>{t('common.noData')}</p>
+        <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
       ) : (
         <div style={{ overflowX: 'auto' }}>
           <table className="table">
@@ -104,7 +104,7 @@ export default function Registrations() {
             <tbody>
               {displayed.map(reg => (
                 <tr key={reg.id}>
-                  <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', color: 'var(--color-muted)' }}>
+                  <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
                     {format(new Date(reg.created_at), 'dd.MM.yyyy HH:mm')}
                   </td>
                   <td style={{ fontWeight: 600 }}>{reg.team_name}</td>

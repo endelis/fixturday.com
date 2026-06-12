@@ -24,7 +24,9 @@
     "guide": "Pamācība",
     "schedule": "Saraksts",
     "standings": "Tabula",
-    "info": "Info"
+    "info": "Info",
+    "openMenu": "Atvērt izvēlni",
+    "closeMenu": "Aizvērt izvēlni"
   },
   "tournament": {
     "title": "Turnīri",

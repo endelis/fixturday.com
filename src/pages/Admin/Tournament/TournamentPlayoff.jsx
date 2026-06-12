@@ -192,7 +192,7 @@ export default function TournamentPlayoff() {
         )}
 
         {ageGroupBrackets.length === 0 && !error && (
-          <p style={{ color: 'var(--color-muted)' }}>{t('standings.knockoutPending')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.knockoutPending')}</p>
         )}
 
         <div className="print-content">
@@ -217,7 +217,7 @@ export default function TournamentPlayoff() {
                       className="bracket-round-label"
                       style={{
                         fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-                        letterSpacing: '0.06em', color: 'var(--color-muted)',
+                        letterSpacing: '0.06em', color: 'var(--color-text-muted)',
                         marginBottom: '0.75rem', textAlign: 'center',
                       }}
                     >
@@ -267,7 +267,7 @@ export default function TournamentPlayoff() {
 
                             <div style={{
                               display: 'flex', justifyContent: 'center', alignItems: 'center',
-                              fontSize: '0.7rem', color: 'var(--color-muted)',
+                              fontSize: '0.7rem', color: 'var(--color-text-muted)',
                               marginBottom: '0.35rem',
                             }}>
                               {hasResult ? ':' : t('fixture.vs')}

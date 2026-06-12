@@ -59,7 +59,7 @@ export default function TournamentInfo() {
 
   const tabBtn = (key) => ({
     background: tab === key ? 'var(--color-accent)' : 'var(--color-surface)',
-    color: tab === key ? '#000' : 'var(--color-muted)',
+    color: tab === key ? '#000' : 'var(--color-text-muted)',
     border: 'none',
     padding: '0.4rem 1.1rem',
     borderRadius: '6px',
@@ -113,14 +113,14 @@ export default function TournamentInfo() {
           >
             {contentMd
               ? <pre style={{ whiteSpace: 'pre-wrap', fontFamily: 'inherit', margin: 0, color: 'var(--color-text)', fontSize: '0.9rem', lineHeight: 1.6 }}>{contentMd}</pre>
-              : <span style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>{t('tournamentInfo.previewEmpty')}</span>
+              : <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('tournamentInfo.previewEmpty')}</span>
             }
           </div>
         )}
 
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '1.25rem' }}>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-muted)', marginBottom: '0.35rem' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.35rem' }}>
               {t('tournamentInfo.contactEmailLabel')}
             </label>
             <input
@@ -130,7 +130,7 @@ export default function TournamentInfo() {
             />
           </div>
           <div>
-            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-muted)', marginBottom: '0.35rem' }}>
+            <label style={{ display: 'block', fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.35rem' }}>
               {t('tournamentInfo.contactPhoneLabel')}
             </label>
             <input

@@ -196,7 +196,7 @@ export default function TournamentLayout() {
         </nav>
 
         <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <Link to="/admin/dashboard" style={{ color: 'var(--color-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>
+          <Link to="/admin/dashboard" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>
             ← {t('workspace.backToDashboard')}
           </Link>
         </div>
@@ -214,7 +214,7 @@ export default function TournamentLayout() {
           <button className="t-hamburger btn-secondary btn-sm" onClick={() => setSidebarOpen(o => !o)}>
             ☰
           </button>
-          <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>{tournament.name}</span>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{tournament.name}</span>
         </div>
         <Outlet context={{ tournament, stepsComplete }} />
       </main>
@@ -235,7 +235,7 @@ export default function TournamentLayout() {
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '0.35rem' }}>
               {t('wizard.title')}
             </h2>
-            <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
               {t('wizard.subtitle')}
             </p>
 
@@ -255,13 +255,13 @@ export default function TournamentLayout() {
             </div>
 
             <div style={{ marginBottom: '1.75rem' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginBottom: '0.25rem' }}>
+              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>
                 {t('wizard.stepLabel', { current: wizardStep + 1, total: WIZARD_STEPS.length })}
               </div>
               <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', marginBottom: '0.4rem' }}>
                 {stepsComplete[wizardStep] && '✓ '}{t(WIZARD_STEPS[wizardStep].titleKey)}
               </h3>
-              <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
                 {stepsComplete[wizardStep]
                   ? t('wizard.stepDone')
                   : t(WIZARD_STEPS[wizardStep].descKey)}
@@ -279,7 +279,7 @@ export default function TournamentLayout() {
               </button>
               <button
                 onClick={dismissWizard}
-                style={{ background: 'none', border: 'none', color: 'var(--color-muted)', cursor: 'pointer', fontSize: '0.82rem', padding: '0.4rem 0.5rem' }}
+                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '0.82rem', padding: '0.4rem 0.5rem' }}
               >
                 {t('wizard.dismiss')}
               </button>

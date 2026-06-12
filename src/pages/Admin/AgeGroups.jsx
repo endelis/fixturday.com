@@ -159,7 +159,7 @@ export default function AgeGroups() {
                       const confirmed = (ag.teams ?? []).filter(tm => tm.status === 'confirmed').length
                       const pending   = (ag.teams ?? []).filter(tm => tm.status === 'pending').length
                       return (
-                        <span style={{ marginLeft: '0.5rem', color: confirmed >= 2 ? 'var(--color-success)' : 'var(--color-muted)', fontSize: '0.875rem' }}>
+                        <span style={{ marginLeft: '0.5rem', color: confirmed >= 2 ? 'var(--color-success)' : 'var(--color-text-muted)', fontSize: '0.875rem' }}>
                           · {confirmed} {t('ageGroup.confirmedCount')}
                           {pending > 0 && <span style={{ color: 'var(--color-accent)', marginLeft: '0.25rem' }}>({pending} {t('ageGroup.pendingCount')})</span>}
                         </span>

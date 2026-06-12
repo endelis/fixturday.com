@@ -66,7 +66,7 @@ export default function NextMatchesWidget({ tournamentId, slug, limit = 10 }) {
                 {match.stage?.age_group?.name && (
                   <span style={{
                     fontSize: '0.68rem',
-                    color: 'var(--color-muted)',
+                    color: 'var(--color-text-muted)',
                     textTransform: 'uppercase',
                     letterSpacing: '0.04em',
                     lineHeight: 1.3,
@@ -102,7 +102,7 @@ export default function NextMatchesWidget({ tournamentId, slug, limit = 10 }) {
               <span style={{
                 fontFamily: 'var(--font-heading)',
                 fontSize: '0.85rem',
-                color: 'var(--color-muted)',
+                color: 'var(--color-text-muted)',
                 flexShrink: 0,
               }}>
                 {t('fixture.vs')}
@@ -132,7 +132,7 @@ export default function NextMatchesWidget({ tournamentId, slug, limit = 10 }) {
               {match.pitch?.name && (
                 <span style={{
                   fontSize: '0.75rem',
-                  color: 'var(--color-muted)',
+                  color: 'var(--color-text-muted)',
                   flexShrink: 0,
                 }}>
                   {match.pitch.venues?.name ? `${match.pitch.venues.name} · ` : ''}{match.pitch.name}

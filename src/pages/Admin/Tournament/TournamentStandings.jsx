@@ -57,7 +57,7 @@ const PRINT_STYLE = `
   }
 `
 
-const thStyle = { textAlign: 'left', padding: '0.5rem 0.4rem', color: 'var(--color-muted)', fontSize: '0.78rem', fontWeight: 600 }
+const thStyle = { textAlign: 'left', padding: '0.5rem 0.4rem', color: 'var(--color-text-muted)', fontSize: '0.78rem', fontWeight: 600 }
 const thCStyle = { ...thStyle, textAlign: 'center' }
 const tdStyle = { padding: '0.6rem 0.4rem' }
 const tdCStyle = { ...tdStyle, textAlign: 'center' }
@@ -91,7 +91,7 @@ function StandingsTable({ rows, advancingCount, t }) {
                   : idx % 2 === 0 ? 'transparent' : 'rgba(255,255,255,0.02)',
               }}
             >
-              <td style={{ ...tdStyle, color: 'var(--color-muted)', fontSize: '0.8rem' }}>{idx + 1}</td>
+              <td style={{ ...tdStyle, color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{idx + 1}</td>
               <td style={{ ...tdStyle, fontWeight: 500 }}>
                 {advancingCount && idx < advancingCount && (
                   <span style={{ fontSize: '0.65rem', color: 'var(--color-accent)', marginRight: '0.4rem', fontWeight: 700 }}>↑</span>
@@ -247,7 +247,7 @@ export default function TournamentStandings() {
         )}
 
         {ageGroupData.length === 0 && !error && (
-          <p style={{ color: 'var(--color-muted)' }}>{t('common.noData')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
         )}
 
         <div className="print-content">
@@ -259,7 +259,7 @@ export default function TournamentStandings() {
 
               {agData.type === 'group_knockout' ? (
                 <>
-                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-muted)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
                     {t('standings.groupPhase')}
                   </h3>
 
@@ -269,7 +269,7 @@ export default function TournamentStandings() {
                         {t('standings.group')} {label}
                       </h4>
                       {rows.length === 0
-                        ? <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
+                        ? <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
                         : <StandingsTable rows={rows} advancingCount={agData.ag.teams_advancing ?? 2} t={t} />
                       }
                     </div>
@@ -294,7 +294,7 @@ export default function TournamentStandings() {
                 </>
               ) : (
                 agData.rows.length === 0
-                  ? <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
+                  ? <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
                   : <StandingsTable rows={agData.rows} t={t} />
               )}
             </div>

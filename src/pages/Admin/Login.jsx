@@ -43,7 +43,7 @@ export default function Login() {
 
   return (
     <div className="admin-login" style={{ position: 'relative' }}>
-      <Link to="/" style={{ position: 'absolute', top: '1rem', left: '1rem', color: 'var(--color-muted)', display: 'flex', alignItems: 'center' }}>
+      <Link to="/" style={{ position: 'absolute', top: '1rem', left: '1rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>
         <ArrowLeft size={20} />
       </Link>
       <div className="login-card">
@@ -85,7 +85,7 @@ export default function Login() {
             type="submit"
             className="btn-primary"
             disabled={submitting}
-            style={{ marginTop: '24px' }}
+            style={{ marginTop: '1.5rem', width: '100%' }}
           >
             {submitting ? t('common.loading') : t('auth.login')}
           </button>

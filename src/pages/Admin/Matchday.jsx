@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Link, Navigate, useParams } from 'react-router-dom'
+import { ArrowLeft } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
 import { formatTime } from '../../utils/dateFormat'
@@ -9,11 +10,12 @@ import { toast } from '../../components/Toast'
 
 const inputSx = {
   background: 'var(--color-surface)',
-  border: '1px solid rgba(255,255,255,0.12)',
+  border: '1px solid var(--color-border)',
   color: 'var(--color-text)',
   padding: '0.3rem 0.6rem',
-  borderRadius: '6px',
+  borderRadius: 'var(--radius-sm)',
   fontSize: '0.875rem',
+  fontFamily: 'var(--font-body)',
 }
 
 export default function Matchday() {
@@ -302,8 +304,9 @@ export default function Matchday() {
   return (
     <div>
       <nav className="admin-nav">
-        <Link to={backLink} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-          ← {t('workspace.backToDashboard')}
+        <Link to={backLink} style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.25rem', display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+          <ArrowLeft size={18} />
+          {t('workspace.backToDashboard')}
         </Link>
         <input
           type="date"
@@ -334,7 +337,7 @@ export default function Matchday() {
         {loading ? (
           <div className="loading">{t('common.loading')}</div>
         ) : filtered.length === 0 ? (
-          <div className="card" style={{ textAlign: 'center', color: 'var(--color-muted)' }}>
+          <div className="card" style={{ textAlign: 'center', color: 'var(--color-text-muted)' }}>
             <p>{t('matchday.noFixtures')}</p>
             <p style={{ fontSize: '0.875rem', marginTop: '0.5rem' }}>{t('matchday.noFixturesHint')}</p>
           </div>
@@ -358,7 +361,7 @@ export default function Matchday() {
                       <div key={f.id} className="card" style={{ opacity: isPostponed ? 0.5 : 1 }}>
                         {/* Top row: time, pitch, status */}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.875rem', color: 'var(--color-muted)' }}>
+                          <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
                             {f.kickoff_time && formatTime(f.kickoff_time)}
                             {f.pitch && ` · ${f.pitch.venues?.name} — ${f.pitch.name}`}
                           </span>
@@ -389,7 +392,7 @@ export default function Matchday() {
                               onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } }))}
                               style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.25rem', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
                             />
-                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-muted)' }}>:</span>
+                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
                             <input
                               type="number" min="0" max="99"
                               value={score.away}
@@ -415,8 +418,8 @@ export default function Matchday() {
 
                         {/* Events section */}
                         {!isPostponed && (
-                          <div style={{ marginTop: '1rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '0.75rem' }}>
-                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
+                          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
+                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
                               {t('matchday.events')}
                             </div>
 
@@ -425,7 +428,7 @@ export default function Matchday() {
                               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
                                 {fixtureEvents.map(ev => (
                                   <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                    <span style={{ color: 'var(--color-muted)', fontSize: '0.75rem', minWidth: '2.5rem' }}>
+                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', minWidth: '2.5rem' }}>
                                       {ev.team?.name === f.home_team?.name ? '←' : '→'} {ev.minute ? `${ev.minute}'` : ''}
                                     </span>
                                     <span>{eventLabel(ev)}</span>

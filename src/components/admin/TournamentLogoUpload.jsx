@@ -163,7 +163,7 @@ export default function TournamentLogoUpload({ tournamentId, currentLogoPath, on
             style={{
               display: 'inline-flex', alignItems: 'center',
               border: `1px solid ${confirmRemove ? 'var(--color-danger)' : 'rgba(255,255,255,0.2)'}`,
-              color: confirmRemove ? 'var(--color-danger)' : 'var(--color-muted)',
+              color: confirmRemove ? 'var(--color-danger)' : 'var(--color-text-muted)',
               background: 'none', borderRadius: '6px', padding: '0.5rem 1rem',
               cursor: busy ? 'not-allowed' : 'pointer',
               fontSize: '0.875rem', fontWeight: 500,

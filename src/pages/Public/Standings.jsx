@@ -136,25 +136,21 @@ export default function Standings() {
   return (
     <div>
       <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
-      <div className="container" style={{ paddingTop: '2rem' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+      <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', margin: 0 }}>{ag.name} — {t('standings.title')}</h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            {lastUpdated && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
-                {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
-              </span>
-            )}
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-              fontSize: '0.72rem', fontWeight: 600,
-              color: realtimeStatus === 'connected' ? 'var(--color-success)' : 'var(--color-muted)',
-              letterSpacing: '0.04em',
+              fontSize: '0.72rem', fontFamily: 'var(--font-heading)', fontWeight: 600,
+              color: realtimeStatus === 'connected' ? 'var(--color-live)' : 'var(--color-text-muted)',
+              letterSpacing: '0.05em', textTransform: 'uppercase',
             }}>
               <span style={{
                 width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0,
-                background: realtimeStatus === 'connected' ? 'var(--color-success)' : '#4a5568',
-                boxShadow: realtimeStatus === 'connected' ? '0 0 6px var(--color-success)' : 'none',
+                background: realtimeStatus === 'connected' ? 'var(--color-live)' : 'var(--color-text-muted)',
+                boxShadow: realtimeStatus === 'connected' ? '0 0 8px var(--color-live)' : 'none',
+                animation: realtimeStatus === 'connected' ? 'live-dot-pulse 2s ease-in-out infinite' : 'none',
               }} />
               {realtimeStatus === 'connected'
                 ? t('standings.live')
@@ -235,7 +231,7 @@ export default function Standings() {
                 </h2>
                 {knockoutRoundList.map(({ roundName, matches }, idx) => (
                   <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
+                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
                       {roundName}
                     </h3>
                     <div style={{ display: 'grid', gap: '0.5rem' }}>

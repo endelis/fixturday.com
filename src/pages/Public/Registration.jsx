@@ -47,7 +47,7 @@ export default function Registration() {
     <div>
       <PublicNav />
       <div className="container" style={{ paddingTop: '2rem' }}>
-        <p style={{ color: 'var(--color-muted)' }}>{t('register.notFound')}</p>
+        <p style={{ color: 'var(--color-text-muted)' }}>{t('register.notFound')}</p>
       </div>
     </div>
   )
@@ -63,7 +63,7 @@ export default function Registration() {
           {t('registration.successMessage')}
         </p>
         {cooldown > 0 ? (
-          <p style={{ fontSize: '0.875rem', color: 'var(--color-muted)' }}>
+          <p style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
             {t('registration.cooldownMessage', { seconds: cooldown })}
           </p>
         ) : (

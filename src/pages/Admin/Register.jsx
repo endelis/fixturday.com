@@ -38,7 +38,7 @@ export default function Register() {
 
   return (
     <div className="admin-login" style={{ position: 'relative' }}>
-      <Link to="/" style={{ position: 'absolute', top: '1rem', left: '1rem', color: 'var(--color-muted)', display: 'flex', alignItems: 'center' }}>
+      <Link to="/" style={{ position: 'absolute', top: '1rem', left: '1rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center' }}>
         <ArrowLeft size={20} />
       </Link>
       <div className="login-card">
@@ -72,7 +72,7 @@ export default function Register() {
           <div className="form-group">
             <label htmlFor="lastName">
               {t('auth.lastName')}{' '}
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>({t('auth.optional')})</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>({t('auth.optional')})</span>
             </label>
             <input
               id="lastName"
@@ -85,7 +85,7 @@ export default function Register() {
           <div className="form-group">
             <label htmlFor="phone">
               {t('auth.phone')}{' '}
-              <span style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>({t('auth.optional')})</span>
+              <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>({t('auth.optional')})</span>
             </label>
             <input
               id="phone"

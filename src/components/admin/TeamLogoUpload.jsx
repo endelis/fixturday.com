@@ -104,7 +104,7 @@ export default function TeamLogoUpload({ teamId, currentLogoPath, onChange }) {
 
   return (
     <div>
-      <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginBottom: '0.35rem' }}>
+      <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.35rem' }}>
         {t('admin.teamLogo.title')}
       </div>
 
@@ -162,7 +162,7 @@ export default function TeamLogoUpload({ teamId, currentLogoPath, onChange }) {
             style={{
               display: 'inline-flex', alignItems: 'center',
               border: `1px solid ${confirmRemove ? 'var(--color-danger)' : 'rgba(255,255,255,0.2)'}`,
-              color: confirmRemove ? 'var(--color-danger)' : 'var(--color-muted)',
+              color: confirmRemove ? 'var(--color-danger)' : 'var(--color-text-muted)',
               background: 'none', borderRadius: '6px', padding: '0.35rem 0.7rem',
               cursor: busy ? 'not-allowed' : 'pointer',
               fontSize: '0.78rem', fontWeight: 500,

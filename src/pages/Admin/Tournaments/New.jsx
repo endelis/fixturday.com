@@ -192,7 +192,7 @@ export default function TournamentNew() {
                   }}
                 >
                   <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{s.icon}</span>
-                  <span style={{ fontSize: '0.68rem', fontWeight: selectedSport === s.value ? 700 : 400, textAlign: 'center', lineHeight: 1.2, color: selectedSport === s.value ? 'var(--color-accent)' : 'var(--color-muted)' }}>
+                  <span style={{ fontSize: '0.68rem', fontWeight: selectedSport === s.value ? 700 : 400, textAlign: 'center', lineHeight: 1.2, color: selectedSport === s.value ? 'var(--color-accent)' : 'var(--color-text-muted)' }}>
                     {t(s.labelKey)}
                   </span>
                 </button>
@@ -238,7 +238,7 @@ export default function TournamentNew() {
 
           {/* Scheduling defaults */}
           <div>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-muted)', marginBottom: '0.75rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
               {t('tournament.schedulingDefaults')}
             </h3>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>

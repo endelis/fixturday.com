@@ -24,7 +24,9 @@
     "guide": "Guide",
     "schedule": "Schedule",
     "standings": "Standings",
-    "info": "Info"
+    "info": "Info",
+    "openMenu": "Open menu",
+    "closeMenu": "Close menu"
   },
   "tournament": {
     "title": "Tournaments",

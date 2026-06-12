@@ -89,7 +89,7 @@ export default function TournamentOverview() {
             <Link key={s.labelKey} to={`/admin/tournaments/${id}/${s.path}`} style={{ textDecoration: 'none' }}>
               <div className="card" style={{ textAlign: 'center', padding: '1.25rem 1rem' }}>
                 <div style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem', color: 'var(--color-accent)' }}>{s.value}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--color-muted)', marginTop: '0.25rem' }}>{t(s.labelKey)}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginTop: '0.25rem' }}>{t(s.labelKey)}</div>
               </div>
             </Link>
           ))}
@@ -112,7 +112,7 @@ export default function TournamentOverview() {
                   alignItems: 'center',
                   gap: '0.75rem',
                   textDecoration: 'none',
-                  color: step.done ? 'var(--color-muted)' : 'var(--color-text)',
+                  color: step.done ? 'var(--color-text-muted)' : 'var(--color-text)',
                   padding: '0.5rem 0.25rem',
                   opacity: step.done ? 0.6 : 1,
                 }}
@@ -122,7 +122,7 @@ export default function TournamentOverview() {
                   background: step.done ? 'var(--color-success)' : 'rgba(255,255,255,0.15)',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   fontSize: '0.7rem', flexShrink: 0,
-                  color: step.done ? '#fff' : 'var(--color-muted)',
+                  color: step.done ? '#fff' : 'var(--color-text-muted)',
                 }}>
                   {step.done ? '✓' : i + 1}
                 </span>
@@ -136,7 +136,7 @@ export default function TournamentOverview() {
       )}
 
       {/* Quick links */}
-      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--color-muted)' }}>
+      <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--color-text-muted)' }}>
         {t('workspace.quickLinks')}
       </h3>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem' }}>

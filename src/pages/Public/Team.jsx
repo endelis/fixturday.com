@@ -22,15 +22,15 @@ function dayHeader(dateKey, locale) {
 }
 
 function resultStyle(f, teamId) {
-  if (f.status !== 'completed') return 'var(--color-muted)'
+  if (f.status !== 'completed') return 'var(--color-text-muted)'
   const r = f.fixture_results?.[0]
-  if (!r) return 'var(--color-muted)'
+  if (!r) return 'var(--color-text-muted)'
   const isHome = f.home_team_id === teamId
   const mine = isHome ? r.home_goals : r.away_goals
   const opp  = isHome ? r.away_goals : r.home_goals
   if (mine > opp)  return 'var(--color-success)'
   if (mine < opp)  return 'var(--color-danger)'
-  return 'var(--color-muted)'
+  return 'var(--color-text-muted)'
 }
 
 function HABadge({ isHome, t }) {
@@ -44,8 +44,8 @@ function HABadge({ isHome, t }) {
       letterSpacing: '0.04em',
       flexShrink: 0,
       background: isHome ? 'var(--color-accent)' : 'transparent',
-      color: isHome ? '#000' : 'var(--color-muted)',
-      border: isHome ? 'none' : '1px solid var(--color-muted)',
+      color: isHome ? '#000' : 'var(--color-text-muted)',
+      border: isHome ? 'none' : '1px solid var(--color-text-muted)',
     }}>
       {isHome ? t('team.home') : t('team.away')}
     </span>
@@ -61,7 +61,7 @@ function StatCell({ label, value }) {
       borderRadius: 'var(--radius, 0.5rem)',
       minWidth: '3.25rem',
     }}>
-      <span style={{ fontSize: '0.65rem', color: 'var(--color-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
+      <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', fontWeight: 600, letterSpacing: '0.06em', textTransform: 'uppercase', marginBottom: '0.2rem' }}>
         {label}
       </span>
       <span style={{ fontSize: '1.2rem', fontWeight: 800, fontFamily: 'var(--font-display)' }}>
@@ -94,7 +94,7 @@ export default function Team() {
       <div>
         <PublicNav />
         <div className="container" style={{ paddingTop: '3rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-muted)' }}>{t('team.notFound')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('team.notFound')}</p>
         </div>
       </div>
     )
@@ -131,8 +131,8 @@ export default function Team() {
       <div className="container" style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
 
         {/* Breadcrumb */}
-        <nav style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--color-muted)' }}>
-          <Link to="/tournaments" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>
+        <nav style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+          <Link to="/tournaments" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>
             {t('match.breadcrumbAll')}
           </Link>
           {tournament && (
@@ -166,7 +166,7 @@ export default function Team() {
                 background: 'var(--color-surface)',
                 borderRadius: '0.375rem',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
-                fontSize: '2rem', color: 'var(--color-muted)',
+                fontSize: '2rem', color: 'var(--color-text-muted)',
               }}>⚽</div>
             )}
 
@@ -181,10 +181,10 @@ export default function Team() {
                 )}
               </h1>
               {ageGroupName && (
-                <span style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>{ageGroupName}</span>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{ageGroupName}</span>
               )}
               {team.contact_name && (
-                <span style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
                   {t('team.manager')}: {team.contact_name}
                 </span>
               )}
@@ -201,7 +201,7 @@ export default function Team() {
 
         {/* Fixture list */}
         {fixtures.length === 0 ? (
-          <p style={{ color: 'var(--color-muted)' }}>{t('team.noFixtures')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('team.noFixtures')}</p>
         ) : (
           Object.keys(grouped).sort().map(day => (
             <div key={day} style={{ marginBottom: '1.75rem' }}>
@@ -236,7 +236,7 @@ export default function Team() {
                         cursor: 'pointer',
                       }}>
                         {/* Time */}
-                        <span style={{ color: 'var(--color-muted)', fontSize: '0.8rem', minWidth: '2.5rem', flexShrink: 0 }}>
+                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', minWidth: '2.5rem', flexShrink: 0 }}>
                           {f.kickoff_time ? formatTime(f.kickoff_time) : '—'}
                         </span>
 

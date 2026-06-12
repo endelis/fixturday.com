@@ -253,7 +253,7 @@ export default function Teams() {
                     />
                     <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
                       <div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>{t('admin.team.managerName')}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.2rem' }}>{t('admin.team.managerName')}</div>
                         <input
                           value={metaDraft.contact_name}
                           onChange={e => setMetaDraft(prev => ({ ...prev, contact_name: e.target.value }))}
@@ -262,7 +262,7 @@ export default function Teams() {
                         />
                       </div>
                       <div>
-                        <div style={{ fontSize: '0.75rem', color: 'var(--color-muted)', marginBottom: '0.2rem' }}>{t('admin.team.countryCode')}</div>
+                        <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.2rem' }}>{t('admin.team.countryCode')}</div>
                         <input
                           value={metaDraft.country_code}
                           onChange={e => setMetaDraft(prev => ({ ...prev, country_code: e.target.value.toUpperCase().slice(0, 2) }))}
@@ -295,7 +295,7 @@ export default function Teams() {
                         <tr key={p.id}>
                           <td>{p.number ?? '—'}</td>
                           <td>{p.name}</td>
-                          <td style={{ fontSize: '0.8rem', color: 'var(--color-muted)' }}>
+                          <td style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
                             {p.position ? t(`team.positions.${p.position}`) : '—'}
                           </td>
                           <td>{p.date_of_birth ? formatDate(p.date_of_birth) : '—'}</td>

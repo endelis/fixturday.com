@@ -97,7 +97,7 @@ export default function TournamentStats() {
       </h1>
 
       {groups.length === 0 ? (
-        <div className="card" style={{ color: 'var(--color-muted)', textAlign: 'center' }}>
+        <div className="card" style={{ color: 'var(--color-text-muted)', textAlign: 'center' }}>
           {t('common.noData')}
         </div>
       ) : (
@@ -112,11 +112,11 @@ export default function TournamentStats() {
               {[
                 { label: t('stats.total'),     value: ag.total },
                 { label: t('stats.completed'), value: ag.completed, color: 'var(--color-success)' },
-                { label: t('stats.pending'),   value: ag.pending,   color: 'var(--color-muted)' },
+                { label: t('stats.pending'),   value: ag.pending,   color: 'var(--color-text-muted)' },
               ].map(s => (
                 <div key={s.label} className="card" style={{ padding: '0.75rem 1.25rem', minWidth: '100px', textAlign: 'center' }}>
                   <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1.75rem', color: s.color ?? 'var(--color-text)' }}>{s.value}</div>
-                  <div style={{ fontSize: '0.78rem', color: 'var(--color-muted)' }}>{s.label}</div>
+                  <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{s.label}</div>
                 </div>
               ))}
             </div>
@@ -126,7 +126,7 @@ export default function TournamentStats() {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-muted)' }}>
+                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-muted)' }}>
                       <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('standings.team')}</th>
                       <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.played')}</th>
                       <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.won')}</th>
@@ -140,7 +140,7 @@ export default function TournamentStats() {
                     {ag.standings.map((row, i) => (
                       <tr key={row.team.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
                         <td style={{ padding: '0.5rem 0.75rem' }}>
-                          <span style={{ color: 'var(--color-muted)', marginRight: '0.5rem', fontSize: '0.8rem' }}>{i + 1}</span>
+                          <span style={{ color: 'var(--color-text-muted)', marginRight: '0.5rem', fontSize: '0.8rem' }}>{i + 1}</span>
                           {row.team.name}
                         </td>
                         <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.played}</td>
@@ -157,7 +157,7 @@ export default function TournamentStats() {
                 </table>
               </div>
             ) : (
-              <p style={{ color: 'var(--color-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
+              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
             )}
           </div>
         ))

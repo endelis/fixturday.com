@@ -75,7 +75,7 @@ export default function FixtureList({ fixtures, format: agFormat, pitches, teams
       <div className="card" style={{ padding: '0.75rem 1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
           {gameNumbers[f.id] != null && (
-            <span style={{ color: 'var(--color-muted)', fontSize: '0.75rem', fontWeight: 600, minWidth: '2rem', flexShrink: 0 }}>
+            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600, minWidth: '2rem', flexShrink: 0 }}>
               {t('schedule.gameNumber', { n: gameNumbers[f.id] })}
             </span>
           )}
@@ -172,7 +172,7 @@ export default function FixtureList({ fixtures, format: agFormat, pitches, teams
             </h2>
             {knockoutRoundList.map(({ roundName, matches }, idx) => (
               <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
                   {roundName}
                 </h3>
                 <div style={{ display: 'grid', gap: '0.5rem' }}>

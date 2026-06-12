@@ -106,7 +106,7 @@ export default function Schedule() {
 
   function teamName(teamId, name, placeholder) {
     if (teamId) return name ?? '?'
-    if (placeholder) return <span style={{ color: 'var(--color-muted)', fontStyle: 'italic' }}>{placeholder}</span>
+    if (placeholder) return <span style={{ color: 'var(--color-text-muted)', fontStyle: 'italic' }}>{placeholder}</span>
     return '?'
   }
 
@@ -115,12 +115,12 @@ export default function Schedule() {
     return (
       <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
         {gameNumbers[f.id] != null && (
-          <span style={{ color: 'var(--color-muted)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0, minWidth: '2rem' }}>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0, minWidth: '2rem' }}>
             {t('schedule.gameNumber', { n: gameNumbers[f.id] })}
           </span>
         )}
         {f.kickoff_time && (
-          <span style={{ color: 'var(--color-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
+          <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
             {formatTime(f.kickoff_time)}
           </span>
         )}
@@ -140,7 +140,7 @@ export default function Schedule() {
           {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
         </span>
         {f.pitch && (
-          <span style={{ color: 'var(--color-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
             {f.pitch.venues?.name} — {f.pitch.name}
           </span>
         )}
@@ -214,7 +214,7 @@ export default function Schedule() {
           </h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             {lastUpdated && (
-              <span style={{ fontSize: '0.75rem', color: 'var(--color-muted)' }}>
+              <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>
                 {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
               </span>
             )}
@@ -232,8 +232,8 @@ export default function Schedule() {
 
         {fixtures.filter(f => f.status === 'live').length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-success)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <span style={{ display: 'inline-block', width: '0.6rem', height: '0.6rem', borderRadius: '50%', background: 'var(--color-success)', animation: 'pulse 1.5s infinite' }} />
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-live)', marginBottom: '0.75rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ display: 'inline-block', width: '8px', height: '8px', borderRadius: '50%', background: 'var(--color-live)', animation: 'live-dot-pulse 2s ease-in-out infinite' }} />
               {t('schedule.liveNow')}
             </h2>
             <div style={{ display: 'grid', gap: '0.5rem' }}>
@@ -273,7 +273,7 @@ export default function Schedule() {
             </h2>
             {knockoutRoundList.map(({ roundName, matches }, idx) => (
               <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-muted)', marginBottom: '0.5rem' }}>
+                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
                   {roundName}
                 </h3>
                 <div style={{ display: 'grid', gap: '0.5rem' }}>

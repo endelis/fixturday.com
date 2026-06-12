@@ -16,9 +16,9 @@ function countryFlag(code) {
 
 function StatusPill({ status, t }) {
   const styles = {
-    scheduled: { background: 'var(--color-surface)', color: 'var(--color-muted)', border: '1px solid var(--color-muted)' },
+    scheduled: { background: 'var(--color-surface)', color: 'var(--color-text-muted)', border: '1px solid var(--color-text-muted)' },
     live:      { background: 'var(--color-success)', color: '#fff' },
-    completed: { background: 'var(--color-bg)', color: 'var(--color-muted)', border: '1px solid var(--color-muted)' },
+    completed: { background: 'var(--color-bg)', color: 'var(--color-text-muted)', border: '1px solid var(--color-text-muted)' },
     postponed: { background: 'var(--color-danger)',  color: '#fff' },
   }
   const label = {
@@ -66,7 +66,7 @@ function TeamBlock({ team, t }) {
           background: 'var(--color-surface)',
           borderRadius: '0.25rem',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          fontSize: '1.5rem', color: 'var(--color-muted)',
+          fontSize: '1.5rem', color: 'var(--color-text-muted)',
         }}>
           ⚽
         </div>
@@ -115,7 +115,7 @@ export default function Match() {
       <div>
         <PublicNav />
         <div className="container" style={{ paddingTop: '3rem', textAlign: 'center' }}>
-          <p style={{ color: 'var(--color-muted)' }}>{t('match.matchNotFound')}</p>
+          <p style={{ color: 'var(--color-text-muted)' }}>{t('match.matchNotFound')}</p>
         </div>
       </div>
     )
@@ -140,8 +140,8 @@ export default function Match() {
       <div className="container" style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
 
         {/* Breadcrumb */}
-        <nav style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--color-muted)' }}>
-          <Link to="/tournaments" style={{ color: 'var(--color-muted)', textDecoration: 'none' }}>
+        <nav style={{ marginBottom: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+          <Link to="/tournaments" style={{ color: 'var(--color-text-muted)', textDecoration: 'none' }}>
             {t('match.breadcrumbAll')}
           </Link>
           <span>›</span>
@@ -165,24 +165,24 @@ export default function Match() {
           {/* Meta row: age group / stage / group / round */}
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1rem' }}>
             {ageGroup?.name && (
-              <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>{ageGroup.name}</span>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{ageGroup.name}</span>
             )}
             {stage?.type && (
               <>
-                <span style={{ color: 'var(--color-muted)', opacity: 0.5 }}>·</span>
-                <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>{stage.type}</span>
+                <span style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}>·</span>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{stage.type}</span>
               </>
             )}
             {match.group_label && (
               <>
-                <span style={{ color: 'var(--color-muted)', opacity: 0.5 }}>·</span>
-                <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>{match.group_label}</span>
+                <span style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}>·</span>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{match.group_label}</span>
               </>
             )}
             {match.round_name && (
               <>
-                <span style={{ color: 'var(--color-muted)', opacity: 0.5 }}>·</span>
-                <span style={{ color: 'var(--color-muted)', fontSize: '0.85rem' }}>{match.round_name}</span>
+                <span style={{ color: 'var(--color-text-muted)', opacity: 0.5 }}>·</span>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{match.round_name}</span>
               </>
             )}
             <span style={{ marginLeft: 'auto' }}>
@@ -234,7 +234,7 @@ export default function Match() {
                   fontFamily: 'var(--font-display)',
                   fontSize: '1.75rem',
                   fontWeight: 600,
-                  color: 'var(--color-muted)',
+                  color: 'var(--color-text-muted)',
                 }}>
                   {t('match.vs')}
                 </span>
@@ -245,7 +245,7 @@ export default function Match() {
           </div>
 
           {/* Match details */}
-          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem', color: 'var(--color-muted)' }}>
+          <div style={{ marginTop: '1.5rem', display: 'flex', flexDirection: 'column', gap: '0.6rem', fontSize: '0.9rem', color: 'var(--color-text-muted)' }}>
             {match.kickoff_time && (
               <div style={{ display: 'flex', gap: '0.5rem' }}>
                 <span style={{ minWidth: '5rem', fontWeight: 500, color: 'var(--color-text)' }}>{t('match.kickoff')}</span>
