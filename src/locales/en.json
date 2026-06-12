@@ -1,10 +1,6 @@
 {
   "sports": {
     "football": "Football",
-    "volleyball": "Volleyball",
-    "beach_volleyball": "Beach Volleyball",
-    "rugby": "Rugby",
-    "table_tennis": "Table Tennis",
     "unsupported": "Unsupported sport"
   },
   "participants": {
@@ -505,13 +501,13 @@
     "whyBenefit3": "Participants follow results in real time on their phone",
     "whyBenefit4": "Public page for every tournament at no extra cost",
     "whyBenefit5": "Completely free — no hidden fees",
-    "sportsTitle": "Tournament management for different sports",
-    "sport1Title": "Football tournament management",
-    "sport1Desc": "Fixturday supports both outdoor and indoor football tournaments, covering age groups from U8 to seniors, group stages, and knockout rounds.",
-    "sport2Title": "Basketball tournament management",
-    "sport2Desc": "Organise basketball tournaments with automatic scheduling and real-time standings. Suitable for school championships, club tournaments, and corporate events.",
-    "sport3Title": "Volleyball tournament management",
-    "sport3Desc": "Plan volleyball tournaments with multi-pitch support. The automatic schedule ensures optimal game order without gaps."
+    "sportsTitle": "3 Football Tournament Formats",
+    "sport1Title": "Round-Robin (League)",
+    "sport1Desc": "Every team plays every other team once. Perfect for league championships where the best team over all rounds wins. Standings are calculated live after each result.",
+    "sport2Title": "Knockout (Cup)",
+    "sport2Desc": "Single-elimination bracket — one loss and you're out. Fixturday auto-generates the draw, seeds teams by registration order, and updates the bracket live.",
+    "sport3Title": "Group Stage + Knockout",
+    "sport3Desc": "Teams play round-robin in groups, then group toppers advance to a knockout bracket. Ideal for large tournaments with many teams and limited time."
   },
   "about": {
     "pill": "ABOUT",
@@ -590,7 +586,7 @@
     "s2f1": "Name",
     "s2f1Desc": "For example: City Cup 2026",
     "s2f2": "Sport",
-    "s2f2Desc": "Football, basketball, volleyball, etc.",
+    "s2f2Desc": "Football",
     "s2f3": "Date",
     "s2f3Desc": "When the tournament takes place — start and end date",
     "s2f4": "Venue",
@@ -677,7 +673,7 @@
   },
   "tournamentList": {
     "pageTitle": "Active Sports Tournaments — Fixturday",
-    "metaDesc": "Browse active sports tournaments. Football, basketball, volleyball, and more. Follow results in real time."
+    "metaDesc": "Browse active football tournaments. Live standings and schedules. Find your tournament and follow results in real time."
   },
   "widget": {
     "nextMatches": "Upcoming matches"

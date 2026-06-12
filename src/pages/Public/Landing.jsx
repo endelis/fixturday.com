@@ -13,7 +13,7 @@ export default function Landing() {
 
   useSEO({
     title: 'Fixturday — Free Tournament Management Software',
-    description: 'Organize sports tournaments in minutes. Auto-generated schedules, live standings, and team registration. Free for football, basketball, volleyball, and more.',
+    description: 'Organize football tournaments in minutes. Auto-generated schedules, live standings, and team registration. Round-robin, knockout, and group stage formats. Free forever.',
     path: '/',
     noSuffix: true,
   })
@@ -326,9 +326,9 @@ export default function Landing() {
           <h2 style={sectionHeading}>{t('landing.sportsTitle')}</h2>
           <div className="landing-features-grid">
             {[
-              { id: 'futbola-turnirs',    title: t('landing.sport1Title'), desc: t('landing.sport1Desc') },
-              { id: 'basketbola-turnirs', title: t('landing.sport2Title'), desc: t('landing.sport2Desc') },
-              { id: 'volejbola-turnirs',  title: t('landing.sport3Title'), desc: t('landing.sport3Desc') },
+              { id: 'round-robin-format',      title: t('landing.sport1Title'), desc: t('landing.sport1Desc') },
+              { id: 'knockout-format',         title: t('landing.sport2Title'), desc: t('landing.sport2Desc') },
+              { id: 'group-knockout-format',   title: t('landing.sport3Title'), desc: t('landing.sport3Desc') },
             ].map((s) => (
               <article key={s.id} id={s.id} style={featureCard}
                 onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(240,165,0,0.35)'; e.currentTarget.style.transform = 'translateY(-2px)' }}

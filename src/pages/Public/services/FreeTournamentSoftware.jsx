@@ -60,7 +60,7 @@ const faqs = [
   },
   {
     q: 'What sports does it support?',
-    a: 'All team sports: football, futsal, basketball, volleyball, handball, floorball, rugby, cricket, hockey, tennis, badminton — and any other sport that uses a round-robin, knockout, or group stage format.',
+    a: 'Football and futsal, in three formats: round-robin (league), knockout (cup), and group stage + knockout.',
   },
   {
     q: 'How is Fixturday different from other free tournament software?',

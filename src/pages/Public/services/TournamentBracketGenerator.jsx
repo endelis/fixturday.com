@@ -58,7 +58,7 @@ const faqs = [
   },
   {
     q: 'What sports does the bracket generator support?',
-    a: 'All sports. Football, basketball, volleyball, handball, badminton, tennis, futsal, floorball — any sport that runs a tournament format. The bracket logic is sport-agnostic.',
+    a: 'Football and futsal tournaments. The bracket supports knockout (single-elimination) and the knockout phase of group stage + knockout events.',
   },
   {
     q: 'Can I see the bracket on my phone?',

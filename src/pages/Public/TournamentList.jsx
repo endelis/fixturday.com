@@ -26,7 +26,7 @@ const STATUS_CONFIG = {
   finished: { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
 }
 
-const SPORT_ICONS = { football: '⚽', volleyball: '🏐', beach_volleyball: '🏖️', rugby: '🏉', table_tennis: '🏓' }
+const SPORT_ICONS = { football: '⚽' }
 
 // ── Component ─────────────────────────────────────────────────
 export default function TournamentList() {

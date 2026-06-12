@@ -1,10 +1,6 @@
 {
   "sports": {
     "football": "Futbols",
-    "volleyball": "Volejbols",
-    "beach_volleyball": "Pludmales volejbols",
-    "rugby": "Regbijs",
-    "table_tennis": "Galda teniss",
     "unsupported": "Neatbalstīts sporta veids"
   },
   "participants": {
@@ -505,13 +501,13 @@
     "whyBenefit3": "Dalībnieki seko rezultātiem reāllaikā savā telefonā",
     "whyBenefit4": "Publiskā lapa katram turnīram bez papildu izmaksām",
     "whyBenefit5": "Pilnīgi bezmaksas — nav slēpto maksājumu",
-    "sportsTitle": "Turnīru organizēšana dažādos sporta veidos",
-    "sport1Title": "Futbola turnīra organizēšana Latvijā",
-    "sport1Desc": "Fixturday ir piemērots gan āra futbola, gan telpu futbola turnīriem. Platforma atbalsta U8 līdz senioru vecuma grupas, grupu posmus un izslēgšanas kārtas.",
-    "sport2Title": "Basketbola turnīra organizēšana",
-    "sport2Desc": "Organizē basketbola turnīrus ar automātisku grafiku un reāllaika tabulu. Piemērots skolu čempionātiem, klubu turnīriem un korporatīvajām sacensībām.",
-    "sport3Title": "Volejbola turnīra organizēšana",
-    "sport3Desc": "Plāno volejbola turnīrus ar vairāku laukumu atbalstu. Automātiskais grafiks nodrošina optimālu spēļu secību bez pārtraukumiem."
+    "sportsTitle": "3 Futbola Turnīra Formāti",
+    "sport1Title": "Apļa turnīrs (Čempionāts)",
+    "sport1Desc": "Katra komanda spēlē pret katru citu komandu. Uzvar komanda, kura iegūst visvairāk punktu visās kārtās. Tabula tiek aprēķināta automātiski reāllaikā.",
+    "sport2Title": "Izslēgšana (Kauss)",
+    "sport2Desc": "Viena zaudējuma formāts — zaudē un tu esi ārā. Fixturday automātiski ģenerē izslēgšanas tabulu un atjaunina to pēc katra rezultāta.",
+    "sport3Title": "Grupu posms + Izslēgšana",
+    "sport3Desc": "Komandas spēlē apļa turnīru grupās, tad grupu labākie iet uz izslēgšanas kārtu. Ideāli lieliem turnīriem ar daudzām komandām un ierobežotu laiku."
   },
   "about": {
     "pill": "PAR MUMS",
@@ -590,7 +586,7 @@
     "s2f1": "Nosaukums",
     "s2f1Desc": "Piemēram: Mālpils Kauss 2026",
     "s2f2": "Sports",
-    "s2f2Desc": "Futbols, basketbols, volejbols utt.",
+    "s2f2Desc": "Futbols",
     "s2f3": "Datums",
     "s2f3Desc": "Kad notiek turnīrs — sākuma un beigu datums",
     "s2f4": "Norises vieta",
@@ -677,7 +673,7 @@
   },
   "tournamentList": {
     "pageTitle": "Aktīvie Sporta Turnīri Latvijā — Fixturday",
-    "metaDesc": "Apskati aktīvos sporta turnīrus Latvijā. Futbols, basketbols, volejbols un citi sporta veidi. Seko rezultātiem reāllaikā."
+    "metaDesc": "Apskati aktīvos futbola turnīrus Latvijā. Reāllaika tabulas un grafiki. Atrod savu turnīru un seko rezultātiem."
   },
   "widget": {
     "nextMatches": "Nākamās spēles"
