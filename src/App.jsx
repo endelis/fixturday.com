@@ -19,6 +19,8 @@ const Terms           = lazy(() => import('./pages/Public/Terms'))
 const CookiesPage     = lazy(() => import('./pages/Public/Cookies'))
 const DataDeletion    = lazy(() => import('./pages/Public/DataDeletion'))
 const Guide           = lazy(() => import('./pages/Public/Guide'))
+const Blog            = lazy(() => import('./pages/Public/Blog'))
+const BlogPost        = lazy(() => import('./pages/Public/BlogPost'))
 const Match           = lazy(() => import('./pages/Public/Match'))
 const Team            = lazy(() => import('./pages/Public/Team'))
 const PublicInfo      = lazy(() => import('./pages/Public/Info'))
@@ -60,6 +62,8 @@ export default function App() {
           <Route path="/about"                               element={<About />} />
           <Route path="/contact"                             element={<Contact />} />
           <Route path="/guide"                               element={<Guide />} />
+          <Route path="/blog"                                element={<Blog />} />
+          <Route path="/blog/:slug"                          element={<BlogPost />} />
           <Route path="/privacy-policy"                      element={<Privacy />} />
           <Route path="/terms-of-use"                        element={<Terms />} />
           <Route path="/cookie-policy"                       element={<CookiesPage />} />

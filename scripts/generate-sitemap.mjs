@@ -7,8 +7,8 @@
  * Usage:  node scripts/generate-sitemap.mjs
  */
 
-import { readFileSync, writeFileSync } from 'fs'
-import { resolve, dirname } from 'path'
+import { readFileSync, writeFileSync, readdirSync } from 'fs'
+import { resolve, dirname, basename } from 'path'
 import { fileURLToPath } from 'url'
 import { createClient } from '@supabase/supabase-js'
 import 'dotenv/config'
@@ -29,7 +29,32 @@ if (!supabaseUrl || !supabaseKey) {
 
 const supabase = createClient(supabaseUrl, supabaseKey)
 
+function getBlogSlugs() {
+  const postsDir = resolve(ROOT, 'src', 'content', 'blog', 'posts')
+  try {
+    return readdirSync(postsDir)
+      .filter(f => f.endsWith('.jsx') || f.endsWith('.js'))
+      .map(f => basename(f, f.endsWith('.jsx') ? '.jsx' : '.js'))
+  } catch {
+    return []
+  }
+}
+
 async function run() {
+  // ── Blog posts ───────────────────────────────────────────────
+  const blogSlugs = getBlogSlugs()
+  const blogEntries = blogSlugs.map(slug => `  <url>
+    <loc>${BASE_URL}/blog/${slug}</loc>
+    <lastmod>${TODAY}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>`).join('\n')
+
+  if (blogSlugs.length) {
+    console.log(`[sitemap] Found ${blogSlugs.length} blog post(s)`)
+  }
+
+  // ── Tournaments ──────────────────────────────────────────────
   const { data: tournaments, error } = await supabase
     .from('tournaments')
     .select('slug, start_date')
@@ -61,13 +86,17 @@ async function run() {
   let xml = readFileSync(SITEMAP_PATH, 'utf8')
 
   // Remove any previously generated dynamic block
-  xml = xml.replace(/\n\s*<!-- BEGIN:dynamic-tournaments -->[\s\S]*<!-- END:dynamic-tournaments -->/g, '')
+  xml = xml.replace(/\n\s*<!-- BEGIN:dynamic -->[\s\S]*<!-- END:dynamic -->/g, '')
 
-  const dynamicBlock = `\n  <!-- BEGIN:dynamic-tournaments -->\n${tournamentEntries}\n  <!-- END:dynamic-tournaments -->`
+  const parts = []
+  if (blogEntries) parts.push(blogEntries)
+  if (tournamentEntries) parts.push(tournamentEntries)
+
+  const dynamicBlock = `\n  <!-- BEGIN:dynamic -->\n${parts.join('\n')}\n  <!-- END:dynamic -->`
   xml = xml.replace('</urlset>', `${dynamicBlock}\n</urlset>`)
 
   writeFileSync(SITEMAP_PATH, xml, 'utf8')
-  console.log(`[sitemap] Added ${tournaments.length} tournament URLs to sitemap.xml`)
+  console.log(`[sitemap] Added ${blogSlugs.length} blog + ${tournaments.length} tournament URLs to sitemap.xml`)
 }
 
 run().catch(err => {
