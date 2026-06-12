@@ -74,9 +74,14 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                 <div style={{
                   display: 'flex',
                   gap: '0.35rem',
-                  flexWrap: 'wrap',
+                  flexWrap: 'nowrap',
                   marginLeft: 'auto',
                   alignItems: 'center',
+                  overflowX: 'auto',
+                  minWidth: 0,
+                  WebkitOverflowScrolling: 'touch',
+                  scrollbarWidth: 'none',
+                  msOverflowStyle: 'none',
                 }}>
                   {ageGroups.map(ag => {
                     const isActive = activeAgeGroupId === ag.id
