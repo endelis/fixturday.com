@@ -17,7 +17,9 @@ export default function Standings() {
   const [lastUpdated, setLastUpdated] = useState(null)
   const [realtimeStatus, setRealtimeStatus] = useState('connecting')
   const [searchParams, setSearchParams] = useSearchParams()
-  const selectedAgeGroupId = searchParams.get('ageGroupId') || null
+  const _rawAgeGroupId = searchParams.get('ageGroupId') || null
+  const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
+  const selectedAgeGroupId = (_rawAgeGroupId && UUID_RE.test(_rawAgeGroupId)) ? _rawAgeGroupId : null
 
   const seoTitle = data?.ag ? `${data.ag.tournaments.name} — ${data.ag.name} Standings` : 'Tournament Standings'
   const seoDesc = data?.ag
@@ -38,11 +40,11 @@ export default function Standings() {
     async function load() {
       const effectiveId = selectedAgeGroupId ?? ageGroupId
 
-      // Load age group + its tournament + sibling age groups in one shot
+      // Age group always loads from the URL param — not the filter override
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
         .select('*, tournaments(id, name, slug)')
-        .eq('id', effectiveId)
+        .eq('id', ageGroupId)
         .single()
 
       if (agErr) {
