@@ -38,7 +38,7 @@ export default function Schedule() {
 
       if (agErr) { setLoading(false); return }
       setAg(agData)
-      document.title = `${agData.tournaments.name} — ${agData.name} — Grafiks — Fixturday`
+      document.title = `${agData.tournaments.name} — ${agData.name} — Schedule — Fixturday`
 
       if (agData?.tournaments?.id) {
         const { data: sibs, error: sibErr } = await supabase

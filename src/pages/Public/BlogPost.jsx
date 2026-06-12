@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Calendar, Clock, ArrowLeft, ArrowRight } from 'lucide-react'
@@ -16,7 +17,37 @@ export default function BlogPost() {
     title: post?.title ?? 'Article Not Found',
     description: post?.description ?? '',
     path: post ? `/blog/${post.slug}` : '/blog',
+    noSuffix: true,
   })
+
+  useEffect(() => {
+    if (!post) return
+    const id = 'article-ld'
+    let el = document.getElementById(id)
+    if (!el) {
+      el = document.createElement('script')
+      el.id = id
+      el.type = 'application/ld+json'
+      document.head.appendChild(el)
+    }
+    el.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'BlogPosting',
+      headline: post.title,
+      description: post.description,
+      datePublished: post.date,
+      dateModified: post.date,
+      author: { '@type': 'Person', name: 'Silvestrs Endelis' },
+      publisher: {
+        '@type': 'Organization',
+        name: 'Fixturday',
+        logo: { '@type': 'ImageObject', url: 'https://www.fixturday.com/logo-horizontal.svg' },
+      },
+      url: `https://www.fixturday.com/blog/${post.slug}`,
+      keywords: post.keywords?.join(', '),
+    })
+    return () => { document.getElementById(id)?.remove() }
+  }, [post])
 
   if (!post) return <Navigate to="/blog" replace />
 

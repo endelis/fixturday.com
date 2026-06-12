@@ -14,7 +14,7 @@ export default function Contact() {
 
   useSEO({
     title: 'Contact Us',
-    description: 'Get in touch with the Fixturday team. We are here to help you organize better sports tournaments.',
+    description: 'Get in touch with the Fixturday team. Have a question about organizing a tournament, found a bug, or want to suggest a feature? We\'d love to hear from you.',
     path: '/contact',
   })
   const [submitted, setSubmitted] = useState(false)

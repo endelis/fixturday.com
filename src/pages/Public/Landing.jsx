@@ -15,7 +15,7 @@ export default function Landing() {
 
   useSEO({
     title: 'Fixturday — Free Tournament Management Software',
-    description: 'Organize sports tournaments in minutes. Auto-generated schedules, real-time standings, team registration. Supports football, basketball, volleyball and more. Free forever.',
+    description: 'Organize sports tournaments in minutes. Auto-generated schedules, live standings, and team registration. Free for football, basketball, volleyball, and more.',
     path: '/',
     noSuffix: true,
   })

@@ -9,9 +9,10 @@ export default function About() {
   const { t } = useTranslation()
 
   useSEO({
-    title: 'About Fixturday',
-    description: 'Fixturday is free sports tournament management software. Learn how we help organizers run better tournaments with automatic schedules, real-time standings, and team registration.',
+    title: 'About Fixturday — Sports Tournament Software',
+    description: 'Fixturday helps sports organizers run better tournaments. Free software with automatic schedules, live standings, online registration, and a public participant page.',
     path: '/about',
+    noSuffix: true,
   })
 
   const values = [

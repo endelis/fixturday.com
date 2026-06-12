@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { ChevronDown, CheckCircle, ArrowRight } from 'lucide-react'
 import PublicNav from './PublicNav'
@@ -35,7 +35,29 @@ export default function ServiceLanding({
   relatedPost,
   relatedPostTitle,
 }) {
-  useSEO({ title: seoTitle, description: seoDescription, path })
+  useSEO({ title: seoTitle, description: seoDescription, path, noSuffix: true })
+
+  useEffect(() => {
+    if (!faqs.length) return
+    const id = 'faq-ld'
+    let el = document.getElementById(id)
+    if (!el) {
+      el = document.createElement('script')
+      el.id = id
+      el.type = 'application/ld+json'
+      document.head.appendChild(el)
+    }
+    el.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(({ q, a }) => ({
+        '@type': 'Question',
+        name: q,
+        acceptedAnswer: { '@type': 'Answer', text: a },
+      })),
+    })
+    return () => { document.getElementById(id)?.remove() }
+  }, [faqs])
 
   return (
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', overflowX: 'hidden' }}>
