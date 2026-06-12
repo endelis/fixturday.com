@@ -56,7 +56,7 @@ export default function Standings() {
 
       const [{ data: siblings, error: sibErr }, { data: teams, error: tmErr }, { data: fixtures, error: fxErr }] = await Promise.all([
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
-        supabase.from('teams').select('*').eq('age_group_id', effectiveId).eq('status', 'confirmed'),
+        supabase.from('teams').select('id, name').eq('age_group_id', effectiveId).eq('status', 'confirmed'),
         supabase.from('fixtures')
           .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
           .eq('stages.age_group_id', effectiveId),
