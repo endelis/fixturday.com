@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useParams, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import { supabase } from '../../lib/supabase'
@@ -13,6 +13,7 @@ export default function Standings() {
   const { t } = useTranslation()
   const [data, setData] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [realtimeStatus, setRealtimeStatus] = useState('connecting')
   const [searchParams, setSearchParams] = useSearchParams()
@@ -44,7 +45,12 @@ export default function Standings() {
         .eq('id', effectiveId)
         .single()
 
-      if (agErr || !ag) { setLoading(false); return }
+      if (agErr) {
+        setLoadError(agErr.code === 'PGRST116' ? 'not_found' : 'network')
+        setLoading(false)
+        return
+      }
+      if (!ag) { setLoadError('not_found'); setLoading(false); return }
 
       const [{ data: siblings, error: sibErr }, { data: teams, error: tmErr }, { data: fixtures, error: fxErr }] = await Promise.all([
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
@@ -53,15 +59,16 @@ export default function Standings() {
           .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
           .eq('stages.age_group_id', effectiveId),
       ])
-      if (sibErr || tmErr || fxErr) { setLoading(false); return }
+      if (sibErr || tmErr || fxErr) { setLoadError('network'); setLoading(false); return }
 
       // Scope results to only this age group's fixture IDs
       const fixtureIds = (fixtures ?? []).map(f => f.id)
       const { data: results, error: resErr } = fixtureIds.length > 0
         ? await supabase.from('fixture_results').select('*').in('fixture_id', fixtureIds)
         : { data: [], error: null }
-      if (resErr) { setLoading(false); return }
+      if (resErr) { setLoadError('network'); setLoading(false); return }
 
+      setLoadError(null)
       setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
       setLastUpdated(new Date())
       setLoading(false)
@@ -84,7 +91,16 @@ export default function Standings() {
   }, [ageGroupId, selectedAgeGroupId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
-  if (!data?.ag) return <div className="loading">{t('standings.notFound')}</div>
+  if (loadError === 'not_found') return <Navigate to={`/t/${slug}`} replace />
+  if (loadError === 'network') return (
+    <div style={{ background: 'var(--color-bg)', minHeight: '100vh' }}>
+      <PublicNav />
+      <div style={{ padding: '4rem 1.25rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>
+        {t('common.error')}
+      </div>
+    </div>
+  )
+  if (!data?.ag) return <Navigate to={`/t/${slug}`} replace />
 
   const { ag, siblings, teams, fixtures, results } = data
   const standings = calculateStandings(teams, fixtures, results)

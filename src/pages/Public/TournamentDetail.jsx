@@ -21,18 +21,18 @@ export default function TournamentDetail() {
         .single()
       if (!tourney) { setNotFound(true); return }
 
-      const { data: ags } = await supabase
+      const { data: ags, error: agsErr } = await supabase
         .from('age_groups')
         .select('id')
         .eq('tournament_id', tourney.id)
         .order('name')
         .limit(1)
 
-      if (ags?.length) {
-        navigate(`/t/${slug}/${ags[0].id}`, { replace: true })
-      } else {
+      if (agsErr || !ags?.length) {
         setNotFound(true)
+        return
       }
+      navigate(`/t/${slug}/${ags[0].id}`, { replace: true })
     }
     doRedirect()
   }, [slug, navigate])
