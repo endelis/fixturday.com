@@ -60,7 +60,7 @@ export default function BlogPost() {
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh' }}>
       <PublicNav />
 
-      <main style={{ maxWidth: 720, margin: '0 auto', padding: '7rem 1.25rem 4rem' }}>
+      <main style={{ maxWidth: 720, margin: '0 auto', padding: '3.5rem 1.25rem 4rem' }}>
 
         {/* Back link */}
         <Link

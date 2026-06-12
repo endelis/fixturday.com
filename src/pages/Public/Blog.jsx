@@ -19,7 +19,7 @@ export default function Blog() {
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh' }}>
       <PublicNav />
 
-      <main style={{ maxWidth: 860, margin: '0 auto', padding: '7rem 1.25rem 4rem' }}>
+      <main style={{ maxWidth: 860, margin: '0 auto', padding: '3.5rem 1.25rem 4rem' }}>
         <header style={{ marginBottom: '3rem' }}>
           <p style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
             Blog

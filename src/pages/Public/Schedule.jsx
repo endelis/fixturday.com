@@ -124,20 +124,24 @@ export default function Schedule() {
             {formatTime(f.kickoff_time)}
           </span>
         )}
-        <span style={{ flex: 1, textAlign: 'right', minWidth: '6rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem' }}>
-          {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
+        <span style={{ flex: 1, textAlign: 'right', minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem', overflow: 'hidden' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
+          </span>
           <TeamLogo size="sm" logoPath={f.home_team?.logo_path} alt={f.home_team?.name ?? ''} />
         </span>
-        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
+        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', width: '4rem', textAlign: 'center', flexShrink: 0 }}>
           {result
             ? `${result.home_goals} : ${result.away_goals}`
             : f.status === 'live'
               ? <span className="live-badge">LIVE</span>
               : t('fixture.vs')}
         </span>
-        <span style={{ flex: 1, minWidth: '6rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+        <span style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden' }}>
           <TeamLogo size="sm" logoPath={f.away_team?.logo_path} alt={f.away_team?.name ?? ''} />
-          {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
+          </span>
         </span>
         {f.pitch && (
           <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', flexShrink: 0 }}>
