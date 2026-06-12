@@ -112,41 +112,44 @@ export default function Schedule() {
 
   function FixtureRow({ f, gameNumbers, t, teamName }) {
     const result = f.fixture_results?.[0]
+    const hasMeta = gameNumbers[f.id] != null || f.kickoff_time || f.pitch
     return (
-      <div className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', flexWrap: 'wrap' }}>
-        {gameNumbers[f.id] != null && (
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600, flexShrink: 0, minWidth: '2rem' }}>
-            {t('schedule.gameNumber', { n: gameNumbers[f.id] })}
+      <div className="card" style={{ padding: '0.75rem 1rem' }}>
+        {/* Match row — full width, teams never squeezed */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <span style={{ flex: 1, textAlign: 'right', display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.35rem', overflow: 'hidden' }}>
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
+            </span>
+            <TeamLogo size="sm" logoPath={f.home_team?.logo_path} alt={f.home_team?.name ?? ''} />
           </span>
-        )}
-        {f.kickoff_time && (
-          <span style={{ color: 'var(--color-text-muted)', minWidth: '3rem', fontSize: '0.875rem', flexShrink: 0 }}>
-            {formatTime(f.kickoff_time)}
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', flexShrink: 0, width: '4.5rem', textAlign: 'center' }}>
+            {result
+              ? `${result.home_goals} : ${result.away_goals}`
+              : f.status === 'live'
+                ? <span className="live-badge">LIVE</span>
+                : t('fixture.vs')}
           </span>
-        )}
-        <span style={{ flex: 1, textAlign: 'right', minWidth: 0, display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: '0.4rem', overflow: 'hidden' }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
+          <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden' }}>
+            <TeamLogo size="sm" logoPath={f.away_team?.logo_path} alt={f.away_team?.name ?? ''} />
+            <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
+              {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
+            </span>
           </span>
-          <TeamLogo size="sm" logoPath={f.home_team?.logo_path} alt={f.home_team?.name ?? ''} />
-        </span>
-        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', width: '4rem', textAlign: 'center', flexShrink: 0 }}>
-          {result
-            ? `${result.home_goals} : ${result.away_goals}`
-            : f.status === 'live'
-              ? <span className="live-badge">LIVE</span>
-              : t('fixture.vs')}
-        </span>
-        <span style={{ flex: 1, minWidth: 0, display: 'flex', alignItems: 'center', gap: '0.4rem', overflow: 'hidden' }}>
-          <TeamLogo size="sm" logoPath={f.away_team?.logo_path} alt={f.away_team?.name ?? ''} />
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-            {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
-          </span>
-        </span>
-        {f.pitch && (
-          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', width: '100%', textAlign: 'right', marginTop: '-0.25rem' }}>
-            {f.pitch.venues?.name} — {f.pitch.name}
-          </span>
+        </div>
+        {/* Meta row — time, game number, venue on their own line */}
+        {hasMeta && (
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
+              {gameNumbers[f.id] != null && <span>{t('schedule.gameNumber', { n: gameNumbers[f.id] })}</span>}
+              {f.kickoff_time && <span>{formatTime(f.kickoff_time)}</span>}
+            </div>
+            {f.pitch && (
+              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', textAlign: 'right' }}>
+                {f.pitch.venues?.name} — {f.pitch.name}
+              </span>
+            )}
+          </div>
         )}
       </div>
     )
