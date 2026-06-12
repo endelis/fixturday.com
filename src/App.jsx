@@ -25,7 +25,6 @@ const Match           = lazy(() => import('./pages/Public/Match'))
 
 // ── Service / landing pages ───────────────────────────────────────
 const FootballTournament        = lazy(() => import('./pages/Public/services/FootballTournament'))
-const BasketballTournament      = lazy(() => import('./pages/Public/services/BasketballTournament'))
 const TournamentBracketGenerator = lazy(() => import('./pages/Public/services/TournamentBracketGenerator'))
 const FreeTournamentSoftware    = lazy(() => import('./pages/Public/services/FreeTournamentSoftware'))
 const Team            = lazy(() => import('./pages/Public/Team'))
@@ -73,8 +72,7 @@ export default function App() {
 
           {/* Service / landing pages */}
           <Route path="/football-tournament-software"        element={<FootballTournament />} />
-          <Route path="/basketball-tournament-software"      element={<BasketballTournament />} />
-          <Route path="/tournament-bracket-generator"        element={<TournamentBracketGenerator />} />
+<Route path="/tournament-bracket-generator"        element={<TournamentBracketGenerator />} />
           <Route path="/free-tournament-software"            element={<FreeTournamentSoftware />} />
           <Route path="/privacy-policy"                      element={<Privacy />} />
           <Route path="/terms-of-use"                        element={<Terms />} />

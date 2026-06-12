@@ -8,18 +8,6 @@ import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
 
-const SPORT_OPTIONS = [
-  { value: 'football',       icon: '⚽', labelKey: 'sports.football' },
-  { value: 'volleyball',     icon: '🏐', labelKey: 'sports.volleyball' },
-  { value: 'beach_volleyball', icon: '🏖️', labelKey: 'sports.beach_volleyball' },
-  { value: 'rugby',          icon: '🏉', labelKey: 'sports.rugby' },
-  { value: 'table_tennis',   icon: '🏓', labelKey: 'sports.table_tennis' },
-]
-
-const PARTICIPANT_TYPE = {
-  football: 'team', volleyball: 'team', beach_volleyball: 'team',
-  rugby: 'team', table_tennis: 'individual',
-}
 
 function slugify(text) {
   return text
@@ -40,7 +28,6 @@ export default function TournamentNew() {
   const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
     defaultValues: { sport: 'football', is_active: true, first_game_time: '09:00', last_game_time: '18:00' }
   })
-  const [selectedSport, setSelectedSport] = useState('football')
   const [logoFile, setLogoFile] = useState(null)
   const [logoPreview, setLogoPreview] = useState(null)
   const [logoFileName, setLogoFileName] = useState(null)
@@ -87,8 +74,8 @@ export default function TournamentNew() {
   async function onSubmit(values) {
     const submitData = {
       ...values,
-      sport: selectedSport,
-      participant_type: PARTICIPANT_TYPE[selectedSport] ?? 'team',
+      sport: 'football',
+      participant_type: 'team',
       start_date: startDate || null,
       end_date: endDate || null,
       lunch_start: lunchEnabled ? values.lunch_start || null : null,
@@ -171,33 +158,6 @@ export default function TournamentNew() {
           <div className="form-group">
             <label>{t('tournament.country')}</label>
             <input {...register('country')} placeholder="Latvia" />
-          </div>
-
-          {/* Sport card selector */}
-          <div className="form-group">
-            <label>{t('tournament.sport')}</label>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(5, 1fr)', gap: '0.5rem', marginTop: '0.25rem' }}>
-              {SPORT_OPTIONS.map(s => (
-                <button
-                  key={s.value}
-                  type="button"
-                  onClick={() => { setSelectedSport(s.value); setValue('sport', s.value) }}
-                  style={{
-                    display: 'flex', flexDirection: 'column', alignItems: 'center',
-                    gap: '0.25rem', padding: '0.6rem 0.25rem',
-                    border: `2px solid ${selectedSport === s.value ? 'var(--color-accent)' : 'rgba(255,255,255,0.12)'}`,
-                    borderRadius: '8px', background: selectedSport === s.value ? 'rgba(240,165,0,0.08)' : 'var(--color-surface)',
-                    cursor: 'pointer', transition: 'border-color 0.15s, background 0.15s',
-                    color: 'var(--color-text)',
-                  }}
-                >
-                  <span style={{ fontSize: '1.5rem', lineHeight: 1 }}>{s.icon}</span>
-                  <span style={{ fontSize: '0.68rem', fontWeight: selectedSport === s.value ? 700 : 400, textAlign: 'center', lineHeight: 1.2, color: selectedSport === s.value ? 'var(--color-accent)' : 'var(--color-text-muted)' }}>
-                    {t(s.labelKey)}
-                  </span>
-                </button>
-              ))}
-            </div>
           </div>
 
           {/* Dates */}
