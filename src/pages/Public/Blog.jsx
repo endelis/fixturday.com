@@ -40,7 +40,7 @@ export default function Blog() {
                 background: 'var(--color-surface)',
                 border: '1px solid var(--color-border)',
                 borderRadius: 'var(--radius-lg)',
-                padding: '1.75rem 2rem',
+                padding: 'clamp(1.25rem, 4vw, 1.75rem) clamp(1rem, 4vw, 2rem)',
                 transition: 'border-color var(--transition-fast), transform var(--transition-fast)',
               }}
               onMouseEnter={e => {

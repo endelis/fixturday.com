@@ -65,7 +65,7 @@ export default function ServiceLanding({
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
-        padding: '7rem 1.25rem 5rem',
+        padding: 'clamp(3.5rem, 8vw, 7rem) 1.25rem clamp(3rem, 6vw, 5rem)',
         textAlign: 'center',
         borderBottom: '1px solid var(--color-border)',
         background: 'linear-gradient(180deg, rgba(240,165,0,0.04) 0%, transparent 100%)',
