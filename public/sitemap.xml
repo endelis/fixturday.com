@@ -1,59 +1,88 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
         xmlns:xhtml="http://www.w3.org/1999/xhtml">
+
+  <!-- Core pages -->
   <url>
     <loc>https://www.fixturday.com/</loc>
-    <xhtml:link rel="alternate" hreflang="lv" href="https://www.fixturday.com/"/>
-    <lastmod>2026-04-08</lastmod>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>weekly</changefreq>
     <priority>1.0</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/turniri</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/tournaments</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>daily</changefreq>
     <priority>0.9</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/pamaciba</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/guide</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.8</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/par-mums</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/about</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.7</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/kontakti</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/contact</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.6</priority>
   </url>
+
+  <!-- Blog (Phase 3 will populate individual posts) -->
   <url>
-    <loc>https://www.fixturday.com/privatuma-politika</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/blog</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>weekly</changefreq>
+    <priority>0.8</priority>
+  </url>
+
+  <!-- Legal -->
+  <url>
+    <loc>https://www.fixturday.com/privacy-policy</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/lietosanas-noteikumi</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/terms-of-use</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.3</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/sikdatnu-politika</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/cookie-policy</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
   <url>
-    <loc>https://www.fixturday.com/datu-dzesana</loc>
-    <lastmod>2026-04-08</lastmod>
+    <loc>https://www.fixturday.com/data-deletion</loc>
+    <lastmod>2026-06-12</lastmod>
     <changefreq>yearly</changefreq>
     <priority>0.2</priority>
   </url>
+
+  <!-- Dynamic tournament pages are appended by scripts/generate-sitemap.mjs at build time -->
+
+
+  <!-- BEGIN:dynamic-tournaments -->
+  <url>
+    <loc>https://www.fixturday.com/t/test-7-teams-1781206560955</loc>
+    <lastmod>2026-06-12</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/t/siguldas-novada-skolu-futbola-kauss-2026</loc>
+    <lastmod>2026-04-22</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
+  </url>
+  <!-- END:dynamic-tournaments -->
 </urlset>

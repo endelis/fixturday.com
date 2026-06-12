@@ -1,18 +1,18 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
 import { Trophy, Zap, Users } from 'lucide-react'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function About() {
   const { t } = useTranslation()
 
-  useEffect(() => {
-    document.title = t('about.pageTitle')
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc) metaDesc.setAttribute('content', t('about.metaDesc'))
-  }, [t])
+  useSEO({
+    title: 'About Fixturday',
+    description: 'Fixturday is free sports tournament management software. Learn how we help organizers run better tournaments with automatic schedules, real-time standings, and team registration.',
+    path: '/about',
+  })
 
   const values = [
     { icon: <Trophy size={28} />, title: t('about.value1Title'), desc: t('about.value1Desc') },

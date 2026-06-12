@@ -5,6 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { Zap, BarChart2, Smartphone, CheckCircle, ChevronDown } from 'lucide-react'
 import Footer from '../../components/Footer'
 import LanguageSwitcher from '../../components/LanguageSwitcher'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Landing() {
   const { t } = useTranslation()
@@ -12,11 +13,12 @@ export default function Landing() {
   const [menuOpen, setMenuOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
 
-  useEffect(() => {
-    document.title = t('landing.pageTitle')
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc) metaDesc.setAttribute('content', t('landing.metaDesc'))
-  }, [t])
+  useSEO({
+    title: 'Fixturday — Free Tournament Management Software',
+    description: 'Organize sports tournaments in minutes. Auto-generated schedules, real-time standings, team registration. Supports football, basketball, volleyball and more. Free forever.',
+    path: '/',
+    noSuffix: true,
+  })
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)

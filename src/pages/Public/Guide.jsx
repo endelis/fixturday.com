@@ -4,62 +4,63 @@ import { useTranslation } from 'react-i18next'
 import { CheckCircle, AlertTriangle, Lightbulb } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import { useSEO } from '../../hooks/useSEO'
 
 // ── HowTo JSON-LD ─────────────────────────────────────────────────
 const HOWTO_LD = {
   '@context': 'https://schema.org',
   '@type': 'HowTo',
-  name: 'Kā organizēt sporta turnīru ar Fixturday',
-  description: 'Soli pa solim pamācība sporta turnīra izveidošanai, grafika ģenerēšanai un spēļu dienas vadīšanai.',
+  name: 'How to Organize a Sports Tournament with Fixturday',
+  description: 'Step-by-step guide to creating a tournament, generating a schedule, and running match day with Fixturday.',
   totalTime: 'PT10M',
   estimatedCost: { '@type': 'MonetaryAmount', currency: 'EUR', value: '0' },
   tool: { '@type': 'HowToTool', name: 'Fixturday — fixturday.com' },
   step: [
     {
       '@type': 'HowToSection',
-      name: 'Reģistrācija un turnīra izveide',
+      name: 'Registration and tournament creation',
       itemListElement: [
         {
           '@type': 'HowToStep',
           position: 1,
-          name: 'Izveido kontu',
-          text: 'Apmeklē fixturday.com/admin/register un reģistrējies ar vārdu, e-pastu un paroli.',
+          name: 'Create an account',
+          text: 'Visit fixturday.com/admin/register and sign up with your name, email, and password.',
         },
         {
           '@type': 'HowToStep',
           position: 2,
-          name: 'Izveido turnīru',
-          text: "Noklikšķini uz '+ Jauns turnīrs', aizpildi nosaukumu, sporta veidu, datumu un norises vietu.",
+          name: 'Create a tournament',
+          text: "Click '+ New Tournament', fill in the name, sport type, date, and venue.",
         },
       ],
     },
     {
       '@type': 'HowToSection',
-      name: 'Komandas un grafiks',
+      name: 'Teams and schedule',
       itemListElement: [
         {
           '@type': 'HowToStep',
           position: 3,
-          name: 'Pievieno komandas',
-          text: 'Pievieno komandas manuāli vai atver publisku reģistrāciju.',
+          name: 'Add teams',
+          text: 'Add teams manually or open public online registration.',
         },
         {
           '@type': 'HowToStep',
           position: 4,
-          name: 'Ģenerē spēļu grafiku',
-          text: 'Izvēlies formātu, norādi laukumu skaitu un spēles ilgumu. Grafiks tiek ģenerēts sekundēs.',
+          name: 'Generate the match schedule',
+          text: 'Choose a format (round-robin, knockout, or group stage), set the number of pitches and match duration. The schedule is generated in seconds.',
         },
       ],
     },
     {
       '@type': 'HowToSection',
-      name: 'Spēļu diena',
+      name: 'Match day',
       itemListElement: [
         {
           '@type': 'HowToStep',
           position: 5,
-          name: 'Ievadi rezultātus',
-          text: 'Izmanto Rezultātu reģistru, lai ievadītu rezultātus. Tabula atjaunojas automātiski.',
+          name: 'Enter results',
+          text: 'Use the Matchday board to enter results. Standings update automatically after each result.',
         },
       ],
     },
@@ -289,19 +290,21 @@ export default function Guide() {
   const [activeSection, setActiveSection] = useState('registracija')
   const contentRef = useRef(null)
 
-  // ── Meta + JSON-LD ─────────────────────────────────────────────
-  useEffect(() => {
-    document.title = t('guide.pageTitle')
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc) metaDesc.setAttribute('content', t('guide.metaDesc'))
+  useSEO({
+    title: 'How to Organize a Sports Tournament',
+    description: 'Step-by-step guide to organizing any sports tournament with Fixturday. Create your schedule, manage teams, run match day, and track results — all free.',
+    path: '/guide',
+  })
 
+  // ── HowTo JSON-LD ─────────────────────────────────────────────
+  useEffect(() => {
     const script = document.createElement('script')
     script.id = 'ld-howto'
     script.type = 'application/ld+json'
     script.textContent = JSON.stringify(HOWTO_LD)
     document.head.appendChild(script)
     return () => document.getElementById('ld-howto')?.remove()
-  }, [t])
+  }, [])
 
   // ── Intersection Observer for TOC highlight ────────────────────
   useEffect(() => {

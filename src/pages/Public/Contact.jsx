@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
@@ -6,16 +6,17 @@ import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
 import { Mail, MapPin, Clock, CheckCircle } from 'lucide-react'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Contact() {
   const { t } = useTranslation()
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
 
-  useEffect(() => {
-    document.title = t('contact.pageTitle')
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc) metaDesc.setAttribute('content', t('contact.metaDesc'))
-  }, [t])
+  useSEO({
+    title: 'Contact Us',
+    description: 'Get in touch with the Fixturday team. We are here to help you organize better sports tournaments.',
+    path: '/contact',
+  })
   const [submitted, setSubmitted] = useState(false)
 
   async function onSubmit(values) {

@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
 import ClassFilter from '../../components/ClassFilter'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Standings() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -16,6 +17,12 @@ export default function Standings() {
   const [realtimeStatus, setRealtimeStatus] = useState('connecting')
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedAgeGroupId = searchParams.get('ageGroupId') || null
+
+  const seoTitle = data?.ag ? `${data.ag.tournaments.name} — ${data.ag.name} Standings` : 'Tournament Standings'
+  const seoDesc = data?.ag
+    ? `Live standings for ${data.ag.tournaments.name} — ${data.ag.name}. Real-time results and match schedule.`
+    : 'Live tournament standings and real-time results.'
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}` })
 
   function handleFilterChange(id) {
     setSearchParams(prev => {
@@ -57,7 +64,6 @@ export default function Standings() {
 
       setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
       setLastUpdated(new Date())
-      document.title = `${ag.tournaments.name} — ${ag.name} — Fixturday`
       setLoading(false)
     }
     load()
@@ -74,7 +80,6 @@ export default function Standings() {
     return () => {
       supabase.removeChannel(channel)
       clearInterval(poll)
-      document.title = 'Fixturday'
     }
   }, [ageGroupId, selectedAgeGroupId])
 

@@ -6,6 +6,7 @@ import { formatDate } from '../../utils/dateFormat'
 import { Search, Trophy, Calendar, MapPin, Users } from 'lucide-react'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import { useSEO } from '../../hooks/useSEO'
 
 // ── Status helpers ────────────────────────────────────────────
 function getTournamentStatus(tournament) {
@@ -38,11 +39,11 @@ export default function TournamentList() {
   const [filterSport, setFilterSport] = useState('')
   const [filterCountry, setFilterCountry] = useState('')
 
-  useEffect(() => {
-    document.title = t('tournamentList.pageTitle')
-    const metaDesc = document.querySelector('meta[name="description"]')
-    if (metaDesc) metaDesc.setAttribute('content', t('tournamentList.metaDesc'))
-  }, [t])
+  useSEO({
+    title: 'Live Tournaments',
+    description: 'Browse all active sports tournaments. Real-time standings and schedules. Find your tournament and follow live results.',
+    path: '/tournaments',
+  })
 
   useEffect(() => {
     async function load() {
