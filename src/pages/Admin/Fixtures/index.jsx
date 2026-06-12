@@ -120,8 +120,6 @@ export default function Fixtures() {
   if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
-  const byRound = fixtures.reduce((acc, f) => { const r = f.round ?? 0; (acc[r] = acc[r] ?? []).push(f); return acc }, {})
-
   return (
     <div>
       <nav className="admin-nav">
@@ -148,7 +146,7 @@ export default function Fixtures() {
             {t('fixture.addTeamsFirst')}
           </div>
         )}
-        <FixtureList byRound={byRound} pitches={pitches} teams={teams} updateFixture={updateFixture} />
+        <FixtureList fixtures={fixtures} format={ageGroup?.format} pitches={pitches} teams={teams} updateFixture={updateFixture} />
       </div>
       <SchedulerModal
         open={schedulerOpen}
