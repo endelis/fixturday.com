@@ -79,7 +79,7 @@ export default function Dashboard() {
       <div>
         <nav className="admin-nav">
           <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
-            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '22px' }} />
+            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '26px' }} />
           </Link>
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             <a

@@ -1,19 +1,29 @@
 <svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
-  <!-- Dark navy background with soft rounded corners (app-icon style) -->
+  <!-- Dark navy background -->
   <rect width="512" height="512" rx="112" fill="#0a0f1e"/>
-  <!-- Fixture grid icon: 3 rows × 2 cols, centered -->
-  <!-- Cell: 106×58, column gap: 28, row gap: 28 -->
-  <!-- Grid total: 240×232. Offset: x=136, y=140 -->
+
+  <!--
+    Fixture grid: 3 rows × 2 cols
+    Gold (active) row is 2× taller than dim rows — dominates at small sizes.
+    Dim rows at 0.42 opacity — visible but clearly secondary.
+
+    Cell width: 110, col gap: 26
+    Grid width: 246, x offset: (512-246)/2 = 133
+
+    Row heights: dim=52, gold=96, dim=52
+    Row gaps: 24
+    Grid height: 52+24+96+24+52 = 248, y offset: (512-248)/2 = 132
+  -->
 
   <!-- Row 1 — scheduled (dim) -->
-  <rect x="136" y="140" width="106" height="58" rx="12" fill="#f0a500" opacity="0.2"/>
-  <rect x="270" y="140" width="106" height="58" rx="12" fill="#f0a500" opacity="0.2"/>
+  <rect x="133" y="132" width="110" height="52" rx="10" fill="#f0a500" opacity="0.42"/>
+  <rect x="269" y="132" width="110" height="52" rx="10" fill="#f0a500" opacity="0.42"/>
 
-  <!-- Row 2 — active match (full gold) -->
-  <rect x="136" y="226" width="106" height="58" rx="12" fill="#f0a500"/>
-  <rect x="270" y="226" width="106" height="58" rx="12" fill="#f0a500"/>
+  <!-- Row 2 — active match (full gold, taller) -->
+  <rect x="133" y="208" width="110" height="96" rx="14" fill="#f0a500"/>
+  <rect x="269" y="208" width="110" height="96" rx="14" fill="#f0a500"/>
 
   <!-- Row 3 — scheduled (dim) -->
-  <rect x="136" y="312" width="106" height="58" rx="12" fill="#f0a500" opacity="0.2"/>
-  <rect x="270" y="312" width="106" height="58" rx="12" fill="#f0a500" opacity="0.2"/>
+  <rect x="133" y="328" width="110" height="52" rx="10" fill="#f0a500" opacity="0.42"/>
+  <rect x="269" y="328" width="110" height="52" rx="10" fill="#f0a500" opacity="0.42"/>
 </svg>

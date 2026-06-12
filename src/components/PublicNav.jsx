@@ -45,7 +45,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         >
           {/* Logo */}
           <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
-            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '26px', display: 'block' }} />
+            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '30px', display: 'block' }} />
           </Link>
 
           {tournament ? (
@@ -227,7 +227,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '22px' }} />
+          <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '26px' }} />
           <button
             onClick={closeDrawer}
             style={{
