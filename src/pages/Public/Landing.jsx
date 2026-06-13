@@ -260,10 +260,10 @@ export default function Landing() {
       </section>
 
       {/* ── How to organise — semantic Q&A for LLMs ───────────── */}
-      <section id="ka-darbojas" style={{ padding: '5rem 1.5rem', background: 'var(--color-surface)' }}>
+      <section id="ka-darbojas" style={{ padding: '5rem 1.5rem', background: 'var(--color-bg)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <h2 style={sectionHeading}>{t('landing.howOrganizeTitle')}</h2>
-          <div className="landing-steps-grid">
+          <div className="landing-org-steps-grid">
             {[
               { n: '1.', title: t('landing.orgStep1Title'), desc: t('landing.orgStep1Desc') },
               { n: '2.', title: t('landing.orgStep2Title'), desc: t('landing.orgStep2Desc') },
@@ -349,10 +349,12 @@ export default function Landing() {
       <style>{`
         .landing-features-grid { display: grid; grid-template-columns: 1fr; gap: 1.25rem; }
         .landing-steps-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
+        .landing-org-steps-grid { display: grid; grid-template-columns: 1fr; gap: 2.5rem; }
         .landing-stats-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; }
         @media (min-width: 768px) {
           .landing-features-grid { grid-template-columns: repeat(3, 1fr); }
           .landing-steps-grid { grid-template-columns: repeat(3, 1fr); }
+          .landing-org-steps-grid { grid-template-columns: repeat(2, 1fr); }
         }
         @keyframes bounce {
           0%, 100% { transform: translateX(-50%) translateY(0); }
