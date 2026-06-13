@@ -20,6 +20,7 @@ export default function Contact() {
   const [submitted, setSubmitted] = useState(false)
 
   async function onSubmit(values) {
+    if (values._hp) return
     const { error } = await supabase.from('contact_messages').insert({
       name: values.name,
       email: values.email,
@@ -157,6 +158,15 @@ export default function Contact() {
               </div>
             ) : (
               <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1.25rem' }}>
+                {/* Honeypot — hidden from humans, bots fill it in */}
+                <input
+                  type="text"
+                  autoComplete="off"
+                  tabIndex={-1}
+                  aria-hidden="true"
+                  style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
+                  {...register('_hp')}
+                />
                 <div className="form-group">
                   <label>{t('contact.name')} *</label>
                   <input
