@@ -694,50 +694,50 @@ export default function Guide() {
                 ))}
               </div>
 
-              {/* Mobile matchday card mockup */}
-              <MockCard style={{ maxWidth: '320px' }}>
+              {/* Matchday card mockup — reflects actual number-input UI */}
+              <MockCard style={{ maxWidth: '400px' }}>
                 <p style={{ fontSize: '0.72rem', fontWeight: 600, color: '#3a506b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.875rem' }}>
                   {t('guide.mockMatchdayLabel')}
                 </p>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1rem' }}>
-                  <div style={{ flex: 1, textAlign: 'right' }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#e0e8f4' }}>Komanda A</div>
-                  </div>
-                  <div style={{ display: 'flex', gap: '0.375rem' }}>
-                    {['−', '2', '+'].map((c, i) => (
-                      <div key={i} style={{
-                        width: '32px', height: '32px',
-                        background: i === 1 ? '#f0a500' : '#0d1b2e',
-                        color: i === 1 ? '#0a1628' : '#8892a4',
-                        border: '1px solid #1e3a5f',
-                        borderRadius: '6px',
-                        display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontWeight: 700, fontSize: '0.875rem',
-                      }}>
-                        {c}
-                      </div>
-                    ))}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: '0.875rem', fontWeight: 600, color: '#e0e8f4' }}>Komanda B</div>
-                  </div>
+                {/* Time + pitch */}
+                <div style={{ fontSize: '0.78rem', color: '#3a506b', marginBottom: '0.75rem' }}>
+                  09:00 · Laukums 1
                 </div>
-                <div style={{ display: 'flex', gap: '0.375rem' }}>
-                  {['−', '1', '+'].map((c, i) => (
-                    <div key={i} style={{
-                      width: '32px', height: '32px',
-                      background: i === 1 ? '#f0a500' : '#0d1b2e',
-                      color: i === 1 ? '#0a1628' : '#8892a4',
-                      border: '1px solid #1e3a5f',
-                      borderRadius: '6px',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontWeight: 700, fontSize: '0.875rem',
-                      marginLeft: i === 0 ? 'auto' : 0,
-                    }}>
-                      {c}
+                {/* Score row */}
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
+                  <span style={{ flex: 1, textAlign: 'right', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 700, color: '#e0e8f4' }}>Komanda A</span>
+                  <div style={{
+                    width: '3rem', height: '2.5rem',
+                    background: '#0d1b2e', border: '2px solid #f0a500', borderRadius: '6px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#e0e8f4',
+                  }}>2</div>
+                  <span style={{ color: '#3a506b', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.25rem' }}>:</span>
+                  <div style={{
+                    width: '3rem', height: '2.5rem',
+                    background: '#0d1b2e', border: '2px solid #f0a500', borderRadius: '6px',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#e0e8f4',
+                  }}>1</div>
+                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 700, color: '#e0e8f4' }}>Komanda B</span>
+                  <div style={{
+                    background: '#f0a500', color: '#0a1628', borderRadius: '6px',
+                    padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 700, flexShrink: 0,
+                  }}>Save</div>
+                </div>
+                {/* Events panel */}
+                <div style={{ borderTop: '1px solid #1e3a5f', paddingTop: '0.625rem' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#3a506b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Events</div>
+                  {[
+                    { side: '←', label: '⚽ Goal  #7 J.Bērziņš  23\'', accent: true },
+                    { side: '←', label: '⚽ Goal  #11 P.Kalniņš  41\'', accent: true },
+                    { side: '→', label: '⚽ Goal  #9 A.Ozols  55\'', accent: false },
+                  ].map((ev, i) => (
+                    <div key={i} style={{ display: 'flex', gap: '0.4rem', fontSize: '0.78rem', color: ev.accent ? '#c8d4e0' : '#8892a4', marginBottom: '0.2rem' }}>
+                      <span style={{ color: '#3a506b', minWidth: '1.2rem' }}>{ev.side}</span>
+                      <span>{ev.label}</span>
                     </div>
                   ))}
-                  <div style={{ flex: 1 }} />
                 </div>
               </MockCard>
 
