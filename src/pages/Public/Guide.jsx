@@ -729,9 +729,11 @@ export default function Guide() {
                 <div style={{ borderTop: '1px solid #1e3a5f', paddingTop: '0.625rem' }}>
                   <div style={{ fontSize: '0.7rem', fontWeight: 700, color: '#3a506b', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.4rem' }}>Events</div>
                   {[
-                    { side: '←', label: '⚽ Goal  #7 J.Bērziņš  23\'', accent: true },
-                    { side: '←', label: '⚽ Goal  #11 P.Kalniņš  41\'', accent: true },
-                    { side: '→', label: '⚽ Goal  #9 A.Ozols  55\'', accent: false },
+                    { side: '←', label: '⚽ Goal  #7 R.Silva  23\'',    accent: true },
+                    { side: '←', label: '🟨 Yellow  #4 M.García  38\'', accent: true },
+                    { side: '←', label: '⚽ Goal  #11 K.Müller  41\'',  accent: true },
+                    { side: '→', label: '⚽ Goal  #9 J.Costa  55\'',    accent: false },
+                    { side: '→', label: '🟥 Red  #3 A.Torres  67\'',    accent: false },
                   ].map((ev, i) => (
                     <div key={i} style={{ display: 'flex', gap: '0.4rem', fontSize: '0.78rem', color: ev.accent ? '#c8d4e0' : '#8892a4', marginBottom: '0.2rem' }}>
                       <span style={{ color: '#3a506b', minWidth: '1.2rem' }}>{ev.side}</span>
