@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 export const meta = {
@@ -10,7 +11,51 @@ export const meta = {
   keywords: ['knockout tournament format', 'knockout vs round robin', 'single elimination tournament', 'cup format tournament', 'which tournament format to choose', 'tournament format comparison'],
 }
 
+const faqs = [
+  {
+    q: 'What is the main difference between knockout and round robin tournaments?',
+    a: 'In a knockout tournament, losing one game eliminates you. In a round robin, every team plays every other team and no one is eliminated — the team with the most points at the end wins. Knockout is faster and more dramatic; round robin is fairer and guarantees more game time.',
+  },
+  {
+    q: 'Which format is better for a small tournament with 4–8 teams?',
+    a: 'Round robin is almost always better for small tournaments. A knockout bracket with 4 teams produces just 3 total matches — 2 semifinals and a final. A round robin with 4 teams produces 6 matches and a much more satisfying event where every team plays at least 3 games.',
+  },
+  {
+    q: 'Can you combine knockout and round robin in one tournament?',
+    a: 'Yes — this is called a group stage plus knockout format, and it is used in the FIFA World Cup, UEFA Euros, and most large amateur tournaments. Teams play a round robin within small groups, then the top finishers from each group advance to a knockout bracket. It gives everyone guaranteed games while still producing a dramatic final.',
+  },
+  {
+    q: 'What is single elimination vs double elimination?',
+    a: 'Single elimination means one loss and you are out. Double elimination gives each team a second chance — after losing in the main bracket, teams enter a losers bracket and can still reach the final. Double elimination is more common in esports and North American sports; single elimination is standard in football cup competitions.',
+  },
+  {
+    q: 'How many teams can you have in a knockout tournament?',
+    a: 'Any number, but knockout brackets work cleanest with powers of 2 (4, 8, 16, 32 teams). For other team counts, byes are added to the first round. The total number of matches is always N−1, regardless of team count, making knockout very time-efficient for large fields.',
+  },
+]
+
 export default function KnockoutVsRRPost() {
+  useEffect(() => {
+    const id = 'faq-ld-knockout-rr'
+    let el = document.getElementById(id)
+    if (!el) {
+      el = document.createElement('script')
+      el.id = id
+      el.type = 'application/ld+json'
+      document.head.appendChild(el)
+    }
+    el.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    })
+    return () => { document.getElementById(id)?.remove() }
+  }, [])
+
   return (
     <div className="post-content">
       <p className="post-lead">
@@ -190,6 +235,16 @@ export default function KnockoutVsRRPost() {
         Also read:{' '}
         <Link to="/blog/how-to-organize-a-sports-tournament">How to Organize a Sports Tournament: The Complete Guide</Link>
       </p>
+
+      <h2>Frequently Asked Questions</h2>
+      <dl>
+        {faqs.map((f, i) => (
+          <div key={i} style={{ marginBottom: '1.25rem' }}>
+            <dt><strong>{f.q}</strong></dt>
+            <dd style={{ marginLeft: 0, marginTop: '0.4rem' }}>{f.a}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

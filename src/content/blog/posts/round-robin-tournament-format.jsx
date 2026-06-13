@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 export const meta = {
@@ -10,7 +11,55 @@ export const meta = {
   keywords: ['round robin tournament format', 'what is round robin tournament', 'round robin schedule', 'round robin points system', 'how many games round robin'],
 }
 
+const faqs = [
+  {
+    q: 'What is a round robin tournament?',
+    a: 'A round robin tournament (also called league or all-play-all format) is one where every team plays every other team exactly once. The team with the most points at the end wins. No team is eliminated — everyone plays the full schedule regardless of results.',
+  },
+  {
+    q: 'How many games does each team play in a round robin?',
+    a: 'Each team plays N−1 games, where N is the total number of teams. With 6 teams, each team plays 5 games. With 8 teams, each team plays 7 games. The total number of matches in the tournament is N×(N−1)÷2.',
+  },
+  {
+    q: 'How are ties resolved in a round robin tournament?',
+    a: 'When teams finish level on points, the standard tiebreaker order is: (1) goal difference, (2) goals scored, (3) head-to-head result between the tied teams, (4) head-to-head goal difference, (5) drawing of lots. The tiebreaker order should be published before the tournament starts.',
+  },
+  {
+    q: 'What is the difference between single and double round robin?',
+    a: 'In a single round robin, every team plays every other team once. In a double round robin, they play each other twice — once at home and once away. Professional football leagues use double round robin. One-day tournaments almost always use single round robin due to time constraints.',
+  },
+  {
+    q: 'How many teams can play in a round robin tournament?',
+    a: 'Technically any number, but 4–12 teams is the practical range for a one-day round robin. More than 12 teams creates too many total games for a single day — at that point a group stage plus knockout format is more suitable.',
+  },
+  {
+    q: 'Can you run a round robin tournament with an odd number of teams?',
+    a: 'Yes. Add a phantom "bye" team to make the count even. Any team that is scheduled against the bye in a given round sits that round out as a rest period. The bye rotates so every team gets one rest across the tournament.',
+  },
+]
+
 export default function RoundRobinPost() {
+  useEffect(() => {
+    const id = 'faq-ld-round-robin'
+    let el = document.getElementById(id)
+    if (!el) {
+      el = document.createElement('script')
+      el.id = id
+      el.type = 'application/ld+json'
+      document.head.appendChild(el)
+    }
+    el.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    })
+    return () => { document.getElementById(id)?.remove() }
+  }, [])
+
   return (
     <div className="post-content">
       <p className="post-lead">
@@ -180,6 +229,16 @@ export default function RoundRobinPost() {
         Ready to run your tournament?{' '}
         <Link to="/admin/register">Start free on Fixturday →</Link>
       </p>
+
+      <h2>Frequently Asked Questions</h2>
+      <dl>
+        {faqs.map((f, i) => (
+          <div key={i} style={{ marginBottom: '1.25rem' }}>
+            <dt><strong>{f.q}</strong></dt>
+            <dd style={{ marginLeft: 0, marginTop: '0.4rem' }}>{f.a}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }

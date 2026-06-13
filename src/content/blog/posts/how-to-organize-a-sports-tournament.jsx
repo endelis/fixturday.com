@@ -1,3 +1,4 @@
+import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 
 export const meta = {
@@ -10,7 +11,55 @@ export const meta = {
   keywords: ['how to organize a sports tournament', 'tournament planning', 'sports tournament checklist', 'tournament schedule', 'organize football tournament'],
 }
 
+const faqs = [
+  {
+    q: 'How long does it take to organize a sports tournament?',
+    a: 'With the right tools, the core setup — format, schedule, and registration — takes 30–60 minutes. The actual planning timeline should start 4–6 weeks before the event to allow time for venue booking, team registration, and communications.',
+  },
+  {
+    q: 'How many teams should a sports tournament have?',
+    a: 'For a one-day event, 6–12 teams is the practical sweet spot for a round-robin format. More than 12 teams requires either a group stage format, multiple days, or a knockout bracket to keep the schedule manageable.',
+  },
+  {
+    q: 'What is the best tournament format for a one-day event?',
+    a: 'Round-robin is the best format for 4–10 teams with a full day available — every team plays multiple games and the result reflects consistent performance. For 10–20 teams, a group stage plus knockout is more practical. Pure knockout works when time is very limited.',
+  },
+  {
+    q: 'Do I need special software to organize a sports tournament?',
+    a: 'Not strictly, but software eliminates hours of manual work. Fixturday generates the full fixture schedule automatically, tracks scores and standings in real time, and gives every tournament a public page that participants can follow from their phones. It is free to use.',
+  },
+  {
+    q: 'How do I handle tiebreakers in a tournament?',
+    a: 'Set and publish your tiebreaker order before the first match. The standard order for football is: (1) points, (2) goal difference, (3) goals scored, (4) head-to-head result. Announcing rules after a tie has occurred always causes disputes.',
+  },
+  {
+    q: 'How do I collect team registrations for a tournament?',
+    a: 'Online registration is the most efficient method. With Fixturday, you share a registration link and teams fill in their details themselves. You approve or reject applications from the admin panel — no spreadsheets, no chasing confirmation emails.',
+  },
+]
+
 export default function HowToOrganizePost() {
+  useEffect(() => {
+    const id = 'faq-ld-organize'
+    let el = document.getElementById(id)
+    if (!el) {
+      el = document.createElement('script')
+      el.id = id
+      el.type = 'application/ld+json'
+      document.head.appendChild(el)
+    }
+    el.textContent = JSON.stringify({
+      '@context': 'https://schema.org',
+      '@type': 'FAQPage',
+      mainEntity: faqs.map(f => ({
+        '@type': 'Question',
+        name: f.q,
+        acceptedAnswer: { '@type': 'Answer', text: f.a },
+      })),
+    })
+    return () => { document.getElementById(id)?.remove() }
+  }, [])
+
   return (
     <div className="post-content">
       <p className="post-lead">
@@ -179,6 +228,16 @@ export default function HowToOrganizePost() {
       <p>
         <Link to="/admin/register">Create your tournament on Fixturday — it's free →</Link>
       </p>
+
+      <h2>Frequently Asked Questions</h2>
+      <dl>
+        {faqs.map((f, i) => (
+          <div key={i} style={{ marginBottom: '1.25rem' }}>
+            <dt><strong>{f.q}</strong></dt>
+            <dd style={{ marginLeft: 0, marginTop: '0.4rem' }}>{f.a}</dd>
+          </div>
+        ))}
+      </dl>
     </div>
   )
 }
