@@ -1,16 +1,19 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { ArrowLeft } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
+import Turnstile from '../../components/Turnstile'
 
 export default function Register() {
   const navigate = useNavigate()
   const { t } = useTranslation()
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm()
   const [authError, setAuthError] = useState(null)
+  const [turnstileToken, setTurnstileToken] = useState(null)
+  const handleVerify = useCallback((token) => setTurnstileToken(token), [])
 
   const password = watch('password')
 
@@ -19,7 +22,20 @@ export default function Register() {
       setAuthError(t('auth.passwordMismatch'))
       return
     }
+    if (!turnstileToken) { setAuthError(t('common.error') + ': Security check not ready'); return }
     setAuthError(null)
+    try {
+      const verifyRes = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: turnstileToken }),
+      })
+      const { success } = await verifyRes.json()
+      if (!success) { setAuthError(t('common.error') + ': Security check failed'); setTurnstileToken(null); return }
+    } catch {
+      setAuthError(t('common.error') + ': Could not verify security check')
+      return
+    }
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -131,13 +147,15 @@ export default function Register() {
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword.message}</span>}
           </div>
 
+          <Turnstile onVerify={handleVerify} />
+
           {authError && <p className="error-message">{authError}</p>}
 
           <button
             type="submit"
             className="btn-primary"
-            disabled={isSubmitting}
-            style={{ width: '100%', marginTop: '24px' }}
+            disabled={isSubmitting || !turnstileToken}
+            style={{ width: '100%', marginTop: '16px', opacity: (isSubmitting || !turnstileToken) ? 0.6 : 1 }}
           >
             {isSubmitting ? t('common.loading') : t('auth.registerBtn')}
           </button>

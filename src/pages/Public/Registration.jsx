@@ -1,9 +1,10 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState, useCallback } from 'react'
 import { useParams } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { useRegistration } from '../../hooks/useRegistration'
 import PublicNav from '../../components/PublicNav'
+import Turnstile from '../../components/Turnstile'
 
 export default function Registration() {
   const { slug } = useParams()
@@ -13,7 +14,9 @@ export default function Registration() {
   const [success, setSuccess] = useState(false)
   const [cooldown, setCooldown] = useState(0)
   const [submitError, setSubmitError] = useState(null)
+  const [turnstileToken, setTurnstileToken] = useState(null)
   const intervalRef = useRef(null)
+  const handleVerify = useCallback((token) => setTurnstileToken(token), [])
 
   useEffect(() => {
     document.title = `${t('registration.title')} — Fixturday`
@@ -24,6 +27,19 @@ export default function Registration() {
 
   async function onSubmit(values) {
     setSubmitError(null)
+    if (!turnstileToken) { setSubmitError(t('common.error') + ': Security check not ready'); return }
+    try {
+      const verifyRes = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: turnstileToken }),
+      })
+      const { success: verified } = await verifyRes.json()
+      if (!verified) { setSubmitError(t('common.error') + ': Security check failed'); setTurnstileToken(null); return }
+    } catch {
+      setSubmitError(t('common.error') + ': Could not verify security check')
+      return
+    }
     try {
       await submit(values)
       reset()
@@ -156,6 +172,8 @@ export default function Registration() {
             />
           </div>
 
+          <Turnstile onVerify={handleVerify} />
+
           {submitError && (
             <p style={{ color: 'var(--color-danger)', fontSize: '0.875rem', margin: 0 }}>
               {submitError}
@@ -165,8 +183,8 @@ export default function Registration() {
           <button
             type="submit"
             className="btn-primary"
-            disabled={isSubmitting}
-            style={{ width: '100%' }}
+            disabled={isSubmitting || !turnstileToken}
+            style={{ width: '100%', opacity: (isSubmitting || !turnstileToken) ? 0.6 : 1 }}
           >
             {isSubmitting ? t('registration.submitting') : t('registration.submit')}
           </button>
