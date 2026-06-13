@@ -5,7 +5,7 @@ import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
-import { Mail, MapPin, Clock, CheckCircle } from 'lucide-react'
+import { MapPin, Clock, CheckCircle } from 'lucide-react'
 import { useSEO } from '../../hooks/useSEO'
 import Turnstile from '../../components/Turnstile'
 
@@ -61,22 +61,14 @@ export default function Contact() {
 
   const infoCards = [
     {
-      icon: <Mail size={20} />,
-      label: t('contact.infoEmailLabel'),
-      value: t('contact.infoEmailValue'),
-      href: `mailto:${t('contact.infoEmailValue')}`,
-    },
-    {
       icon: <MapPin size={20} />,
       label: t('contact.infoLocationLabel'),
       value: t('contact.infoLocationValue'),
-      href: null,
     },
     {
       icon: <Clock size={20} />,
       label: t('contact.infoResponseLabel'),
       value: t('contact.infoResponseValue'),
-      href: null,
     },
   ]
 
@@ -135,13 +127,7 @@ export default function Contact() {
                   }}>
                     {item.label}
                   </div>
-                  {item.href ? (
-                    <a href={item.href} style={{ color: 'var(--color-text)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
-                      {item.value}
-                    </a>
-                  ) : (
-                    <span style={{ color: 'var(--color-text)', fontSize: '0.9375rem', fontWeight: 500 }}>{item.value}</span>
-                  )}
+                  <span style={{ color: 'var(--color-text)', fontSize: '0.9375rem', fontWeight: 500 }}>{item.value}</span>
                 </div>
               </div>
             ))}
