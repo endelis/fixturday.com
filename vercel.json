@@ -1,4 +1,14 @@
 {
+  "redirects": [
+    { "source": "/turniri",              "destination": "/tournaments",  "permanent": true },
+    { "source": "/par-mums",            "destination": "/about",         "permanent": true },
+    { "source": "/kontakti",            "destination": "/contact",       "permanent": true },
+    { "source": "/pamaciba",            "destination": "/guide",         "permanent": true },
+    { "source": "/privatuma-politika",  "destination": "/privacy-policy","permanent": true },
+    { "source": "/lietosanas-noteikumi","destination": "/terms-of-use",  "permanent": true },
+    { "source": "/sikdatnu-politika",   "destination": "/cookie-policy", "permanent": true },
+    { "source": "/datu-dzesana",        "destination": "/data-deletion", "permanent": true }
+  ],
   "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
   "headers": [
     {
