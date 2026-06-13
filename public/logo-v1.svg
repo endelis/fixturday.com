@@ -1,0 +1,14 @@
+<svg width="210" height="36" viewBox="0 0 210 36" xmlns="http://www.w3.org/2000/svg">
+  <!-- Fixture grid: 3 rows × 2 cols. Middle row = live/active match (full gold). Top/bottom = scheduled (dim). -->
+  <!-- Row 1 — scheduled -->
+  <rect x="0" y="2"  width="14" height="8" rx="2" fill="#f0a500" opacity="0.18"/>
+  <rect x="18" y="2" width="14" height="8" rx="2" fill="#f0a500" opacity="0.18"/>
+  <!-- Row 2 — active match -->
+  <rect x="0" y="14"  width="14" height="8" rx="2" fill="#f0a500"/>
+  <rect x="18" y="14" width="14" height="8" rx="2" fill="#f0a500"/>
+  <!-- Row 3 — scheduled -->
+  <rect x="0" y="26"  width="14" height="8" rx="2" fill="#f0a500" opacity="0.18"/>
+  <rect x="18" y="26" width="14" height="8" rx="2" fill="#f0a500" opacity="0.18"/>
+  <!-- Wordmark -->
+  <text x="44" y="27" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-weight="700" font-size="28" fill="#f0a500" letter-spacing="1.5">FIXTURDAY</text>
+</svg>

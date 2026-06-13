@@ -1,0 +1,7 @@
+<svg width="200" height="36" viewBox="0 0 200 36" xmlns="http://www.w3.org/2000/svg">
+  <!-- Pure wordmark: FIXTUR·DAY — the dot splits the compound word, read as "fixture day" -->
+  <text x="0" y="27" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-weight="700" font-size="28" fill="#f0a500" letter-spacing="1.5">FIXTUR</text>
+  <!-- Separator dot — gold, slightly smaller, vertically centered on cap height -->
+  <circle cx="111" cy="17" r="3.5" fill="#f0a500" opacity="0.7"/>
+  <text x="119" y="27" font-family="'Barlow Condensed','Arial Narrow',sans-serif" font-weight="700" font-size="28" fill="#e0e0e0" letter-spacing="1.5">DAY</text>
+</svg>

@@ -309,12 +309,22 @@ test.describe.serial('Full Tournament Lifecycle — group_knockout with playoffs
     await expect(rows).toHaveCount(6, { timeout: 8000 })
   })
 
-  // ── 10: Public tournament main page loads ────────────────────────────────
+  // ── 10: Public tournament main page — Grafiks/Tabula/Komandas have content ──
   test('10 · public tournament page loads', async () => {
     await page.goto(`/t/${tournamentSlug}`)
     await expect(page.getByText(TOURNAMENT_NAME).first()).toBeVisible({ timeout: 12000 })
-    // Tab buttons render once the tournament data loads
-    await expect(page.getByRole('button', { name: 'Tabula', exact: true })).toBeVisible({ timeout: 8000 })
+
+    // Grafiks tab: click and verify a fixture row is visible
+    await page.getByRole('button', { name: 'Grafiks', exact: true }).click()
+    await expect(page.getByText('Alpha FC').first()).toBeVisible({ timeout: 10000 })
+
+    // Tabula tab: click and verify standings table has rows
+    await page.getByRole('button', { name: 'Tabula', exact: true }).click()
+    await expect(page.locator('table tbody tr').first()).toBeVisible({ timeout: 10000 })
+
+    // Komandas tab: click and verify teams are listed
+    await page.getByRole('button', { name: 'Komandas', exact: true }).click()
+    await expect(page.getByText('Alpha FC').first()).toBeVisible({ timeout: 10000 })
   })
 
   // ── 11: Public standings page (dedicated route) shows 6 rows ─────────────

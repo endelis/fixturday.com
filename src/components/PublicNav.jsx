@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react'
 import { Link, NavLink } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { X, Menu } from 'lucide-react'
-import LanguageSwitcher from './LanguageSwitcher'
+
 
 /**
  * Public navigation bar.
@@ -130,7 +130,6 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                     {item.label}
                   </Link>
                 ))}
-                <LanguageSwitcher />
                 <Link to="/admin" style={loginBtnStyle}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.color = '#0a0f1e' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-accent)' }}
@@ -304,10 +303,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           flexDirection: 'column',
           gap: '0.5rem',
         }}>
-          <div style={{ paddingBottom: '0.75rem' }}>
-            <LanguageSwitcher />
-          </div>
-          {[
+{[
             { to: '/privacy-policy', label: t('footer.privacy') },
             { to: '/terms-of-use',   label: t('footer.terms') },
             { to: '/cookie-policy',  label: t('footer.cookies') },

@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<title>Fixturday Logo Preview</title>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@400;700&family=Barlow:wght@400;500&display=swap" rel="stylesheet"/>
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: #0a0f1e; color: #e0e0e0; font-family: 'Barlow', sans-serif; padding: 3rem 2rem; }
+  h1 { font-family: 'Barlow Condensed', sans-serif; color: #f0a500; font-size: 1.1rem; letter-spacing: 0.12em; text-transform: uppercase; margin-bottom: 2.5rem; opacity: 0.6; }
+  .grid { display: grid; gap: 2rem; max-width: 700px; }
+  .card { background: #111827; border: 1px solid rgba(255,255,255,0.07); border-radius: 12px; padding: 2rem 2.5rem; }
+  .card h2 { font-size: 0.72rem; text-transform: uppercase; letter-spacing: 0.12em; color: #8892a4; margin-bottom: 1.5rem; }
+  /* nav simulation */
+  .nav-sim { background: #0a0f1e; border-top: 2px solid #f0a500; border-bottom: 1px solid rgba(255,255,255,0.08); padding: 0 1.5rem; display: flex; align-items: center; height: 60px; margin-bottom: 1.25rem; border-radius: 8px; }
+  /* large display */
+  .large { display: flex; align-items: center; gap: 1rem; }
+  .large img { height: 48px; }
+  .label { font-size: 0.75rem; color: #4a5568; margin-left: 0.5rem; }
+  /* small favicon sim */
+  .sizes { display: flex; align-items: center; gap: 1.5rem; margin-top: 1rem; flex-wrap: wrap; }
+  .size-item { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; font-size: 0.65rem; color: #4a5568; }
+  .size-item img { image-rendering: crisp-edges; }
+  .divider { border: none; border-top: 1px solid rgba(255,255,255,0.05); margin: 2rem 0; }
+  .note { font-size: 0.8rem; color: #6b7280; margin-top: 0.75rem; line-height: 1.5; }
+  .badge { display: inline-block; background: rgba(240,165,0,0.12); color: #f0a500; font-size: 0.68rem; font-weight: 600; letter-spacing: 0.08em; text-transform: uppercase; padding: 0.2rem 0.6rem; border-radius: 999px; margin-bottom: 0.75rem; }
+</style>
+</head>
+<body>
+<h1>Fixturday — Logo Variants</h1>
+
+<div class="grid">
+
+  <!-- V1 -->
+  <div class="card">
+    <div class="badge">Variant 1</div>
+    <h2>Fixture Grid — evolved from current concept</h2>
+    <div class="nav-sim">
+      <img src="/logo-v1.svg" alt="V1" height="26"/>
+    </div>
+    <div class="sizes">
+      <div class="size-item"><img src="/logo-v1.svg" height="40" alt=""/><span>40px</span></div>
+      <div class="size-item"><img src="/logo-v1.svg" height="26" alt=""/><span>26px (nav)</span></div>
+      <div class="size-item"><img src="/logo-v1.svg" height="16" alt=""/><span>16px</span></div>
+    </div>
+    <p class="note">3-row × 2-column grid: each row is a fixture slot (home | away). Middle row highlighted gold = live/active match. Clean evolution of the current icon — same concept, tighter geometry.</p>
+  </div>
+
+  <!-- V2 -->
+  <div class="card">
+    <div class="badge">Variant 2</div>
+    <h2>Knockout Bracket — tournament structure</h2>
+    <div class="nav-sim">
+      <img src="/logo-v2.svg" alt="V2" height="26"/>
+    </div>
+    <div class="sizes">
+      <div class="size-item"><img src="/logo-v2.svg" height="40" alt=""/><span>40px</span></div>
+      <div class="size-item"><img src="/logo-v2.svg" height="26" alt=""/><span>26px (nav)</span></div>
+      <div class="size-item"><img src="/logo-v2.svg" height="16" alt=""/><span>16px</span></div>
+    </div>
+    <p class="note">4-team knockout bracket — two semi-finals converge to a champion dot. Dim lines = early rounds, bright lines = final. Directly communicates "tournament bracket generator".</p>
+  </div>
+
+  <!-- V3 -->
+  <div class="card">
+    <div class="badge">Variant 3</div>
+    <h2>FIXTUR·DAY — pure wordmark</h2>
+    <div class="nav-sim">
+      <img src="/logo-v3.svg" alt="V3" height="26"/>
+    </div>
+    <div class="sizes">
+      <div class="size-item"><img src="/logo-v3.svg" height="40" alt=""/><span>40px</span></div>
+      <div class="size-item"><img src="/logo-v3.svg" height="26" alt=""/><span>26px (nav)</span></div>
+      <div class="size-item"><img src="/logo-v3.svg" height="16" alt=""/><span>16px</span></div>
+    </div>
+    <p class="note">No icon — the name carries everything. Gold "FIXTUR" + dot separator + light "DAY". Reads as "fixture day" — the day matches are played. Scales perfectly to any size. Most modern SaaS choice.</p>
+  </div>
+
+</div>
+</body>
+</html>
