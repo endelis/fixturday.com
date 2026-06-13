@@ -53,14 +53,14 @@ export default function Contact() {
   ]
 
   return (
-    <div style={{ background: '#0a1628', color: '#e0e8f4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
         padding: '4.5rem 1.5rem 3rem',
         textAlign: 'center',
-        background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
+        background: 'radial-gradient(ellipse 60% 40% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), var(--color-bg)',
       }}>
         <div style={{ maxWidth: '560px', margin: '0 auto' }}>
           <div style={pill}>{t('contact.pill')}</div>
@@ -80,16 +80,16 @@ export default function Contact() {
                 display: 'flex',
                 alignItems: 'flex-start',
                 gap: '1rem',
-                background: '#0d1b2e',
-                border: '1px solid rgba(255,255,255,0.07)',
-                borderRadius: '10px',
+                background: 'var(--color-surface)',
+                border: '1px solid var(--color-border)',
+                borderRadius: 'var(--radius)',
                 padding: '1rem 1.25rem',
               }}>
                 <div style={{
-                  color: '#f0a500',
+                  color: 'var(--color-accent)',
                   flexShrink: 0,
                   background: 'rgba(240,165,0,0.1)',
-                  borderRadius: '8px',
+                  borderRadius: 'var(--radius-sm)',
                   padding: '0.5rem',
                   display: 'flex',
                   alignItems: 'center',
@@ -99,7 +99,7 @@ export default function Contact() {
                 <div>
                   <div style={{
                     fontSize: '0.75rem',
-                    color: '#8fa3bc',
+                    color: 'var(--color-text-muted)',
                     marginBottom: '0.2rem',
                     textTransform: 'uppercase',
                     letterSpacing: '0.06em',
@@ -108,11 +108,11 @@ export default function Contact() {
                     {item.label}
                   </div>
                   {item.href ? (
-                    <a href={item.href} style={{ color: '#e0e8f4', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
+                    <a href={item.href} style={{ color: 'var(--color-text)', textDecoration: 'none', fontSize: '0.9375rem', fontWeight: 500 }}>
                       {item.value}
                     </a>
                   ) : (
-                    <span style={{ color: '#e0e8f4', fontSize: '0.9375rem', fontWeight: 500 }}>{item.value}</span>
+                    <span style={{ color: 'var(--color-text)', fontSize: '0.9375rem', fontWeight: 500 }}>{item.value}</span>
                   )}
                 </div>
               </div>
@@ -121,30 +121,30 @@ export default function Contact() {
 
           {/* Right — form */}
           <div style={{
-            background: '#0d1b2e',
-            border: '1px solid rgba(255,255,255,0.07)',
-            borderRadius: '14px',
+            background: 'var(--color-surface)',
+            border: '1px solid var(--color-border)',
+            borderRadius: 'var(--radius-lg)',
             padding: '2rem',
           }}>
             {submitted ? (
               <div style={{ textAlign: 'center', padding: '2rem 0' }}>
-                <CheckCircle size={48} style={{ color: '#22c55e', margin: '0 auto 1rem', display: 'block' }} />
+                <CheckCircle size={48} style={{ color: 'var(--color-success)', margin: '0 auto 1rem', display: 'block' }} />
                 <h2 style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: 'var(--font-heading)',
                   fontSize: '1.75rem',
-                  color: '#22c55e',
+                  color: 'var(--color-success)',
                   marginBottom: '0.75rem',
                 }}>
                   {t('contact.successTitle')}
                 </h2>
-                <p style={{ color: '#8fa3bc', marginBottom: '1.5rem' }}>{t('contact.successBody')}</p>
+                <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>{t('contact.successBody')}</p>
                 <button
                   onClick={() => setSubmitted(false)}
                   style={{
-                    border: '1px solid rgba(255,255,255,0.2)',
-                    color: '#e0e8f4',
+                    border: '1px solid var(--color-border)',
+                    color: 'var(--color-text)',
                     background: 'none',
-                    borderRadius: '8px',
+                    borderRadius: 'var(--radius-sm)',
                     padding: '0.6rem 1.5rem',
                     cursor: 'pointer',
                     fontSize: '0.9rem',
@@ -194,10 +194,10 @@ export default function Contact() {
                   disabled={isSubmitting}
                   style={{
                     width: '100%',
-                    background: '#f0a500',
-                    color: '#0a1628',
+                    background: 'var(--color-accent)',
+                    color: '#0a0f1e',
                     border: 'none',
-                    borderRadius: '8px',
+                    borderRadius: 'var(--radius-sm)',
                     padding: '0.85rem 1.5rem',
                     fontWeight: 700,
                     fontSize: '0.9375rem',
@@ -238,21 +238,21 @@ const pill = {
   borderRadius: '999px',
   padding: '0.3rem 1rem',
   fontSize: '0.75rem',
-  color: '#f0a500',
+  color: 'var(--color-accent)',
   letterSpacing: '0.1em',
   fontWeight: 600,
   marginBottom: '1.25rem',
 }
 const h1 = {
-  fontFamily: "'Barlow Condensed', sans-serif",
+  fontFamily: 'var(--font-heading)',
   fontSize: 'clamp(2rem, 5vw, 3rem)',
   fontWeight: 700,
-  color: '#ffffff',
+  color: 'var(--color-text)',
   marginBottom: '0.75rem',
 }
 const subtitle = {
   fontSize: 'clamp(0.9375rem, 2vw, 1rem)',
-  color: '#8fa3bc',
+  color: 'var(--color-text-muted)',
   lineHeight: 1.6,
   margin: 0,
 }

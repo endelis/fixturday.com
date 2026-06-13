@@ -3,6 +3,10 @@ import { Outlet, NavLink, Link, useParams, Navigate, useNavigate } from 'react-r
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
+import {
+  LayoutDashboard, Users, List, Trophy, MapPin,
+  BarChart2, Settings, Info, ClipboardList, Zap, Menu, ArrowLeft,
+} from 'lucide-react'
 
 const WIZARD_STEPS = [
   { titleKey: 'wizard.step1Title', descKey: 'wizard.step1Desc', path: 'age-groups' },
@@ -12,15 +16,15 @@ const WIZARD_STEPS = [
 ]
 
 const NAV_ITEMS = [
-  { path: 'overview',    icon: '◎', labelKey: 'workspace.navOverview' },
-  { path: 'age-groups',  icon: '👥', labelKey: 'workspace.navAgeGroups' },
-  { path: 'standings',   icon: '📋', labelKey: 'workspace.navStandings' },
-  { path: 'playoff',     icon: '🏆', labelKey: 'workspace.navPlayoff' },
-  { path: 'venues',      icon: '🏟', labelKey: 'workspace.navVenues' },
-  { path: 'stats',       icon: '📊', labelKey: 'workspace.navStats' },
-  { path: 'settings',    icon: '⚙',  labelKey: 'workspace.navSettings' },
-  { path: 'info',          icon: 'ℹ',  labelKey: 'workspace.navInfo' },
-  { path: 'registrations', icon: '📝', labelKey: 'workspace.navRegistrations' },
+  { path: 'overview',       icon: <LayoutDashboard size={16} />, labelKey: 'workspace.navOverview' },
+  { path: 'age-groups',     icon: <Users size={16} />,           labelKey: 'workspace.navAgeGroups' },
+  { path: 'standings',      icon: <List size={16} />,            labelKey: 'workspace.navStandings' },
+  { path: 'playoff',        icon: <Trophy size={16} />,          labelKey: 'workspace.navPlayoff' },
+  { path: 'venues',         icon: <MapPin size={16} />,          labelKey: 'workspace.navVenues' },
+  { path: 'stats',          icon: <BarChart2 size={16} />,       labelKey: 'workspace.navStats' },
+  { path: 'settings',       icon: <Settings size={16} />,        labelKey: 'workspace.navSettings' },
+  { path: 'info',           icon: <Info size={16} />,            labelKey: 'workspace.navInfo' },
+  { path: 'registrations',  icon: <ClipboardList size={16} />,   labelKey: 'workspace.navRegistrations' },
 ]
 
 export default function TournamentLayout() {
@@ -181,7 +185,7 @@ export default function TournamentLayout() {
               style={navLinkStyle}
               onClick={() => setSidebarOpen(false)}
             >
-              <span style={{ width: '1.25rem', textAlign: 'center' }}>{item.icon}</span>
+              <span style={{ width: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</span>
               {t(item.labelKey)}
             </NavLink>
           ))}
@@ -190,14 +194,14 @@ export default function TournamentLayout() {
             style={navLinkStyle}
             onClick={() => setSidebarOpen(false)}
           >
-            <span style={{ width: '1.25rem', textAlign: 'center' }}>⚽</span>
+            <span style={{ width: '1.25rem', textAlign: 'center', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Zap size={16} /></span>
             {t('workspace.navMatchday')}
           </NavLink>
         </nav>
 
         <div style={{ padding: '1rem 1.25rem', borderTop: '1px solid rgba(255,255,255,0.06)' }}>
-          <Link to="/admin/dashboard" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '0.85rem' }}>
-            ← {t('workspace.backToDashboard')}
+          <Link to="/admin/dashboard" style={{ color: 'var(--color-text-muted)', textDecoration: 'none', fontSize: '0.85rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+            <ArrowLeft size={14} />{t('workspace.backToDashboard')}
           </Link>
         </div>
       </aside>
@@ -211,8 +215,8 @@ export default function TournamentLayout() {
           borderBottom: '1px solid rgba(255,255,255,0.06)',
           display: 'flex', alignItems: 'center', gap: '0.75rem',
         }}>
-          <button className="t-hamburger btn-secondary btn-sm" onClick={() => setSidebarOpen(o => !o)}>
-            ☰
+          <button className="t-hamburger btn-secondary btn-sm" onClick={() => setSidebarOpen(o => !o)} style={{ display: 'flex', alignItems: 'center', gap: '0.35rem' }}>
+            <Menu size={16} />
           </button>
           <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{tournament.name}</span>
         </div>

@@ -22,14 +22,14 @@ export default function About() {
   ]
 
   return (
-    <div style={{ background: '#0a1628', color: '#e0e8f4', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+    <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
         padding: '5rem 1.5rem 4rem',
         textAlign: 'center',
-        background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), #0a1628',
+        background: 'radial-gradient(ellipse 70% 50% at 50% 0%, rgba(240,165,0,0.07) 0%, transparent 70%), var(--color-bg)',
       }}>
         <div style={{ maxWidth: '640px', margin: '0 auto' }}>
           <div style={pill}>{t('about.pill')}</div>
@@ -39,14 +39,14 @@ export default function About() {
       </section>
 
       {/* ── Mission quote ─────────────────────────────────────── */}
-      <section style={{ padding: '4rem 1.5rem', background: '#0d1b2e' }}>
+      <section style={{ padding: '4rem 1.5rem', background: 'var(--color-surface)' }}>
         <div style={{ maxWidth: '760px', margin: '0 auto' }}>
           <blockquote style={{
             fontSize: 'clamp(1.125rem, 2.5vw, 1.5rem)',
             fontStyle: 'italic',
-            color: '#ffffff',
+            color: 'var(--color-text)',
             lineHeight: 1.65,
-            borderLeft: '3px solid #f0a500',
+            borderLeft: '3px solid var(--color-accent)',
             paddingLeft: '1.5rem',
             margin: '0 auto',
             maxWidth: '680px',
@@ -57,26 +57,26 @@ export default function About() {
       </section>
 
       {/* ── Value cards ───────────────────────────────────────── */}
-      <section style={{ padding: '4rem 1.5rem', background: '#0a1628' }}>
+      <section style={{ padding: '4rem 1.5rem', background: 'var(--color-bg)' }}>
         <div style={{ maxWidth: '1100px', margin: '0 auto' }}>
           <div className="about-values-grid">
             {values.map((v, i) => (
               <div
                 key={i}
                 style={{
-                  background: '#16213e',
-                  border: '1px solid rgba(255,255,255,0.07)',
-                  borderRadius: '14px',
+                  background: 'var(--color-surface)',
+                  border: '1px solid var(--color-border)',
+                  borderRadius: 'var(--radius-lg)',
                   padding: '1.5rem',
-                  transition: 'border-color 200ms',
+                  transition: 'border-color var(--transition-fast)',
                 }}
                 onMouseEnter={e => e.currentTarget.style.borderColor = 'rgba(240,165,0,0.4)'}
-                onMouseLeave={e => e.currentTarget.style.borderColor = 'rgba(255,255,255,0.07)'}
+                onMouseLeave={e => e.currentTarget.style.borderColor = 'var(--color-border)'}
               >
                 <div style={{
-                  color: '#f0a500',
+                  color: 'var(--color-accent)',
                   background: 'rgba(240,165,0,0.1)',
-                  borderRadius: '10px',
+                  borderRadius: 'var(--radius)',
                   padding: '0.6rem',
                   display: 'inline-flex',
                   marginBottom: '1rem',
@@ -84,15 +84,15 @@ export default function About() {
                   {v.icon}
                 </div>
                 <h3 style={{
-                  fontFamily: "'Barlow Condensed', sans-serif",
+                  fontFamily: 'var(--font-heading)',
                   fontSize: '1.35rem',
                   fontWeight: 700,
-                  color: '#ffffff',
+                  color: 'var(--color-text)',
                   marginBottom: '0.5rem',
                 }}>
                   {v.title}
                 </h3>
-                <p style={{ color: '#8fa3bc', fontSize: '0.9375rem', lineHeight: 1.65, margin: 0 }}>
+                <p style={{ color: 'var(--color-text-muted)', fontSize: '0.9375rem', lineHeight: 1.65, margin: 0 }}>
                   {v.desc}
                 </p>
               </div>
@@ -101,14 +101,14 @@ export default function About() {
         </div>
       </section>
 
-      {/* ── CTA ──────────────────────────────────────────────── */}
-      <section style={{ padding: '5rem 1.5rem', textAlign: 'center', background: '#0d1b2e', flex: 1 }}>
+      {/* ── CTA ───────────────────────────────────────────────── */}
+      <section style={{ padding: '5rem 1.5rem', textAlign: 'center', background: 'var(--color-surface)', flex: 1 }}>
         <div style={{ maxWidth: '480px', margin: '0 auto' }}>
           <h2 style={{
-            fontFamily: "'Barlow Condensed', sans-serif",
+            fontFamily: 'var(--font-heading)',
             fontSize: 'clamp(1.75rem, 4vw, 2.25rem)',
             fontWeight: 700,
-            color: '#ffffff',
+            color: 'var(--color-text)',
             marginBottom: '1.75rem',
           }}>
             {t('about.ctaTitle')}
@@ -116,9 +116,9 @@ export default function About() {
           <Link to="/contact" style={{
             display: 'inline-flex',
             alignItems: 'center',
-            background: '#f0a500',
-            color: '#0a1628',
-            borderRadius: '8px',
+            background: 'var(--color-accent)',
+            color: '#0a0f1e',
+            borderRadius: 'var(--radius)',
             padding: '0.85rem 2.25rem',
             fontWeight: 700,
             fontSize: '0.9375rem',
@@ -152,22 +152,22 @@ const pill = {
   borderRadius: '999px',
   padding: '0.3rem 1rem',
   fontSize: '0.75rem',
-  color: '#f0a500',
+  color: 'var(--color-accent)',
   letterSpacing: '0.1em',
   fontWeight: 600,
   marginBottom: '1.25rem',
 }
 const h1 = {
-  fontFamily: "'Barlow Condensed', sans-serif",
+  fontFamily: 'var(--font-heading)',
   fontSize: 'clamp(2rem, 6vw, 3rem)',
   fontWeight: 700,
-  color: '#ffffff',
+  color: 'var(--color-text)',
   lineHeight: 1.1,
   marginBottom: '1rem',
 }
 const subtitle = {
   fontSize: 'clamp(1rem, 2.5vw, 1.125rem)',
-  color: '#8fa3bc',
+  color: 'var(--color-text-muted)',
   lineHeight: 1.65,
   maxWidth: '520px',
   margin: '0 auto',
