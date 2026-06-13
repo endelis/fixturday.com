@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useCallback } from 'react'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
@@ -7,6 +7,7 @@ import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
 import { Mail, MapPin, Clock, CheckCircle } from 'lucide-react'
 import { useSEO } from '../../hooks/useSEO'
+import Turnstile from '../../components/Turnstile'
 
 export default function Contact() {
   const { t } = useTranslation()
@@ -17,10 +18,36 @@ export default function Contact() {
     description: 'Get in touch with the Fixturday team. Have a question about organizing a tournament, found a bug, or want to suggest a feature? We\'d love to hear from you.',
     path: '/contact',
   })
+
   const [submitted, setSubmitted] = useState(false)
+  const [turnstileToken, setTurnstileToken] = useState(null)
+  const handleVerify = useCallback((token) => setTurnstileToken(token), [])
 
   async function onSubmit(values) {
     if (values._hp) return
+
+    if (!turnstileToken) {
+      toast(t('common.error') + ': Security check not ready — please wait a moment', 'error')
+      return
+    }
+
+    try {
+      const verifyRes = await fetch('/api/verify-turnstile', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ token: turnstileToken }),
+      })
+      const { success } = await verifyRes.json()
+      if (!success) {
+        toast(t('common.error') + ': Security check failed', 'error')
+        setTurnstileToken(null)
+        return
+      }
+    } catch {
+      toast(t('common.error') + ': Could not verify security check', 'error')
+      return
+    }
+
     const { error } = await supabase.from('contact_messages').insert({
       name: values.name,
       email: values.email,
@@ -167,6 +194,7 @@ export default function Contact() {
                   style={{ position: 'absolute', left: '-9999px', opacity: 0, pointerEvents: 'none' }}
                   {...register('_hp')}
                 />
+
                 <div className="form-group">
                   <label>{t('contact.name')} *</label>
                   <input
@@ -199,9 +227,11 @@ export default function Contact() {
                   {errors.message && <span className="error-message">{errors.message.message}</span>}
                 </div>
 
+                <Turnstile onVerify={handleVerify} />
+
                 <button
                   type="submit"
-                  disabled={isSubmitting}
+                  disabled={isSubmitting || !turnstileToken}
                   style={{
                     width: '100%',
                     background: 'var(--color-accent)',
@@ -211,8 +241,8 @@ export default function Contact() {
                     padding: '0.85rem 1.5rem',
                     fontWeight: 700,
                     fontSize: '0.9375rem',
-                    cursor: isSubmitting ? 'not-allowed' : 'pointer',
-                    opacity: isSubmitting ? 0.7 : 1,
+                    cursor: (isSubmitting || !turnstileToken) ? 'not-allowed' : 'pointer',
+                    opacity: (isSubmitting || !turnstileToken) ? 0.6 : 1,
                     fontFamily: 'var(--font-body)',
                     minHeight: '44px',
                     transition: 'opacity 150ms',
