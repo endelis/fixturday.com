@@ -30,7 +30,7 @@ const HOWTO_LD = {
           '@type': 'HowToStep',
           position: 2,
           name: 'Create a tournament',
-          text: "Click '+ New Tournament', fill in the name, sport type, date, and venue.",
+          text: "Click '+ New Tournament', fill in the name, dates, description, and organiser contacts.",
         },
       ],
     },
