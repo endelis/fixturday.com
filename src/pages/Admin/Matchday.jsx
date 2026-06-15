@@ -176,6 +176,55 @@ export default function Matchday() {
     return acc
   }, {})
 
+  async function advanceKnockoutTeams(f, homeGoals, awayGoals) {
+    if (f.group_label || !f.stage_id) return
+    if (homeGoals === awayGoals) return
+    const winner = homeGoals > awayGoals ? f.home_team_id : f.away_team_id
+    const loser  = homeGoals > awayGoals ? f.away_team_id : f.home_team_id
+    if (!winner || !loser) return
+
+    const { data: stageFx } = await supabase
+      .from('fixtures')
+      .select('id, round, round_name, home_placeholder, away_placeholder')
+      .eq('stage_id', f.stage_id)
+    if (!stageFx) return
+
+    const roundFx = stageFx
+      .filter(sf => sf.round === f.round && sf.round_name !== '3rd_place')
+      .sort((a, b) => (a.home_placeholder ?? a.id).localeCompare(b.home_placeholder ?? b.id))
+
+    const myIndex = roundFx.findIndex(sf => sf.id === f.id)
+    if (myIndex === -1) return
+
+    const n = roundFx.length
+    const roundLabel = n >= 8 ? `R${n * 2}` : n === 4 ? 'QF' : n === 2 ? 'SF' : 'F'
+    const matchNum = myIndex + 1
+    const winnerEN = `${roundLabel}${matchNum} Winner`
+    const loserEN  = `${roundLabel}${matchNum} Loser`
+    const winnerLV = `${roundLabel}${matchNum} uzvarētājs`
+    const loserLV  = `${roundLabel}${matchNum} zaudētājs`
+
+    const downstream = stageFx.filter(sf =>
+      sf.round > f.round && (
+        sf.home_placeholder === winnerEN || sf.away_placeholder === winnerEN ||
+        sf.home_placeholder === loserEN  || sf.away_placeholder === loserEN  ||
+        sf.home_placeholder === winnerLV || sf.away_placeholder === winnerLV ||
+        sf.home_placeholder === loserLV  || sf.away_placeholder === loserLV
+      )
+    )
+
+    for (const df of downstream) {
+      const upd = {}
+      if (df.home_placeholder === winnerEN || df.home_placeholder === winnerLV) upd.home_team_id = winner
+      if (df.away_placeholder === winnerEN || df.away_placeholder === winnerLV) upd.away_team_id = winner
+      if (df.home_placeholder === loserEN  || df.home_placeholder === loserLV)  upd.home_team_id = loser
+      if (df.away_placeholder === loserEN  || df.away_placeholder === loserLV)  upd.away_team_id = loser
+      if (Object.keys(upd).length > 0) {
+        await supabase.from('fixtures').update(upd).eq('id', df.id)
+      }
+    }
+  }
+
   async function saveScore(f) {
     setSaving(prev => ({ ...prev, [f.id]: true }))
     const score = scores[f.id] ?? { home: 0, away: 0 }
@@ -194,6 +243,7 @@ export default function Matchday() {
 
     const { error: statusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
     if (statusErr) toast(`${t('common.error')}: ${statusErr.message}`, 'error')
+    else await advanceKnockoutTeams(f, score.home, score.away)
     toast(t('common.saved'))
     setSaving(prev => ({ ...prev, [f.id]: false }))
     load()
@@ -526,12 +576,44 @@ export default function Matchday() {
                     </span>
                     <div style={{ flex: 1, height: '1px', background: 'rgba(240,165,0,0.2)' }} />
                   </div>
-                  {Object.keys(byAgPlayoff).sort().map(agName => (
-                    <div key={agName} style={{ marginBottom: '1.5rem' }}>
-                      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>{agName}</h2>
-                      <div style={{ display: 'grid', gap: '0.75rem' }}>{byAgPlayoff[agName].map(f => renderFixture(f))}</div>
-                    </div>
-                  ))}
+                  {Object.keys(byAgPlayoff).sort().map(agName => {
+                    const agFx = byAgPlayoff[agName]
+                    const roundMap = agFx.reduce((acc, f) => {
+                      const key = f.round ?? 0
+                      ;(acc[key] = acc[key] ?? []).push(f)
+                      return acc
+                    }, {})
+                    const is3rd = f =>
+                      f.round_name === '3rd_place' ||
+                      (f.home_placeholder ?? '').includes('Loser') ||
+                      (f.away_placeholder ?? '').includes('Loser')
+                    const roundLabel = ms => {
+                      if (ms[0]?.round_name === '3rd_place') return t('playoff.thirdPlace')
+                      const n = ms.length
+                      return n >= 8 ? `R${n * 2}` : n === 4 ? t('playoff.quarterFinal') : n === 2 ? t('playoff.semiFinal') : t('playoff.final')
+                    }
+                    const roundEntries = Object.entries(roundMap)
+                      .sort(([a], [b]) => Number(a) - Number(b))
+                      .flatMap(([, matches]) => {
+                        const third = matches.filter(is3rd)
+                        const main  = matches.filter(f => !is3rd(f))
+                        if (third.length > 0 && main.length > 0) {
+                          return [{ label: roundLabel(third), fx: third }, { label: roundLabel(main), fx: main }]
+                        }
+                        return [{ label: roundLabel(matches), fx: matches }]
+                      })
+                    return (
+                      <div key={agName} style={{ marginBottom: '1.5rem' }}>
+                        <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>{agName}</h2>
+                        {roundEntries.map(({ label, fx }, i) => (
+                          <div key={i} style={{ marginBottom: '1rem' }}>
+                            <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', paddingLeft: '0.1rem' }}>{label}</div>
+                            <div style={{ display: 'grid', gap: '0.75rem' }}>{fx.map(f => renderFixture(f))}</div>
+                          </div>
+                        ))}
+                      </div>
+                    )
+                  })}
                 </div>
               )
             })()}
