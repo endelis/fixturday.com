@@ -22,11 +22,36 @@ export default function Standings() {
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
   const selectedAgeGroupId = (_rawAgeGroupId && UUID_RE.test(_rawAgeGroupId)) ? _rawAgeGroupId : null
 
-  const seoTitle = data?.ag ? `${data.ag.tournaments.name} — ${data.ag.name} Standings` : 'Tournament Standings'
+  const seoTitle = data?.ag
+    ? `${data.ag.tournaments.name} — ${data.ag.name} Standings`
+    : 'Tournament Standings'
+  const teamCount = data?.teams?.length ?? 0
   const seoDesc = data?.ag
-    ? `Live standings for ${data.ag.tournaments.name} — ${data.ag.name}. Real-time results and match schedule.`
+    ? `Live standings for ${data.ag.tournaments.name} — ${data.ag.name}${teamCount > 0 ? ` (${teamCount} teams)` : ''}. Real-time results updated after every match.`
     : 'Live tournament standings and real-time results.'
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}` })
+  const seoSchema = data?.ag ? {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'SportsEvent',
+        '@id': `https://www.fixturday.com/t/${slug}/${ageGroupId}#event`,
+        name: `${data.ag.tournaments.name} — ${data.ag.name}`,
+        url: `https://www.fixturday.com/t/${slug}/${ageGroupId}`,
+        sport: 'Football',
+        organizer: { '@type': 'Organization', name: 'Fixturday', url: 'https://www.fixturday.com' },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Fixturday', item: 'https://www.fixturday.com' },
+          { '@type': 'ListItem', position: 2, name: 'Tournaments', item: 'https://www.fixturday.com/tournaments' },
+          { '@type': 'ListItem', position: 3, name: data.ag.tournaments.name, item: `https://www.fixturday.com/t/${slug}` },
+          { '@type': 'ListItem', position: 4, name: `${data.ag.name} Standings`, item: `https://www.fixturday.com/t/${slug}/${ageGroupId}` },
+        ],
+      },
+    ],
+  } : null
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}`, schema: seoSchema })
 
   function handleFilterChange(id) {
     setSearchParams(prev => {

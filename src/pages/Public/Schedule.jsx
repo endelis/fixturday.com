@@ -7,6 +7,7 @@ import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
 import TeamLogo from '../../components/TeamLogo'
 import ClassFilter from '../../components/ClassFilter'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Schedule() {
   const { t } = useTranslation()
@@ -18,6 +19,35 @@ export default function Schedule() {
   const [lastUpdated, setLastUpdated] = useState(null)
   const [searchParams, setSearchParams] = useSearchParams()
   const selectedAgeGroupId = searchParams.get('ageGroupId') || null
+
+  const seoTitle = ag ? `${ag.tournaments.name} — ${ag.name} Schedule` : 'Tournament Schedule'
+  const seoDesc = ag
+    ? `Full match schedule and results for ${ag.tournaments.name} — ${ag.name}. Kick-off times, venues, and live scores.`
+    : 'Tournament match schedule, kick-off times and results.'
+  const seoSchema = ag ? {
+    '@context': 'https://schema.org',
+    '@graph': [
+      {
+        '@type': 'SportsEvent',
+        '@id': `https://www.fixturday.com/t/${slug}/${ageGroupId}/schedule#event`,
+        name: `${ag.tournaments.name} — ${ag.name}`,
+        url: `https://www.fixturday.com/t/${slug}/${ageGroupId}/schedule`,
+        sport: 'Football',
+        organizer: { '@type': 'Organization', name: 'Fixturday', url: 'https://www.fixturday.com' },
+      },
+      {
+        '@type': 'BreadcrumbList',
+        itemListElement: [
+          { '@type': 'ListItem', position: 1, name: 'Fixturday', item: 'https://www.fixturday.com' },
+          { '@type': 'ListItem', position: 2, name: 'Tournaments', item: 'https://www.fixturday.com/tournaments' },
+          { '@type': 'ListItem', position: 3, name: ag.tournaments.name, item: `https://www.fixturday.com/t/${slug}` },
+          { '@type': 'ListItem', position: 4, name: `${ag.name} Standings`, item: `https://www.fixturday.com/t/${slug}/${ageGroupId}` },
+          { '@type': 'ListItem', position: 5, name: `${ag.name} Schedule`, item: `https://www.fixturday.com/t/${slug}/${ageGroupId}/schedule` },
+        ],
+      },
+    ],
+  } : null
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/schedule`, schema: seoSchema })
 
   function handleFilterChange(id) {
     setSearchParams(prev => {
@@ -38,7 +68,6 @@ export default function Schedule() {
 
       if (agErr) { setLoading(false); return }
       setAg(agData)
-      document.title = `${agData.tournaments.name} — ${agData.name} — Schedule — Fixturday`
 
       if (agData?.tournaments?.id) {
         const { data: sibs, error: sibErr } = await supabase
@@ -97,7 +126,6 @@ export default function Schedule() {
     return () => {
       supabase.removeChannel(channel)
       clearInterval(poll)
-      document.title = 'Fixturday'
     }
   }, [ageGroupId, selectedAgeGroupId])
 
