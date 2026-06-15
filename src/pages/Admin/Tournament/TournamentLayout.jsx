@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Outlet, NavLink, Link, useParams, Navigate, useNavigate } from 'react-router-dom'
+import { Outlet, NavLink, Link, useParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
@@ -7,13 +7,6 @@ import {
   LayoutDashboard, Users, List, Trophy, MapPin,
   BarChart2, Settings, Info, ClipboardList, Zap, Menu, ArrowLeft,
 } from 'lucide-react'
-
-const WIZARD_STEPS = [
-  { titleKey: 'wizard.step1Title', descKey: 'wizard.step1Desc', path: 'age-groups' },
-  { titleKey: 'wizard.step2Title', descKey: 'wizard.step2Desc', path: 'venues' },
-  { titleKey: 'wizard.step3Title', descKey: 'wizard.step3Desc', path: 'age-groups' },
-  { titleKey: 'wizard.step4Title', descKey: 'wizard.step4Desc', path: 'age-groups' },
-]
 
 const NAV_ITEMS = [
   { path: 'overview',       icon: <LayoutDashboard size={16} />, labelKey: 'workspace.navOverview' },
@@ -31,19 +24,12 @@ export default function TournamentLayout() {
   const { id } = useParams()
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
-  const navigate = useNavigate()
   const [tournament, setTournament] = useState(null)
   const [loading, setLoading] = useState(true)
   const [sidebarOpen, setSidebarOpen] = useState(false)
   // stepsComplete[0..3]: age groups, venues, confirmed teams, fixtures
   const [stepsComplete, setStepsComplete] = useState([false, false, false, false])
   const [pendingRegs, setPendingRegs] = useState(0)
-  const [wizardDismissed, setWizardDismissed] = useState(
-    () => localStorage.getItem(`fixturday_wizard_dismissed_${id}`) === 'true'
-  )
-  // wizardVisible: set after load, can be closed without dismissing permanently
-  const [wizardVisible, setWizardVisible] = useState(false)
-  const [wizardStep, setWizardStep] = useState(0)
 
   useEffect(() => {
     if (authLoading || !user) return
@@ -92,12 +78,6 @@ export default function TournamentLayout() {
       ]
       setStepsComplete(done)
 
-      // Only show wizard after data is loaded and we know which steps are incomplete
-      const dismissed = localStorage.getItem(`fixturday_wizard_dismissed_${id}`) === 'true'
-      if (!dismissed && done.some(s => !s)) {
-        setWizardVisible(true)
-      }
-
       setLoading(false)
     }
     load()
@@ -106,25 +86,6 @@ export default function TournamentLayout() {
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
   if (!tournament) return <div className="loading">{t('workspace.notFound')}</div>
-
-  function dismissWizard() {
-    localStorage.setItem(`fixturday_wizard_dismissed_${id}`, 'true')
-    setWizardDismissed(true)
-    setWizardVisible(false)
-  }
-
-  function skipStep() {
-    if (wizardStep < WIZARD_STEPS.length - 1) {
-      setWizardStep(s => s + 1)
-    } else {
-      setWizardVisible(false)
-    }
-  }
-
-  function openWizardStep(path) {
-    setWizardVisible(false)
-    navigate(`/admin/tournaments/${id}/${path}`)
-  }
 
   const navLinkStyle = ({ isActive }) => ({
     display: 'flex',
@@ -242,74 +203,6 @@ export default function TournamentLayout() {
         <Outlet context={{ tournament, stepsComplete }} />
       </main>
 
-      {/* Setup wizard — only rendered after data loads, only when steps remain */}
-      {wizardVisible && (
-        <div style={{
-          position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.72)',
-          display: 'flex', alignItems: 'center', justifyContent: 'center',
-          zIndex: 500, padding: '1rem',
-        }}>
-          <div style={{
-            background: 'var(--color-surface)',
-            border: '1px solid rgba(255,255,255,0.1)',
-            borderRadius: '12px', padding: '2rem',
-            width: '100%', maxWidth: '460px',
-          }}>
-            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '0.35rem' }}>
-              {t('wizard.title')}
-            </h2>
-            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
-              {t('wizard.subtitle')}
-            </p>
-
-            {/* Progress bar */}
-            <div style={{ display: 'flex', gap: '4px', marginBottom: '1.75rem' }}>
-              {WIZARD_STEPS.map((_, i) => (
-                <div key={i} style={{
-                  flex: 1, height: '4px', borderRadius: '2px',
-                  background: stepsComplete[i]
-                    ? 'var(--color-success)'
-                    : i === wizardStep
-                      ? 'var(--color-accent)'
-                      : 'rgba(255,255,255,0.15)',
-                  transition: 'background 0.25s',
-                }} />
-              ))}
-            </div>
-
-            <div style={{ marginBottom: '1.75rem' }}>
-              <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginBottom: '0.25rem' }}>
-                {t('wizard.stepLabel', { current: wizardStep + 1, total: WIZARD_STEPS.length })}
-              </div>
-              <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.2rem', marginBottom: '0.4rem' }}>
-                {stepsComplete[wizardStep] && '✓ '}{t(WIZARD_STEPS[wizardStep].titleKey)}
-              </h3>
-              <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                {stepsComplete[wizardStep]
-                  ? t('wizard.stepDone')
-                  : t(WIZARD_STEPS[wizardStep].descKey)}
-              </p>
-            </div>
-
-            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              {!stepsComplete[wizardStep] && (
-                <button className="btn-primary" onClick={() => openWizardStep(WIZARD_STEPS[wizardStep].path)}>
-                  {t('wizard.open')}
-                </button>
-              )}
-              <button className="btn-secondary" onClick={skipStep}>
-                {wizardStep < WIZARD_STEPS.length - 1 ? t('wizard.skip') : t('wizard.finish')}
-              </button>
-              <button
-                onClick={dismissWizard}
-                style={{ background: 'none', border: 'none', color: 'var(--color-text-muted)', cursor: 'pointer', fontSize: '0.82rem', padding: '0.4rem 0.5rem' }}
-              >
-                {t('wizard.dismiss')}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </>
   )
 }

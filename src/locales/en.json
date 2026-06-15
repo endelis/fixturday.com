@@ -423,7 +423,10 @@
     "setupStep4": "Generate fixtures",
     "quickLinks": "Quick links",
     "guideLink": "Setup guide",
-    "printLink": "Print"
+    "printLink": "Print",
+    "setupGuideTitle": "Getting started",
+    "setupGuideDesc": "Follow the guide to add teams, set up venues, and generate the fixture schedule.",
+    "setupGuideBtn": "Open guide"
   },
   "wizard": {
     "stepDone": "Step done!",

@@ -6,7 +6,7 @@ import { supabase } from '../../../lib/supabase'
 export default function TournamentOverview() {
   const { id } = useParams()
   const { t } = useTranslation()
-  const { tournament } = useOutletContext()
+  const { tournament, stepsComplete } = useOutletContext()
   const [stats, setStats] = useState(null)
   const [ageGroups, setAgeGroups] = useState([])
   const [loading, setLoading] = useState(true)
@@ -66,6 +66,39 @@ export default function TournamentOverview() {
           {tournament.is_active ? t('tournament.active') : t('tournament.inactive')}
         </span>
       </div>
+
+      {/* Setup guide banner — shown while any setup step is incomplete */}
+      {stepsComplete && stepsComplete.some(s => !s) && (
+        <a
+          href="/guide"
+          target="_blank"
+          rel="noreferrer"
+          style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+            gap: '1rem', padding: '1rem 1.25rem',
+            background: 'rgba(240,165,0,0.08)',
+            border: '1px solid rgba(240,165,0,0.3)',
+            borderRadius: '10px', marginBottom: '1.75rem',
+            textDecoration: 'none', cursor: 'pointer',
+          }}
+        >
+          <div>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-accent)', marginBottom: '0.2rem' }}>
+              {t('workspace.setupGuideTitle')}
+            </div>
+            <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+              {t('workspace.setupGuideDesc')}
+            </div>
+          </div>
+          <span style={{
+            flexShrink: 0, padding: '0.5rem 1rem',
+            background: 'var(--color-accent)', color: '#0a1628',
+            borderRadius: '6px', fontFamily: 'var(--font-heading)', fontSize: '0.9rem', fontWeight: 700,
+          }}>
+            {t('workspace.setupGuideBtn')}
+          </span>
+        </a>
+      )}
 
       {/* Quick stats */}
       {!loading && stats && (
