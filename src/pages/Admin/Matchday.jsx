@@ -125,7 +125,32 @@ export default function Matchday() {
             ;(koEvs ?? []).forEach(ev => { (koEvMap[ev.fixture_id] = koEvMap[ev.fixture_id] ?? []).push(ev) })
             setEvents(prev => ({ ...prev, ...koEvMap }))
           }
-          const koFull = koList.map(f => ({ ...f, fixture_results: koResMap[f.id] ? [koResMap[f.id]] : [] }))
+          let koFull = koList.map(f => ({ ...f, fixture_results: koResMap[f.id] ? [koResMap[f.id]] : [] }))
+
+          // Auto-advance completed KO fixtures (handles results saved before deploy)
+          let advancedAny = false
+          for (const kf of koFull) {
+            const res = koResMap[kf.id]
+            if (res && res.home_goals !== res.away_goals) {
+              const changed = await advanceKnockoutTeams(kf, res.home_goals, res.away_goals)
+              if (changed) advancedAny = true
+            }
+          }
+          if (advancedAny) {
+            const { data: refreshed } = await supabase
+              .from('fixtures')
+              .select(`*, home_team:teams!home_team_id(id, name), away_team:teams!away_team_id(id, name), pitch:pitches(name, venues(name)), stages(age_groups(name, tournaments(id, name)))`)
+              .in('stage_id', koStageIds).not('home_team_id', 'is', null).order('round')
+            if (refreshed) {
+              const rfIds = refreshed.map(f => f.id)
+              const { data: rfRes } = rfIds.length > 0
+                ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', rfIds)
+                : { data: [] }
+              const rfResMap = Object.fromEntries((rfRes ?? []).map(r => [r.fixture_id, r]))
+              koFull = refreshed.map(f => ({ ...f, fixture_results: rfResMap[f.id] ? [rfResMap[f.id]] : [] }))
+            }
+          }
+
           const koScores = {}
           koFull.forEach(f => { const r = f.fixture_results?.[0]; koScores[f.id] = { home: r?.home_goals ?? 0, away: r?.away_goals ?? 0 } })
           setScores(prev => ({ ...prev, ...koScores }))
@@ -185,16 +210,16 @@ export default function Matchday() {
 
     const { data: stageFx } = await supabase
       .from('fixtures')
-      .select('id, round, round_name, home_placeholder, away_placeholder')
+      .select('id, round, round_name, home_placeholder, away_placeholder, home_team_id, away_team_id')
       .eq('stage_id', f.stage_id)
-    if (!stageFx) return
+    if (!stageFx) return false
 
     const roundFx = stageFx
       .filter(sf => sf.round === f.round && sf.round_name !== '3rd_place')
       .sort((a, b) => (a.home_placeholder ?? a.id).localeCompare(b.home_placeholder ?? b.id))
 
     const myIndex = roundFx.findIndex(sf => sf.id === f.id)
-    if (myIndex === -1) return
+    if (myIndex === -1) return false
 
     const n = roundFx.length
     const roundLabel = n >= 8 ? `R${n * 2}` : n === 4 ? 'QF' : n === 2 ? 'SF' : 'F'
@@ -213,16 +238,19 @@ export default function Matchday() {
       )
     )
 
+    let changed = false
     for (const df of downstream) {
       const upd = {}
-      if (df.home_placeholder === winnerEN || df.home_placeholder === winnerLV) upd.home_team_id = winner
-      if (df.away_placeholder === winnerEN || df.away_placeholder === winnerLV) upd.away_team_id = winner
-      if (df.home_placeholder === loserEN  || df.home_placeholder === loserLV)  upd.home_team_id = loser
-      if (df.away_placeholder === loserEN  || df.away_placeholder === loserLV)  upd.away_team_id = loser
+      if (!df.home_team_id && (df.home_placeholder === winnerEN || df.home_placeholder === winnerLV)) upd.home_team_id = winner
+      if (!df.away_team_id && (df.away_placeholder === winnerEN || df.away_placeholder === winnerLV)) upd.away_team_id = winner
+      if (!df.home_team_id && (df.home_placeholder === loserEN  || df.home_placeholder === loserLV))  upd.home_team_id = loser
+      if (!df.away_team_id && (df.away_placeholder === loserEN  || df.away_placeholder === loserLV))  upd.away_team_id = loser
       if (Object.keys(upd).length > 0) {
         await supabase.from('fixtures').update(upd).eq('id', df.id)
+        changed = true
       }
     }
+    return changed
   }
 
   async function saveScore(f) {
