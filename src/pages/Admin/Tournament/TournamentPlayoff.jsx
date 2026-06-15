@@ -126,9 +126,11 @@ export default function TournamentPlayoff() {
         for (const fix of fixturesWithResults) {
           const round = fix.round ?? 0
           const is3rd =
-            fix.round_name === t('playoff.thirdPlace') ||
+            fix.round_name === '3rd_place' ||
             (fix.home_placeholder ?? '').includes('zaudētājs') ||
-            (fix.away_placeholder ?? '').includes('zaudētājs')
+            (fix.away_placeholder ?? '').includes('zaudētājs') ||
+            (fix.home_placeholder ?? '').includes('Loser') ||
+            (fix.away_placeholder ?? '').includes('Loser')
           const key = is3rd ? `${round}:3` : `${round}:m`
           if (!vMap.has(key)) vMap.set(key, { round, is3rd, matches: [] })
           vMap.get(key).matches.push(fix)
@@ -229,7 +231,8 @@ export default function TournamentPlayoff() {
                         const decodePlaceholder = (p) => {
                           if (!p) return '?'
                           const m = p.match(/^Group ([A-Z])-(\d+)$/) ?? p.match(/^G(\d+)P(\d+)$/)
-                          return m ? t('standings.groupPlaceholder', { group: m[1], pos: m[2] }) : p
+                          if (m) return t('standings.groupPlaceholder', { group: m[1], pos: m[2] })
+                          return p.replace('uzvarētājs', 'Winner').replace('zaudētājs', 'Loser')
                         }
                         const homeTeam = match.home_team?.name ?? decodePlaceholder(match.home_placeholder)
                         const awayTeam = match.away_team?.name ?? decodePlaceholder(match.away_placeholder)

@@ -31,6 +31,7 @@ export default function Matchday() {
   const [filterGroup, setFilterGroup] = useState('all')
   const [filterStatus, setFilterStatus] = useState('all')
   const [tournamentId, setTournamentId] = useState(null)
+  const [playoffFixtures, setPlayoffFixtures] = useState([])
 
   // Events state: { [fixtureId]: [event, ...] }
   const [events, setEvents] = useState({})
@@ -100,6 +101,38 @@ export default function Matchday() {
       })
       setEvents(evMap)
     }
+
+    // Fetch all knockout fixtures for this tournament regardless of kickoff date
+    if (urlTournamentId) {
+      const { data: ags } = await supabase.from('age_groups').select('id').eq('tournament_id', urlTournamentId)
+      const agIds = (ags ?? []).map(a => a.id)
+      if (agIds.length > 0) {
+        const { data: koStg } = await supabase.from('stages').select('id').in('age_group_id', agIds).eq('type', 'knockout')
+        const koStageIds = (koStg ?? []).map(s => s.id)
+        if (koStageIds.length > 0) {
+          const { data: koFx } = await supabase
+            .from('fixtures')
+            .select(`*, home_team:teams!home_team_id(id, name), away_team:teams!away_team_id(id, name), pitch:pitches(name, venues(name)), stages(age_groups(name, tournaments(id, name)))`)
+            .in('stage_id', koStageIds).not('home_team_id', 'is', null).order('round')
+          const koList = koFx ?? []
+          const koFxIds = koList.map(f => f.id)
+          let koResMap = {}
+          if (koFxIds.length > 0) {
+            const { data: koRes } = await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', koFxIds)
+            koResMap = Object.fromEntries((koRes ?? []).map(r => [r.fixture_id, r]))
+            const { data: koEvs } = await supabase.from('fixture_events').select('*, player:team_players(id, name, number), team:teams(id, name)').in('fixture_id', koFxIds).order('minute', { ascending: true, nullsFirst: false })
+            const koEvMap = {}
+            ;(koEvs ?? []).forEach(ev => { (koEvMap[ev.fixture_id] = koEvMap[ev.fixture_id] ?? []).push(ev) })
+            setEvents(prev => ({ ...prev, ...koEvMap }))
+          }
+          const koFull = koList.map(f => ({ ...f, fixture_results: koResMap[f.id] ? [koResMap[f.id]] : [] }))
+          const koScores = {}
+          koFull.forEach(f => { const r = f.fixture_results?.[0]; koScores[f.id] = { home: r?.home_goals ?? 0, away: r?.away_goals ?? 0 } })
+          setScores(prev => ({ ...prev, ...koScores }))
+          setPlayoffFixtures(koFull)
+        } else { setPlayoffFixtures([]) }
+      } else { setPlayoffFixtures([]) }
+    } else { setPlayoffFixtures([]) }
 
     setLoading(false)
   }
@@ -301,6 +334,93 @@ export default function Matchday() {
 
   const backLink = tournamentId ? `/admin/tournaments/${tournamentId}/overview` : '/admin/dashboard'
 
+  function renderFixture(f) {
+    const score = scores[f.id] ?? { home: 0, away: 0 }
+    const isPostponed = f.status === 'postponed'
+    const hasResult = !!f.fixture_results?.[0]
+    const fixtureEvents = events[f.id] ?? []
+    const ef = eventForm[f.id] ?? {}
+    const selectedTeamPlayers = ef.teamId ? (teamPlayers[ef.teamId] ?? []) : []
+    return (
+      <div key={f.id} className="card" style={{ opacity: isPostponed ? 0.5 : 1 }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            {f.kickoff_time ? formatTime(f.kickoff_time) : <span style={{ fontStyle: 'italic' }}>TBD</span>}
+            {f.pitch && ` · ${f.pitch.venues?.name} — ${f.pitch.name}`}
+          </span>
+          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+            {statusBadge(f)}
+            {!isPostponed && (
+              <button className="btn-secondary btn-sm" style={{ fontSize: '0.75rem' }} onClick={() => postpone(f.id)}>
+                {t('matchday.postponeBtn')}
+              </button>
+            )}
+          </div>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+          <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.home_team?.name}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+            <input type="number" min="0" max="99" value={score.home} disabled={isPostponed}
+              onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } }))}
+              style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
+            />
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
+            <input type="number" min="0" max="99" value={score.away} disabled={isPostponed}
+              onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } }))}
+              style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
+            />
+          </div>
+          <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.away_team?.name}</span>
+          {!isPostponed && (
+            <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem' }} onClick={() => saveScore(f)} disabled={saving[f.id]}>
+              {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
+            </button>
+          )}
+        </div>
+        {!isPostponed && (
+          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
+            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('matchday.events')}</div>
+            {fixtureEvents.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
+                {fixtureEvents.map(ev => (
+                  <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', minWidth: '2.5rem' }}>
+                      {ev.team?.name === f.home_team?.name ? '←' : '→'} {ev.minute ? `${ev.minute}'` : ''}
+                    </span>
+                    <span>{eventLabel(ev)}</span>
+                    <button onClick={() => deleteEvent(ev.id, f.id)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: '1rem', padding: '0.25rem 0.5rem', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>×</button>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
+              <select value={ef.teamId ?? ''} onChange={e => { setEF(f.id, { teamId: e.target.value, playerId: '' }); loadTeamPlayers(e.target.value) }} style={{ ...inputSx, fontSize: '0.8rem' }}>
+                <option value="">{t('matchday.eventTeam')}</option>
+                {f.home_team && <option value={f.home_team.id}>{f.home_team.name}</option>}
+                {f.away_team && <option value={f.away_team.id}>{f.away_team.name}</option>}
+              </select>
+              <select value={ef.playerId ?? ''} onChange={e => setEF(f.id, { playerId: e.target.value })} style={{ ...inputSx, fontSize: '0.8rem' }} disabled={!ef.teamId}>
+                <option value="">{t('matchday.eventPlayer')}</option>
+                {selectedTeamPlayers.map(p => <option key={p.id} value={p.id}>{p.number ? `#${p.number} ` : ''}{p.name}</option>)}
+              </select>
+              <select value={ef.eventType ?? ''} onChange={e => setEF(f.id, { eventType: e.target.value })} style={{ ...inputSx, fontSize: '0.8rem' }}>
+                <option value="">—</option>
+                <option value="goal">{t('matchday.eventGoal')}</option>
+                <option value="own_goal">{t('matchday.eventOwnGoal')}</option>
+                <option value="yellow_card">{t('matchday.eventYellow')}</option>
+                <option value="red_card">{t('matchday.eventRed')}</option>
+              </select>
+              <input type="number" min="1" max="120" placeholder={t('matchday.eventMinute')} value={ef.minute ?? ''} onChange={e => setEF(f.id, { minute: e.target.value })} style={{ ...inputSx, width: '4.5rem', fontSize: '0.8rem' }} />
+              <button className="btn-primary btn-sm" disabled={!ef.teamId || !ef.eventType || addingEvent[f.id]} onClick={() => addEvent(f)}>
+                + {t('matchday.addEvent')}
+              </button>
+            </div>
+          </div>
+        )}
+      </div>
+    )
+  }
+
   return (
     <div>
       <nav className="admin-nav">
@@ -343,176 +463,82 @@ export default function Matchday() {
           </div>
         ) : (
           <>
-            {Object.keys(byGroup).sort().map(groupName => (
-              <div key={groupName} style={{ marginBottom: '2rem' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
-                  {groupName}
-                </h2>
-                <div style={{ display: 'grid', gap: '0.75rem' }}>
-                  {byGroup[groupName].map(f => {
-                    const score = scores[f.id] ?? { home: 0, away: 0 }
-                    const isPostponed = f.status === 'postponed'
-                    const hasResult = !!f.fixture_results?.[0]
-                    const fixtureEvents = events[f.id] ?? []
-                    const ef = eventForm[f.id] ?? {}
-                    const selectedTeamPlayers = ef.teamId ? (teamPlayers[ef.teamId] ?? []) : []
-
-                    return (
-                      <div key={f.id} className="card" style={{ opacity: isPostponed ? 0.5 : 1 }}>
-                        {/* Top row: time, pitch, status */}
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-                          <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
-                            {f.kickoff_time && formatTime(f.kickoff_time)}
-                            {f.pitch && ` · ${f.pitch.venues?.name} — ${f.pitch.name}`}
-                          </span>
-                          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-                            {statusBadge(f)}
-                            {!isPostponed && (
-                              <button
-                                className="btn-secondary btn-sm"
-                                style={{ fontSize: '0.75rem' }}
-                                onClick={() => postpone(f.id)}
-                              >
-                                {t('matchday.postponeBtn')}
-                              </button>
-                            )}
-                          </div>
-                        </div>
-
-                        {/* Score row */}
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-                          <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>
-                            {f.home_team?.name}
-                          </span>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-                            <input
-                              type="number" min="0" max="99"
-                              value={score.home}
-                              disabled={isPostponed}
-                              onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } }))}
-                              style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
-                            />
-                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
-                            <input
-                              type="number" min="0" max="99"
-                              value={score.away}
-                              disabled={isPostponed}
-                              onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } }))}
-                              style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
-                            />
-                          </div>
-                          <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>
-                            {f.away_team?.name}
-                          </span>
-                          {!isPostponed && (
-                            <button
-                              className="btn-primary"
-                              style={{ flexShrink: 0, minWidth: '6rem' }}
-                              onClick={() => saveScore(f)}
-                              disabled={saving[f.id]}
-                            >
-                              {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
-                            </button>
-                          )}
-                        </div>
-
-                        {/* Events section */}
-                        {!isPostponed && (
-                          <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
-                            <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>
-                              {t('matchday.events')}
-                            </div>
-
-                            {/* Event list */}
-                            {fixtureEvents.length > 0 && (
-                              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', marginBottom: '0.75rem' }}>
-                                {fixtureEvents.map(ev => (
-                                  <div key={ev.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem' }}>
-                                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', minWidth: '2.5rem' }}>
-                                      {ev.team?.name === f.home_team?.name ? '←' : '→'} {ev.minute ? `${ev.minute}'` : ''}
-                                    </span>
-                                    <span>{eventLabel(ev)}</span>
-                                    <button
-                                      onClick={() => deleteEvent(ev.id, f.id)}
-                                      style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', fontSize: '1rem', padding: '0.25rem 0.5rem', minWidth: '44px', minHeight: '44px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-                                    >×</button>
-                                  </div>
-                                ))}
-                              </div>
-                            )}
-
-                            {/* Add event form */}
-                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-                              <select
-                                value={ef.teamId ?? ''}
-                                onChange={e => {
-                                  setEF(f.id, { teamId: e.target.value, playerId: '' })
-                                  loadTeamPlayers(e.target.value)
-                                }}
-                                style={{ ...inputSx, fontSize: '0.8rem' }}
-                              >
-                                <option value="">{t('matchday.eventTeam')}</option>
-                                {f.home_team && <option value={f.home_team.id}>{f.home_team.name}</option>}
-                                {f.away_team && <option value={f.away_team.id}>{f.away_team.name}</option>}
-                              </select>
-                              <select
-                                value={ef.playerId ?? ''}
-                                onChange={e => setEF(f.id, { playerId: e.target.value })}
-                                style={{ ...inputSx, fontSize: '0.8rem' }}
-                                disabled={!ef.teamId}
-                              >
-                                <option value="">{t('matchday.eventPlayer')}</option>
-                                {selectedTeamPlayers.map(p => (
-                                  <option key={p.id} value={p.id}>
-                                    {p.number ? `#${p.number} ` : ''}{p.name}
-                                  </option>
-                                ))}
-                              </select>
-                              <select
-                                value={ef.eventType ?? ''}
-                                onChange={e => setEF(f.id, { eventType: e.target.value })}
-                                style={{ ...inputSx, fontSize: '0.8rem' }}
-                              >
-                                <option value="">—</option>
-                                <option value="goal">{t('matchday.eventGoal')}</option>
-                                <option value="own_goal">{t('matchday.eventOwnGoal')}</option>
-                                <option value="yellow_card">{t('matchday.eventYellow')}</option>
-                                <option value="red_card">{t('matchday.eventRed')}</option>
-                              </select>
-                              <input
-                                type="number"
-                                min="1"
-                                max="120"
-                                placeholder={t('matchday.eventMinute')}
-                                value={ef.minute ?? ''}
-                                onChange={e => setEF(f.id, { minute: e.target.value })}
-                                style={{ ...inputSx, width: '4.5rem', fontSize: '0.8rem' }}
-                              />
-                              <button
-                                className="btn-primary btn-sm"
-                                disabled={!ef.teamId || !ef.eventType || addingEvent[f.id]}
-                                onClick={() => addEvent(f)}
-                              >
-                                + {t('matchday.addEvent')}
-                              </button>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    )
-                  })}
+            {/* Date-filtered fixtures — group stage and knockout, with phase headers */}
+            {Object.keys(byGroup).sort().map(agName => {
+              const agFx = byGroup[agName]
+              const groupStageFx = agFx.filter(f => f.group_label)
+              const knockoutFx = agFx.filter(f => !f.group_label)
+              const hasBoth = groupStageFx.length > 0 && knockoutFx.length > 0
+              const phaseTag = (label, amber) => (
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.875rem' }}>
+                  <span style={{
+                    background: amber ? 'rgba(240,165,0,0.12)' : 'rgba(255,255,255,0.07)',
+                    color: amber ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                    fontFamily: 'var(--font-heading)', fontSize: '0.72rem', fontWeight: 700,
+                    letterSpacing: '0.08em', textTransform: 'uppercase',
+                    padding: '0.2rem 0.65rem', borderRadius: '4px',
+                    border: amber ? '1px solid rgba(240,165,0,0.3)' : '1px solid rgba(255,255,255,0.1)',
+                    whiteSpace: 'nowrap',
+                  }}>{label}</span>
+                  <div style={{ flex: 1, height: '1px', background: amber ? 'rgba(240,165,0,0.2)' : 'rgba(255,255,255,0.08)' }} />
                 </div>
-              </div>
-            ))}
+              )
+              return (
+                <div key={agName} style={{ marginBottom: '2.5rem' }}>
+                  <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>{agName}</h2>
+                  {groupStageFx.length > 0 && (
+                    <div style={{ marginBottom: hasBoth ? '1.5rem' : 0 }}>
+                      {hasBoth && phaseTag(t('schedule.groupStage'), false)}
+                      <div style={{ display: 'grid', gap: '0.75rem' }}>{groupStageFx.map(f => renderFixture(f))}</div>
+                    </div>
+                  )}
+                  {knockoutFx.length > 0 && (
+                    <div>
+                      {hasBoth && phaseTag(t('schedule.playoffStage'), true)}
+                      <div style={{ display: 'grid', gap: '0.75rem' }}>{knockoutFx.map(f => renderFixture(f))}</div>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+
+            {/* Playoff fixtures not on today's date — always visible when teams are assigned */}
+            {(() => {
+              const shownIds = new Set(filtered.map(f => f.id))
+              const extraPlayoff = playoffFixtures.filter(f => !shownIds.has(f.id))
+              if (!extraPlayoff.length) return null
+              const byAgPlayoff = extraPlayoff.reduce((acc, f) => {
+                const key = f.stages?.age_groups?.name ?? '—'
+                ;(acc[key] = acc[key] ?? []).push(f)
+                return acc
+              }, {})
+              return (
+                <div style={{ marginTop: filtered.length > 0 ? '2rem' : 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.25rem' }}>
+                    <span style={{
+                      background: 'rgba(240,165,0,0.12)', color: 'var(--color-accent)',
+                      fontFamily: 'var(--font-heading)', fontSize: '0.78rem', fontWeight: 700,
+                      letterSpacing: '0.08em', textTransform: 'uppercase',
+                      padding: '0.25rem 0.75rem', borderRadius: '4px',
+                      border: '1px solid rgba(240,165,0,0.3)', whiteSpace: 'nowrap',
+                    }}>
+                      {t('schedule.playoffStage')}
+                    </span>
+                    <div style={{ flex: 1, height: '1px', background: 'rgba(240,165,0,0.2)' }} />
+                  </div>
+                  {Object.keys(byAgPlayoff).sort().map(agName => (
+                    <div key={agName} style={{ marginBottom: '1.5rem' }}>
+                      <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>{agName}</h2>
+                      <div style={{ display: 'grid', gap: '0.75rem' }}>{byAgPlayoff[agName].map(f => renderFixture(f))}</div>
+                    </div>
+                  ))}
+                </div>
+              )
+            })()}
 
             {/* Bulk save */}
             <div style={{ marginTop: '2rem', textAlign: 'right' }}>
-              <button
-                className="btn-primary"
-                onClick={saveAll}
-                disabled={savingAll}
-                style={{ minWidth: '160px' }}
-              >
+              <button className="btn-primary" onClick={saveAll} disabled={savingAll} style={{ minWidth: '160px' }}>
                 {savingAll ? t('common.saving') : t('matchday.saveAll')}
               </button>
             </div>

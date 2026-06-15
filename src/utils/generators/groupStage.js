@@ -155,8 +155,8 @@ function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffT
         awayTeamId: null,
         round: r,
         group: null,
-        home_placeholder: 'SF1 zaudētājs',
-        away_placeholder: 'SF2 zaudētājs',
+        home_placeholder: 'SF1 Loser',
+        away_placeholder: 'SF2 Loser',
         round_name: '3rd_place',
         bracket_label: null,
       })
@@ -168,8 +168,8 @@ function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffT
         awayTeamId: null,
         round: r,
         group: null,
-        home_placeholder: `${prevRoundName}${2 * i + 1} uzvarētājs`,
-        away_placeholder: `${prevRoundName}${2 * i + 2} uzvarētājs`,
+        home_placeholder: `${prevRoundName}${2 * i + 1} Winner`,
+        away_placeholder: `${prevRoundName}${2 * i + 2} Winner`,
       })
     }
   }
