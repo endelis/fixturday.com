@@ -545,7 +545,41 @@ export default function Matchday() {
                   {knockoutFx.length > 0 && (
                     <div>
                       {hasBoth && phaseTag(t('schedule.playoffStage'), true)}
-                      <div style={{ display: 'grid', gap: '0.75rem' }}>{knockoutFx.map(f => renderFixture(f))}</div>
+                      {(() => {
+                        const koRoundMap = knockoutFx.reduce((acc, f) => {
+                          const key = f.round ?? 0
+                          ;(acc[key] = acc[key] ?? []).push(f)
+                          return acc
+                        }, {})
+                        const koIs3rd = f =>
+                          f.round_name === '3rd_place' ||
+                          (f.home_placeholder ?? '').includes('Loser') ||
+                          (f.away_placeholder ?? '').includes('Loser')
+                        const koRoundLabel = ms => {
+                          if (ms[0]?.round_name === '3rd_place') return t('playoff.thirdPlace')
+                          const n = ms.length
+                          return n >= 8 ? `R${n * 2}` : n === 4 ? t('playoff.quarterFinal') : n === 2 ? t('playoff.semiFinal') : t('playoff.final')
+                        }
+                        const koRoundEntries = Object.entries(koRoundMap)
+                          .sort(([a], [b]) => Number(a) - Number(b))
+                          .flatMap(([, matches]) => {
+                            const third = matches.filter(koIs3rd)
+                            const main  = matches.filter(f => !koIs3rd(f))
+                            if (third.length > 0 && main.length > 0) {
+                              return [{ label: koRoundLabel(third), fx: third }, { label: koRoundLabel(main), fx: main }]
+                            }
+                            return [{ label: koRoundLabel(matches), fx: matches }]
+                          })
+                        const showKoLabels = koRoundEntries.length > 1
+                        return koRoundEntries.map(({ label, fx }, i) => (
+                          <div key={i} style={{ marginBottom: showKoLabels ? '1rem' : 0 }}>
+                            {showKoLabels && (
+                              <div style={{ fontSize: '0.75rem', fontWeight: 700, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: '0.5rem', paddingLeft: '0.1rem' }}>{label}</div>
+                            )}
+                            <div style={{ display: 'grid', gap: '0.75rem' }}>{fx.map(f => renderFixture(f))}</div>
+                          </div>
+                        ))
+                      })()}
                     </div>
                   )}
                 </div>
