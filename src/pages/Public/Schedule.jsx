@@ -229,6 +229,37 @@ export default function Schedule() {
           </div>
         </div>
 
+        {ag.registration_open && (
+          <Link
+            to={`/t/${slug}/register`}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: '1rem', flexWrap: 'wrap', textDecoration: 'none',
+              background: 'rgba(240,165,0,0.08)',
+              border: '1px solid rgba(240,165,0,0.3)',
+              borderLeft: '3px solid var(--color-accent)',
+              borderRadius: '8px', padding: '0.875rem 1.25rem', marginBottom: '1rem',
+            }}
+          >
+            <div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-accent)', fontSize: '0.85rem', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {t('public.regOpen')}
+              </div>
+              <div style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', marginTop: '0.15rem' }}>
+                {t('public.regBannerText')}
+              </div>
+            </div>
+            <span style={{
+              background: 'var(--color-accent)', color: '#0a1628',
+              fontFamily: 'var(--font-heading)', fontWeight: 700,
+              fontSize: '0.8125rem', letterSpacing: '0.05em', textTransform: 'uppercase',
+              padding: '0.5rem 1.1rem', borderRadius: '6px', whiteSpace: 'nowrap', flexShrink: 0,
+            }}>
+              {t('public.regBannerCta')} →
+            </span>
+          </Link>
+        )}
+
         <div style={{ position: 'sticky', top: 0, background: 'var(--color-bg)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
           <ClassFilter
             tournamentId={ag?.tournaments?.id}
