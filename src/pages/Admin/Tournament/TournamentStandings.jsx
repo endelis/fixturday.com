@@ -57,6 +57,23 @@ const PRINT_STYLE = `
   }
 `
 
+const STANDINGS_MOBILE_STYLE = `
+  @media (max-width: 767px) {
+    .standings-table th:nth-child(4),
+    .standings-table td:nth-child(4),
+    .standings-table th:nth-child(5),
+    .standings-table td:nth-child(5),
+    .standings-table th:nth-child(6),
+    .standings-table td:nth-child(6),
+    .standings-table th:nth-child(7),
+    .standings-table td:nth-child(7),
+    .standings-table th:nth-child(8),
+    .standings-table td:nth-child(8) {
+      display: none;
+    }
+  }
+`
+
 const thStyle = { textAlign: 'left', padding: '0.5rem 0.4rem', color: 'var(--color-text-muted)', fontSize: '0.78rem', fontWeight: 600 }
 const thCStyle = { ...thStyle, textAlign: 'center' }
 const tdStyle = { padding: '0.6rem 0.4rem' }
@@ -65,7 +82,7 @@ const tdCStyle = { ...tdStyle, textAlign: 'center' }
 function StandingsTable({ rows, advancingCount, t }) {
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+      <table className="standings-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
         <thead>
           <tr style={{ borderBottom: '2px solid rgba(255,255,255,0.12)' }}>
             <th style={thStyle}>#</th>
@@ -229,6 +246,7 @@ export default function TournamentStandings() {
 
   return (
     <>
+      <style>{STANDINGS_MOBILE_STYLE}</style>
       <style>{PRINT_STYLE}</style>
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '900px' }}>
         <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>

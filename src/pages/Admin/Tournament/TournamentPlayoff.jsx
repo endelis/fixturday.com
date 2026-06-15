@@ -4,6 +4,27 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 
+const MOBILE_STYLE = `
+  @media (max-width: 767px) {
+    .bracket-wrapper {
+      flex-direction: column !important;
+      overflow-x: visible !important;
+      gap: 1.25rem !important;
+    }
+    .bracket-round {
+      min-width: 0 !important;
+      flex: none !important;
+      width: 100% !important;
+    }
+    .bracket-round-label {
+      text-align: left !important;
+    }
+    .bracket-match-team span {
+      max-width: none !important;
+    }
+  }
+`
+
 const PRINT_STYLE = `
   @media print {
     @page { size: A4 landscape; margin: 10mm 15mm; }
@@ -173,6 +194,7 @@ export default function TournamentPlayoff() {
 
   return (
     <>
+      <style>{MOBILE_STYLE}</style>
       <style>{PRINT_STYLE}</style>
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '1100px' }}>
         <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
@@ -258,7 +280,7 @@ export default function TournamentPlayoff() {
                                 color: homeWon ? 'var(--color-accent)' : 'var(--color-text)',
                               }}
                             >
-                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px' }}>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
                                 {homeTeam}
                               </span>
                               {hasResult && (
@@ -284,7 +306,7 @@ export default function TournamentPlayoff() {
                                 color: awayWon ? 'var(--color-accent)' : 'var(--color-text)',
                               }}
                             >
-                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '120px' }}>
+                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
                                 {awayTeam}
                               </span>
                               {hasResult && (
