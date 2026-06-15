@@ -107,24 +107,24 @@ export default function Register() {
     try {
       const selectedAg = allAgeGroups.find(ag => ag.id === values.age_group_id)
       const isAutoApprove = selectedAg?.auto_approve ?? false
-      const teamId = crypto.randomUUID()
 
-      const { error: teamError } = await supabase
-        .from('teams')
-        .insert({
-          id: teamId,
-          age_group_id: values.age_group_id,
-          name: values.name,
-          club: values.club,
-          contact_name: values.contact_name,
-          contact_email: values.contact_email,
-          contact_phone: values.contact_phone,
-          status: isAutoApprove ? 'confirmed' : 'pending',
-        })
+      if (isAutoApprove) {
+        // Auto-approve: insert directly into teams as confirmed
+        const teamId = crypto.randomUUID()
+        const { error: teamError } = await supabase
+          .from('teams')
+          .insert({
+            id: teamId,
+            age_group_id: values.age_group_id,
+            name: values.name,
+            club: values.club,
+            contact_name: values.contact_name,
+            contact_email: values.contact_email,
+            contact_phone: values.contact_phone,
+            status: 'confirmed',
+          })
+        if (teamError) throw teamError
 
-      if (teamError) throw teamError
-
-      if (players.length > 0) {
         const playerRows = players
           .filter(p => p.name?.trim())
           .map(p => ({
@@ -133,13 +133,31 @@ export default function Register() {
             dob: p.dob || null,
             number: p.jersey ? Number(p.jersey) : null,
           }))
-
         if (playerRows.length > 0) {
-          const { error: playersError } = await supabase
-            .from('team_players')
-            .insert(playerRows)
+          const { error: playersError } = await supabase.from('team_players').insert(playerRows)
           if (playersError) throw playersError
         }
+      } else {
+        // Standard flow: submit application for admin review
+        const { error: regError } = await supabase
+          .from('team_registrations')
+          .insert({
+            tournament_id: tournament.id,
+            age_group_id: values.age_group_id,
+            team_name: values.name,
+            manager_name: values.contact_name,
+            manager_email: values.contact_email,
+            manager_phone: values.contact_phone || null,
+            player_roster: {
+              club: values.club || null,
+              players: players.filter(p => p.name?.trim()).map(p => ({
+                name: p.name.trim(),
+                dob: p.dob || null,
+                number: p.jersey ? Number(p.jersey) : null,
+              })),
+            },
+          })
+        if (regError) throw regError
       }
 
       setAutoApproved(isAutoApprove)

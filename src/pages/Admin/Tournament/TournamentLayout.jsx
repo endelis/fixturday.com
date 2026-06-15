@@ -68,8 +68,8 @@ export default function TournamentLayout() {
           const [{ count: tc }, { count: pendingCnt }, { data: stages }] = await Promise.all([
             supabase.from('teams').select('id', { count: 'exact', head: true })
               .in('age_group_id', agIds).eq('status', 'confirmed'),
-            supabase.from('teams').select('id', { count: 'exact', head: true })
-              .in('age_group_id', agIds).eq('status', 'pending'),
+            supabase.from('team_registrations').select('id', { count: 'exact', head: true })
+              .eq('tournament_id', id).eq('status', 'pending'),
             supabase.from('stages').select('id').in('age_group_id', agIds),
           ])
           teamsCnt = tc ?? 0
