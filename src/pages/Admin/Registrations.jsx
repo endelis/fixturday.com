@@ -12,6 +12,7 @@ export default function Registrations() {
   const { tournament } = useOutletContext()
   const { registrations, approve, reject, loading, error } = useRegistrations(tournament.id)
   const [tab, setTab] = useState('pending')
+  const [approvingAll, setApprovingAll] = useState(false)
 
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
@@ -29,6 +30,18 @@ export default function Registrations() {
     } catch {
       toast(t('common.error'), 'error')
     }
+  }
+
+  async function handleApproveAll() {
+    if (!window.confirm(t('admin.registrations.approveAllConfirm', { count: pending.length }))) return
+    setApprovingAll(true)
+    let failed = 0
+    for (const reg of pending) {
+      try { await approve(reg.id) } catch { failed++ }
+    }
+    setApprovingAll(false)
+    if (failed > 0) toast(t('common.error'), 'error')
+    else toast(t('admin.registrations.approveAllDone'), 'success')
   }
 
   async function handleReject(id) {
@@ -58,9 +71,20 @@ export default function Registrations() {
 
   return (
     <div style={{ padding: '2rem 1.25rem' }}>
-      <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.75rem', marginBottom: '1.5rem' }}>
-        {t('admin.registrations.title')}
-      </h1>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '1rem', marginBottom: '1.5rem', flexWrap: 'wrap' }}>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.75rem', margin: 0 }}>
+          {t('admin.registrations.title')}
+        </h1>
+        {tab === 'pending' && pending.length > 0 && (
+          <button
+            className="btn-primary btn-sm"
+            disabled={approvingAll}
+            onClick={handleApproveAll}
+          >
+            {approvingAll ? t('common.saving') : t('admin.registrations.approveAll', { count: pending.length })}
+          </button>
+        )}
+      </div>
 
       {/* Tabs */}
       <div style={{ display: 'flex', borderBottom: '1px solid rgba(255,255,255,0.08)', marginBottom: '1.5rem', overflowX: 'auto' }}>

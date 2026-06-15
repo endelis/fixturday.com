@@ -16,6 +16,7 @@ export default function Standings() {
   const [loadError, setLoadError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [realtimeStatus, setRealtimeStatus] = useState('connecting')
+  const [copied, setCopied] = useState(false)
   const [searchParams, setSearchParams] = useSearchParams()
   const _rawAgeGroupId = searchParams.get('ageGroupId') || null
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -58,7 +59,7 @@ export default function Standings() {
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
         supabase.from('teams').select('id, name').eq('age_group_id', effectiveId).eq('status', 'confirmed'),
         supabase.from('fixtures')
-          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id, type)')
+          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, kickoff_time, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), pitch:pitches(name), stages!inner(age_group_id, type)')
           .eq('stages.age_group_id', effectiveId),
       ])
       if (sibErr || tmErr || fxErr) { setLoadError('network'); setLoading(false); return }
@@ -107,6 +108,31 @@ export default function Standings() {
   const { ag, siblings, teams, fixtures, results } = data
   const standings = calculateStandings(teams, fixtures, results)
   const tournament = ag.tournaments
+
+  const now = new Date()
+  const nextFixture = fixtures
+    .filter(f => f.status !== 'completed' && f.home_team?.id && f.away_team?.id)
+    .filter(f => !f.kickoff_time || new Date(f.kickoff_time) >= now)
+    .sort((a, b) => {
+      if (!a.kickoff_time && !b.kickoff_time) return (a.round ?? 0) - (b.round ?? 0)
+      if (!a.kickoff_time) return 1
+      if (!b.kickoff_time) return -1
+      return new Date(a.kickoff_time) - new Date(b.kickoff_time)
+    })[0] ?? null
+
+  async function handleShare() {
+    const url = window.location.href
+    const title = `${tournament.name} — ${ag.name}`
+    if (navigator.share) {
+      try { await navigator.share({ title, url }) } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(url)
+        setCopied(true)
+        setTimeout(() => setCopied(false), 2000)
+      } catch {}
+    }
+  }
 
   // Group-knockout: derive per-group data
   const groupFixtures = fixtures.filter(f => f.group_label)
@@ -184,6 +210,13 @@ export default function Standings() {
             <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
               {t('standings.scheduleLink')}
             </Link>
+            <button
+              onClick={handleShare}
+              className="btn-secondary btn-sm"
+              style={{ cursor: 'pointer' }}
+            >
+              {copied ? t('standings.shareCopied') : t('standings.share')}
+            </button>
           </div>
         </div>
 
@@ -194,6 +227,30 @@ export default function Standings() {
             onChange={handleFilterChange}
           />
         </div>
+
+        {nextFixture && (
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
+            background: 'rgba(240,165,0,0.07)', border: '1px solid rgba(240,165,0,0.18)',
+            borderRadius: '8px', padding: '0.7rem 1rem', marginBottom: '1.25rem',
+          }}>
+            <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+              {t('standings.nextMatch')}
+            </span>
+            <span style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', minWidth: 0 }}>
+              <strong>{nextFixture.home_team.name}</strong>
+              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('fixture.vs')}</span>
+              <strong>{nextFixture.away_team.name}</strong>
+            </span>
+            {(nextFixture.kickoff_time || nextFixture.pitch?.name) && (
+              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', flexShrink: 0 }}>
+                {nextFixture.kickoff_time && formatTime(new Date(nextFixture.kickoff_time))}
+                {nextFixture.kickoff_time && nextFixture.pitch?.name && ' · '}
+                {nextFixture.pitch?.name}
+              </span>
+            )}
+          </div>
+        )}
 
         {standings.length === 0 ? (
           <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.noTeams')}</p>
@@ -309,6 +366,39 @@ export default function Standings() {
                 ))}
               </tbody>
             </table>
+          </div>
+        )}
+
+        {teams.length > 0 && (
+          <div style={{ marginTop: '3rem' }}>
+            <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
+              {t('standings.teamsTitle')}
+            </h2>
+            <div style={{
+              display: 'grid',
+              gridTemplateColumns: 'repeat(auto-fill, minmax(140px, 1fr))',
+              gap: '0.625rem',
+            }}>
+              {teams.map(team => (
+                <Link
+                  key={team.id}
+                  to={`/t/${slug}/${ageGroupId}/teams/${team.id}`}
+                  style={{
+                    display: 'block',
+                    background: 'var(--color-surface)',
+                    border: '1px solid rgba(255,255,255,0.07)',
+                    borderRadius: '8px',
+                    padding: '0.75rem 1rem',
+                    color: 'var(--color-text)',
+                    textDecoration: 'none',
+                    fontSize: '0.875rem',
+                    fontWeight: 600,
+                  }}
+                >
+                  {team.name}
+                </Link>
+              ))}
+            </div>
           </div>
         )}
       </div>

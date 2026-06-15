@@ -6,21 +6,22 @@ import { supabase } from '../../../lib/supabase'
 export default function TournamentOverview() {
   const { id } = useParams()
   const { t } = useTranslation()
-  const { tournament, stepsComplete } = useOutletContext()
+  const { tournament } = useOutletContext()
   const [stats, setStats] = useState(null)
+  const [ageGroups, setAgeGroups] = useState([])
   const [loading, setLoading] = useState(true)
 
   useEffect(() => {
     async function loadStats() {
-      // Phase 1 — load age_groups and venues in parallel (both only need tournament id)
-      const [{ data: ageGroups, error: agErr }, { count: venuesCount, error: venErr }] = await Promise.all([
-        supabase.from('age_groups').select('id').eq('tournament_id', id),
+      const [{ data: agData, error: agErr }, { count: venuesCount, error: venErr }] = await Promise.all([
+        supabase.from('age_groups').select('id, name').eq('tournament_id', id).order('name'),
         supabase.from('venues').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
       ])
       if (agErr || venErr) { setLoading(false); return }
 
-      const agIds = (ageGroups ?? []).map(ag => ag.id)
-      const ageGroupsCount = agIds.length
+      const ags = agData ?? []
+      setAgeGroups(ags)
+      const agIds = ags.map(ag => ag.id)
 
       if (agIds.length === 0) {
         setStats({ ageGroups: 0, teams: 0, fixtures: 0, completed: 0, venues: venuesCount ?? 0 })
@@ -28,7 +29,6 @@ export default function TournamentOverview() {
         return
       }
 
-      // Phase 2 — stages needed to get fixture counts; teams count can run in parallel with stage load
       const [{ data: stageData, error: stErr }, { count: teamsCount, error: tmErr }] = await Promise.all([
         supabase.from('stages').select('id').in('age_group_id', agIds),
         supabase.from('teams').select('id', { count: 'exact', head: true }).in('age_group_id', agIds).eq('status', 'confirmed'),
@@ -36,7 +36,6 @@ export default function TournamentOverview() {
       if (stErr || tmErr) { setLoading(false); return }
       const stageIds = (stageData ?? []).map(s => s.id)
 
-      // Phase 3 — fixture counts (need stageIds)
       const [{ count: fixturesCount, error: fxErr }, { count: completedCount, error: cErr }] = await Promise.all([
         stageIds.length
           ? supabase.from('fixtures').select('id', { count: 'exact', head: true }).in('stage_id', stageIds)
@@ -48,7 +47,7 @@ export default function TournamentOverview() {
       if (fxErr || cErr) { setLoading(false); return }
 
       setStats({
-        ageGroups: ageGroupsCount,
+        ageGroups: ags.length,
         teams: teamsCount ?? 0,
         fixtures: fixturesCount ?? 0,
         completed: completedCount ?? 0,
@@ -58,15 +57,6 @@ export default function TournamentOverview() {
     }
     loadStats()
   }, [id])
-
-  // Use stepsComplete from TournamentLayout outlet context
-  const setupSteps = [
-    { labelKey: 'workspace.setupStep1', done: stepsComplete[0], path: 'age-groups' },
-    { labelKey: 'workspace.setupStep2', done: stepsComplete[1], path: 'venues' },
-    { labelKey: 'workspace.setupStep3', done: stepsComplete[2], path: 'age-groups' },
-    { labelKey: 'workspace.setupStep4', done: stepsComplete[3], path: 'age-groups' },
-  ]
-  const setupDone = setupSteps.every(s => s.done)
 
   return (
     <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
@@ -96,40 +86,37 @@ export default function TournamentOverview() {
         </div>
       )}
 
-      {/* Setup progress (hidden once all done) */}
-      {!setupDone && (
-        <div className="card" style={{ marginBottom: '2rem' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: '1rem', color: 'var(--color-accent)' }}>
-            {t('wizard.setupProgress')}
+      {/* Age groups with per-group print links */}
+      {ageGroups.length > 0 && (
+        <div style={{ marginBottom: '2rem' }}>
+          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', marginBottom: '0.75rem', color: 'var(--color-text-muted)' }}>
+            {t('workspace.navAgeGroups')}
           </h3>
-          <div style={{ display: 'grid', gap: '0.6rem' }}>
-            {setupSteps.map((step, i) => (
-              <Link
-                key={i}
-                to={`/admin/tournaments/${id}/${step.path}`}
-                style={{
-                  display: 'flex',
-                  alignItems: 'center',
-                  gap: '0.75rem',
-                  textDecoration: 'none',
-                  color: step.done ? 'var(--color-text-muted)' : 'var(--color-text)',
-                  padding: '0.5rem 0.25rem',
-                  opacity: step.done ? 0.6 : 1,
-                }}
-              >
-                <span style={{
-                  width: '20px', height: '20px', borderRadius: '50%',
-                  background: step.done ? 'var(--color-success)' : 'rgba(255,255,255,0.15)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  fontSize: '0.7rem', flexShrink: 0,
-                  color: step.done ? '#fff' : 'var(--color-text-muted)',
-                }}>
-                  {step.done ? '✓' : i + 1}
-                </span>
-                <span style={{ fontSize: '0.9rem', textDecoration: step.done ? 'line-through' : 'none' }}>
-                  {t(step.labelKey)}
-                </span>
-              </Link>
+          <div style={{ display: 'grid', gap: '0.5rem' }}>
+            {ageGroups.map(ag => (
+              <div key={ag.id} className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '0.75rem 1rem' }}>
+                <Link
+                  to={`/admin/tournaments/${id}/age-groups`}
+                  style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-text)', textDecoration: 'none' }}
+                >
+                  {ag.name}
+                </Link>
+                <a
+                  href={`/admin/tournaments/${id}/print?agId=${ag.id}`}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{
+                    display: 'inline-flex', alignItems: 'center', gap: '0.375rem',
+                    fontSize: '0.8rem', color: 'var(--color-text-muted)', textDecoration: 'none',
+                    padding: '0.3rem 0.625rem',
+                    border: '1px solid rgba(255,255,255,0.1)',
+                    borderRadius: '5px',
+                    flexShrink: 0,
+                  }}
+                >
+                  🖨 {t('workspace.printLink')}
+                </a>
+              </div>
             ))}
           </div>
         </div>
@@ -156,6 +143,16 @@ export default function TournamentOverview() {
             <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem' }}>{t(link.labelKey)}</span>
           </Link>
         ))}
+        <a
+          href="/guide"
+          target="_blank"
+          rel="noreferrer"
+          className="card"
+          style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.875rem 1rem' }}
+        >
+          <span>📖</span>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem' }}>{t('workspace.guideLink')}</span>
+        </a>
       </div>
     </div>
   )

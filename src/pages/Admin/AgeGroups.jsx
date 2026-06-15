@@ -62,18 +62,21 @@ export default function AgeGroups() {
 
   async function onSubmit(values) {
     const payload = {
-      ...values,
+      name: values.name,
+      format: values.format,
       tournament_id: tournamentId,
       max_teams: values.max_teams ? Number(values.max_teams) : null,
+      registration_open: !!values.registration_open,
+      auto_approve: !!values.auto_approve,
     }
 
     if (editingId) {
       const { error } = await supabase.from('age_groups').update(payload).eq('id', editingId)
-      if (error) { toast(t('common.error'), 'error'); return }
+      if (error) { console.error('[AgeGroups] update:', error); toast(t('common.error'), 'error'); return }
       toast(t('common.saved'))
     } else {
       const { error } = await supabase.from('age_groups').insert(payload)
-      if (error) { toast(t('common.error'), 'error'); return }
+      if (error) { console.error('[AgeGroups] insert:', error); toast(t('common.error'), 'error'); return }
       toast(t('ageGroup.added'))
     }
 

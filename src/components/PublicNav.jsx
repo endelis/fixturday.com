@@ -172,6 +172,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               borderTop: '1px solid var(--color-border)',
               paddingTop: '0.3rem',
               paddingBottom: '0.3rem',
+              alignItems: 'center',
             }}
           >
             {(() => {
@@ -186,6 +187,9 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   </NavLink>
                   <NavLink to={`/${tournament.slug}/info`} end style={tourNavLink}>
                     {t('nav.info')}
+                  </NavLink>
+                  <NavLink to={`/t/${tournament.slug}/register`} end style={registerNavLink}>
+                    {t('nav.register')}
                   </NavLink>
                 </>
               )
@@ -357,6 +361,26 @@ const loginBtnStyle = {
   transition: 'background var(--transition-fast), color var(--transition-fast)',
   textTransform: 'uppercase',
 }
+
+const registerNavLink = ({ isActive }) => ({
+  marginLeft: 'auto',
+  padding: '0.25rem 0.75rem',
+  borderRadius: 'var(--radius-sm)',
+  fontSize: '0.8rem',
+  fontFamily: 'var(--font-heading)',
+  fontWeight: 700,
+  letterSpacing: '0.05em',
+  textDecoration: 'none',
+  textTransform: 'uppercase',
+  display: 'inline-flex',
+  alignItems: 'center',
+  minHeight: '30px',
+  background: isActive ? 'var(--color-accent)' : 'rgba(240,165,0,0.12)',
+  color: isActive ? '#0a0f1e' : 'var(--color-accent)',
+  border: '1px solid rgba(240,165,0,0.35)',
+  transition: 'all var(--transition-fast)',
+  flexShrink: 0,
+})
 
 const tourNavLink = ({ isActive }) => ({
   color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',

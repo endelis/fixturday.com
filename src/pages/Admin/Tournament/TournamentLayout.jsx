@@ -37,6 +37,7 @@ export default function TournamentLayout() {
   const [sidebarOpen, setSidebarOpen] = useState(false)
   // stepsComplete[0..3]: age groups, venues, confirmed teams, fixtures
   const [stepsComplete, setStepsComplete] = useState([false, false, false, false])
+  const [pendingRegs, setPendingRegs] = useState(0)
   const [wizardDismissed, setWizardDismissed] = useState(
     () => localStorage.getItem(`fixturday_wizard_dismissed_${id}`) === 'true'
   )
@@ -64,12 +65,15 @@ export default function TournamentLayout() {
         if (!agsErr) {
           const agIds = (ags ?? []).map(a => a.id)
 
-          const [{ count: tc }, { data: stages }] = await Promise.all([
+          const [{ count: tc }, { count: pendingCnt }, { data: stages }] = await Promise.all([
             supabase.from('teams').select('id', { count: 'exact', head: true })
               .in('age_group_id', agIds).eq('status', 'confirmed'),
+            supabase.from('teams').select('id', { count: 'exact', head: true })
+              .in('age_group_id', agIds).eq('status', 'pending'),
             supabase.from('stages').select('id').in('age_group_id', agIds),
           ])
           teamsCnt = tc ?? 0
+          setPendingRegs(pendingCnt ?? 0)
 
           if ((stages ?? []).length > 0) {
             const { count: fc } = await supabase.from('fixtures')
@@ -186,7 +190,22 @@ export default function TournamentLayout() {
               onClick={() => setSidebarOpen(false)}
             >
               <span style={{ width: '1.25rem', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{item.icon}</span>
-              {t(item.labelKey)}
+              <span style={{ flex: 1 }}>{t(item.labelKey)}</span>
+              {item.path === 'registrations' && pendingRegs > 0 && (
+                <span style={{
+                  background: 'var(--color-accent)',
+                  color: '#0a1628',
+                  borderRadius: '10px',
+                  fontSize: '0.7rem',
+                  fontWeight: 700,
+                  padding: '0.1rem 0.45rem',
+                  minWidth: '1.25rem',
+                  textAlign: 'center',
+                  lineHeight: 1.6,
+                }}>
+                  {pendingRegs}
+                </span>
+              )}
             </NavLink>
           ))}
           <NavLink

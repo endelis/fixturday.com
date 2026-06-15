@@ -492,8 +492,8 @@ export default function Guide() {
                 <p style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.25rem', fontWeight: 700, color: '#fff', marginBottom: '1.25rem' }}>
                   {t('guide.mockRegHeading')}
                 </p>
-                <MockField label={t('guide.mockFirstName')} placeholder="Jānis" />
-                <MockField label={t('guide.mockEmail')} placeholder="janis@piemers.lv" />
+                <MockField label={t('guide.mockFirstName')} placeholder="Alex" />
+                <MockField label={t('guide.mockEmail')} placeholder="alex@example.com" />
                 <MockField label={t('guide.mockPassword')} placeholder="••••••••" type="password" />
                 <MockButton>{t('guide.mockRegBtn')}</MockButton>
                 <MockButton secondary>{t('guide.mockLoginLink')}</MockButton>
@@ -655,10 +655,10 @@ export default function Guide() {
                 <p style={{ fontSize: '0.72rem', fontWeight: 600, color: '#3a506b', textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: '0.75rem' }}>
                   {t('guide.mockScheduleHeading')}
                 </p>
-                <MockScheduleRow time="09:00" pitch="Laukums 1" home="Komanda A" away="Komanda B" completed />
-                <MockScheduleRow time="09:20" pitch="Laukums 1" home="Komanda C" away="Komanda D" />
-                <MockScheduleRow time="09:00" pitch="Laukums 2" home="Komanda E" away="Komanda F" />
-                <MockScheduleRow time="09:20" pitch="Laukums 2" home="Komanda G" away="Komanda H" />
+                <MockScheduleRow time="09:00" pitch="Pitch 1" home="Team A" away="Team B" completed />
+                <MockScheduleRow time="09:20" pitch="Pitch 1" home="Team C" away="Team D" />
+                <MockScheduleRow time="09:00" pitch="Pitch 2" home="Team E" away="Team F" />
+                <MockScheduleRow time="09:20" pitch="Pitch 2" home="Team G" away="Team H" />
               </MockCard>
 
               <TipBox variant="warning">{t('guide.s6Warning')}</TipBox>
@@ -701,11 +701,11 @@ export default function Guide() {
                 </p>
                 {/* Time + pitch */}
                 <div style={{ fontSize: '0.78rem', color: '#3a506b', marginBottom: '0.75rem' }}>
-                  09:00 · Laukums 1
+                  09:00 · Pitch 1
                 </div>
                 {/* Score row */}
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.875rem' }}>
-                  <span style={{ flex: 1, textAlign: 'right', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 700, color: '#e0e8f4' }}>Komanda A</span>
+                  <span style={{ flex: 1, textAlign: 'right', fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 700, color: '#e0e8f4' }}>Team A</span>
                   <div style={{
                     width: '3rem', height: '2.5rem',
                     background: '#0d1b2e', border: '2px solid #f0a500', borderRadius: '6px',
@@ -719,7 +719,7 @@ export default function Guide() {
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.5rem', fontWeight: 700, color: '#e0e8f4',
                   }}>1</div>
-                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 700, color: '#e0e8f4' }}>Komanda B</span>
+                  <span style={{ flex: 1, fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1rem', fontWeight: 700, color: '#e0e8f4' }}>Team B</span>
                   <div style={{
                     background: '#f0a500', color: '#0a1628', borderRadius: '6px',
                     padding: '0.35rem 0.75rem', fontSize: '0.8rem', fontWeight: 700, flexShrink: 0,
@@ -763,7 +763,7 @@ export default function Guide() {
                 marginBottom: '1.25rem',
                 wordBreak: 'break-all',
               }}>
-                fixturday.com/t/<span style={{ color: '#8892a4' }}>tavs-turnira-nosaukums</span>
+                fixturday.com/t/<span style={{ color: '#8892a4' }}>your-tournament-name</span>
               </div>
 
               <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>

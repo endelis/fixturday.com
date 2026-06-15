@@ -21,6 +21,7 @@
     "schedule": "Schedule",
     "standings": "Standings",
     "info": "Info",
+    "register": "Register",
     "openMenu": "Open menu",
     "closeMenu": "Close menu"
   },
@@ -248,7 +249,11 @@
     "print": "Print",
     "live": "Live",
     "connecting": "Connecting...",
-    "groupPlaceholder": "Group {{group}} position {{pos}}"
+    "groupPlaceholder": "Group {{group}} position {{pos}}",
+    "teamsTitle": "Teams",
+    "nextMatch": "Next match",
+    "share": "Share",
+    "shareCopied": "Copied!"
   },
   "playoff": {
     "final": "Final",
@@ -416,7 +421,9 @@
     "setupStep2": "Add venue",
     "setupStep3": "Add teams",
     "setupStep4": "Generate fixtures",
-    "quickLinks": "Quick links"
+    "quickLinks": "Quick links",
+    "guideLink": "Setup guide",
+    "printLink": "Print"
   },
   "wizard": {
     "stepDone": "Step done!",
@@ -445,6 +452,7 @@
     "searchPlaceholder": "Search tournament...",
     "noResults": "No tournaments found",
     "noResultsHint": "Try a different search term",
+    "clearFilters": "Clear filters",
     "teamsLabel": "teams",
     "tabInfo": "Info",
     "tabSchedule": "Schedule",
@@ -773,7 +781,10 @@
       "colAgeGroup": "Age group",
       "colManager": "Manager",
       "colEmail": "Email",
-      "colActions": "Actions"
+      "colActions": "Actions",
+      "approveAll": "Approve all ({{count}})",
+      "approveAllConfirm": "Approve all {{count}} pending applications?",
+      "approveAllDone": "All applications approved."
     },
     "tournamentLogo": {
       "title": "Tournament logo (Storage)",
@@ -825,6 +836,7 @@
     "notFound": "Tournament not found.",
     "printBtn": "Print",
     "printedOn": "Printed: ",
+    "qrLabel": "See live results here",
     "standings": "Standings",
     "schedule": "Fixture schedule",
     "colRound": "Round",

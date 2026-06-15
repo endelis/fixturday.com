@@ -270,6 +270,15 @@ export default function TournamentList() {
               {t('public.noResults')}
             </h2>
             <p style={{ fontSize: '0.9rem' }}>{t('public.noResultsHint')}</p>
+            {(search || filterSport || filterCountry) && (
+              <button
+                className="btn-secondary btn-sm"
+                style={{ marginTop: '1.25rem', cursor: 'pointer' }}
+                onClick={() => { setSearch(''); setFilterSport(''); setFilterCountry('') }}
+              >
+                {t('public.clearFilters')}
+              </button>
+            )}
           </div>
         ) : (
           /* Grid */
@@ -282,7 +291,7 @@ export default function TournamentList() {
                 : tournament.venues?.name
 
               const teamCount = teamCounts[tournament.id] ?? 0
-              const hasOpenReg = (tournament.age_groups ?? []).some(ag => ag.registration_open)
+              const hasOpenReg = status !== 'finished' && (tournament.age_groups ?? []).some(ag => ag.registration_open)
 
               return (
                 <div

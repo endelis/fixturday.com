@@ -5,7 +5,7 @@
 // 4. Verify all content fits without cutoff
 
 import { useEffect, useState } from 'react'
-import { useParams, Navigate } from 'react-router-dom'
+import { useParams, Navigate, useSearchParams } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
@@ -14,6 +14,7 @@ import { useDateLocale } from '../../hooks/useDateLocale'
 import { formatDate } from '../../utils/dateFormat'
 import { calculateStandings } from '../../utils/standings'
 import { Printer } from 'lucide-react'
+import QRCode from 'qrcode'
 
 const PRINT_STYLE = `
   @media print {
@@ -97,10 +98,13 @@ const PRINT_STYLE = `
 
 export default function Print() {
   const { id: tournamentId } = useParams()
+  const [searchParams] = useSearchParams()
+  const filterAgId = searchParams.get('agId') || null
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
+  const [qrUrls, setQrUrls] = useState({})
   const [loading, setLoading] = useState(true)
   const dateLocale = useDateLocale()
   const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: dateLocale })
@@ -109,7 +113,7 @@ export default function Print() {
     async function load() {
       const { data: tourney, error: tErr } = await supabase
         .from('tournaments')
-        .select('*, venues(name)')
+        .select('*, venues(name), slug')
         .eq('id', tournamentId)
         .single()
 
@@ -157,6 +161,17 @@ export default function Print() {
       }))
 
       setAgeGroupData(results)
+
+      // Generate QR data URLs — one per age group pointing at the live public page
+      const urls = {}
+      await Promise.all(
+        ageGroups.map(async ag => {
+          const publicUrl = `https://fixturday.com/t/${tourney.slug}/${ag.id}`
+          urls[ag.id] = await QRCode.toDataURL(publicUrl, { width: 160, margin: 1, color: { dark: '#000', light: '#fff' } })
+        })
+      )
+      setQrUrls(urls)
+
       setLoading(false)
     }
     load()
@@ -238,18 +253,30 @@ export default function Print() {
         </div>
 
         {/* ── Per age group ──────────────────────────────────────── */}
-        {ageGroupData.map(({ ag, fixtures, standings }) => {
+        {ageGroupData.filter(({ ag }) => !filterAgId || ag.id === filterAgId).map(({ ag, fixtures, standings }) => {
           if (fixtures.length === 0 && standings.length === 0) return null
 
           return (
             <div key={ag.id} className="print-age-group">
-              <h2 style={{
-                fontFamily: 'Arial, sans-serif', fontSize: '1.25rem', fontWeight: 700,
-                borderBottom: '1px solid #999', paddingBottom: '0.25rem', marginBottom: '0.75rem',
-                color: '#000',
-              }}>
-                {ag.name}
-              </h2>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', borderBottom: '1px solid #999', paddingBottom: '0.5rem', marginBottom: '0.75rem' }}>
+                <h2 style={{ fontFamily: 'Arial, sans-serif', fontSize: '1.25rem', fontWeight: 700, color: '#000', margin: 0 }}>
+                  {ag.name}
+                </h2>
+                {qrUrls[ag.id] && (
+                  <div style={{ textAlign: 'center', flexShrink: 0, marginLeft: '1rem' }}>
+                    <img
+                      src={qrUrls[ag.id]}
+                      width={72}
+                      height={72}
+                      alt="QR"
+                      style={{ display: 'block', margin: '0 auto 3px' }}
+                    />
+                    <div style={{ fontFamily: 'Arial, sans-serif', fontSize: '7pt', fontWeight: 700, color: '#000', whiteSpace: 'nowrap' }}>
+                      {t('print.qrLabel')}
+                    </div>
+                  </div>
+                )}
+              </div>
 
               {/* Standings table */}
               {standings.length > 0 && (

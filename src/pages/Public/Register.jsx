@@ -107,10 +107,12 @@ export default function Register() {
     try {
       const selectedAg = allAgeGroups.find(ag => ag.id === values.age_group_id)
       const isAutoApprove = selectedAg?.auto_approve ?? false
+      const teamId = crypto.randomUUID()
 
-      const { data: team, error: teamError } = await supabase
+      const { error: teamError } = await supabase
         .from('teams')
         .insert({
+          id: teamId,
           age_group_id: values.age_group_id,
           name: values.name,
           club: values.club,
@@ -119,8 +121,6 @@ export default function Register() {
           contact_phone: values.contact_phone,
           status: isAutoApprove ? 'confirmed' : 'pending',
         })
-        .select()
-        .single()
 
       if (teamError) throw teamError
 
@@ -128,7 +128,7 @@ export default function Register() {
         const playerRows = players
           .filter(p => p.name?.trim())
           .map(p => ({
-            team_id: team.id,
+            team_id: teamId,
             name: p.name.trim(),
             dob: p.dob || null,
             number: p.jersey ? Number(p.jersey) : null,
@@ -145,6 +145,7 @@ export default function Register() {
       setAutoApproved(isAutoApprove)
       setSubmitted(true)
     } catch (err) {
+      console.error('[Register] submit error:', err)
       setSubmitError(t('register.error'))
     }
   }
