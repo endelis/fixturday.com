@@ -115,7 +115,11 @@ export default function AgeGroups() {
     }
 
     if (editingId) {
-      const { error } = await supabase.from('age_groups').update(payload).eq('id', editingId)
+      console.log('[AgeGroups] saving groups_count:', payload.groups_count, 'for age group:', editingId)
+      const { data: updatedRow, error } = await supabase
+        .from('age_groups').update(payload).eq('id', editingId)
+        .select('id, groups_count, playoff_depth, bracket_seeding').single()
+      console.log('[AgeGroups] update returned:', updatedRow, 'error:', error)
       if (error) { toast(t('common.error'), 'error'); return }
 
       if (isGroupKnockout) {
