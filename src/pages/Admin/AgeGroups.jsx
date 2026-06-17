@@ -122,81 +122,35 @@ export default function AgeGroups() {
       teams_advancing: teamsAdvancing,
     }
 
-    // When group+knockout settings changed and fixtures already exist → delete and regenerate
     const groupSettingsChanged = originalSettings && isGroupKnockout && (
       groupsCount !== (originalSettings.groups_count ?? 2) ||
       playoffDepth !== (originalSettings.playoff_depth ?? 'sf') ||
       (values.bracket_seeding ?? 'cross') !== (originalSettings.bracket_seeding ?? 'cross')
     )
 
-    if (editingId && hasFixtures && groupSettingsChanged) {
-      if (!window.confirm(t('ageGroup.regenerateConfirm'))) return
-
-      // Delete existing stages → fixtures → results in cascade order
-      const { data: existingStages } = await supabase
-        .from('stages').select('id').eq('age_group_id', editingId)
-      if (existingStages?.length) {
-        const stageIds = existingStages.map(s => s.id)
-        const { data: fxList } = await supabase
-          .from('fixtures').select('id').in('stage_id', stageIds)
-        if (fxList?.length) {
-          await supabase.from('fixture_results').delete()
-            .in('fixture_id', fxList.map(f => f.id))
-          await supabase.from('fixtures').delete().in('stage_id', stageIds)
-        }
-        await supabase.from('stages').delete().in('id', stageIds)
-      }
-
-      // Save updated settings
-      const { error: upErr } = await supabase.from('age_groups').update(payload).eq('id', editingId)
-      if (upErr) { toast(t('common.error'), 'error'); return }
-
-      // Regenerate from confirmed teams (skip if not enough teams yet)
-      const { data: confirmedTeams } = await supabase
-        .from('teams').select('id, name')
-        .eq('age_group_id', editingId).eq('status', 'confirmed')
-
-      if ((confirmedTeams?.length ?? 0) >= 2) {
-        const { data: gsStage, error: gsErr } = await supabase.from('stages').insert({
-          age_group_id: editingId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: 1,
-        }).select().single()
-        if (!gsErr && gsStage) {
-          const { groupFixtures, knockoutFixtures } = generateGroupStage(
-            confirmedTeams, groupsCount, teamsAdvancing, null, values.bracket_seeding ?? 'cross'
-          )
-          if (groupFixtures.length > 0) {
-            await supabase.from('fixtures').insert(
-              groupFixtures.map(f => ({
-                stage_id: gsStage.id, home_team_id: f.homeTeamId, away_team_id: f.awayTeamId,
-                round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled',
-              }))
-            )
-          }
-          const { data: koStage } = await supabase.from('stages').insert({
-            age_group_id: editingId, name: t('fixture.stageKnockout'), type: 'knockout', sequence: 2,
-          }).select().single()
-          if (koStage && knockoutFixtures.length > 0) {
-            await supabase.from('fixtures').insert(
-              knockoutFixtures.map(f => ({
-                stage_id: koStage.id, home_team_id: null, away_team_id: null,
-                round: f.round, round_name: f.round_name ?? null, group_label: null,
-                home_placeholder: f.home_placeholder, away_placeholder: f.away_placeholder, status: 'scheduled',
-              }))
-            )
-          }
-        }
-      }
-
-      toast(t('ageGroup.regenerated'))
-      cancelForm()
-      load()
-      return
-    }
-
     if (editingId) {
       const { error } = await supabase.from('age_groups').update(payload).eq('id', editingId)
-      if (error) { console.error('[AgeGroups] update:', error); toast(t('common.error'), 'error'); return }
-      toast(t('common.saved'))
+      if (error) { toast(t('common.error'), 'error'); return }
+
+      // Group settings changed — clear fixtures so the new config is used on next generation
+      if (hasFixtures && groupSettingsChanged) {
+        const { data: stages } = await supabase
+          .from('stages').select('id').eq('age_group_id', editingId)
+        if (stages?.length) {
+          const stageIds = stages.map(s => s.id)
+          const { data: fxList } = await supabase
+            .from('fixtures').select('id').in('stage_id', stageIds)
+          if (fxList?.length) {
+            await supabase.from('fixture_results').delete()
+              .in('fixture_id', fxList.map(f => f.id))
+            await supabase.from('fixtures').delete().in('stage_id', stageIds)
+          }
+          await supabase.from('stages').delete().in('id', stageIds)
+        }
+        toast(t('ageGroup.savedAndCleared'))
+      } else {
+        toast(t('common.saved'))
+      }
     } else {
       const { error } = await supabase.from('age_groups').insert(payload)
       if (error) { console.error('[AgeGroups] insert:', error); toast(t('common.error'), 'error'); return }
