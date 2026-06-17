@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react'
+import { useState, useEffect, Fragment } from 'react'
 import { useTranslation } from 'react-i18next'
 import { format, parse, isValid } from 'date-fns'
 import { generateSchedule } from '../../../utils/scheduler'
@@ -26,7 +26,6 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   const [schedGameDuration, setSchedGameDuration] = useState(ageGroup?.game_duration_minutes || 20)
   const [schedPitchGap, setSchedPitchGap] = useState(ageGroup?.pitch_gap_minutes || 5)
   const [schedFirst, setSchedFirst] = useState('09:00')
-  const [schedLast, setSchedLast] = useState('18:00')
   const [schedLunchEnabled, setSchedLunchEnabled] = useState(false)
   const [schedLunchStart, setSchedLunchStart] = useState('')
   const [schedLunchEnd, setSchedLunchEnd] = useState('')
@@ -41,9 +40,12 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     if (ageGroup.game_duration_minutes) setSchedGameDuration(ageGroup.game_duration_minutes)
     if (ageGroup.pitch_gap_minutes != null) setSchedPitchGap(ageGroup.pitch_gap_minutes)
     if (!ageGroup.tournaments) return
-    const { first_game_time, last_game_time, lunch_start, lunch_end } = ageGroup.tournaments
+    const { start_date, first_game_time, lunch_start, lunch_end } = ageGroup.tournaments
+    if (start_date) {
+      setSchedDate(start_date)
+      setSchedDateDisplay(format(new Date(start_date + 'T00:00'), 'dd/MM/yyyy'))
+    }
     if (first_game_time) setSchedFirst(first_game_time.slice(0, 5))
-    if (last_game_time) setSchedLast(last_game_time.slice(0, 5))
     if (lunch_start) setSchedLunchStart(lunch_start.slice(0, 5))
     if (lunch_end) setSchedLunchEnd(lunch_end.slice(0, 5))
     if (lunch_start && lunch_end) setSchedLunchEnabled(true)
@@ -57,13 +59,13 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     let cancelled = false
     supabase
       .from('venues')
-      .select('id, name, pitches(id, label)')
+      .select('id, name, pitches(id, name)')
       .eq('tournament_id', tournamentId)
       .order('name')
       .then(({ data }) => {
         if (cancelled) return
         const flat = (data ?? []).flatMap(v =>
-          (v.pitches ?? []).map(p => ({ id: p.id, label: `${v.name} — ${p.label}` }))
+          (v.pitches ?? []).map(p => ({ id: p.id, label: `${v.name} — ${p.name}` }))
         )
         setAvailablePitches(flat)
         setSelectedPitchIds(new Set(flat.map(p => p.id)))
@@ -99,7 +101,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
       pitchIds,
       gameDuration: schedGameDuration,
       firstGameTime: schedFirst || '09:00',
-      lastGameTime: schedLast || '18:00',
+      lastGameTime: '23:59',
       lunchStart: schedLunchEnabled ? (schedLunchStart || null) : null,
       lunchEnd: schedLunchEnabled ? (schedLunchEnd || null) : null,
       date: schedDate,
@@ -142,14 +144,20 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     }
   }
 
-  // Build team-name lookup from the fixtures already in scope so that UUID
-  // tokens in scheduler warning strings can be replaced with readable names.
-  const teamNameMap = Object.fromEntries(
-    fixtures.flatMap(f => [
+  // Build a lookup map so that UUID tokens in scheduler warning strings can be
+  // replaced with readable names. Includes team IDs → team names, and fixture
+  // IDs → "Game N: Home vs Away" labels for fixture-not-scheduled warnings.
+  const teamNameMap = Object.fromEntries([
+    ...fixtures.flatMap(f => [
       f.home_team_id && f.home_team?.name ? [f.home_team_id, f.home_team.name] : [],
       f.away_team_id && f.away_team?.name ? [f.away_team_id, f.away_team.name] : [],
-    ])
-  )
+    ]),
+    ...fixtures.map((f, idx) => {
+      const home = f.home_team?.name ?? f.home_placeholder ?? '?'
+      const away = f.away_team?.name ?? f.away_placeholder ?? '?'
+      return [f.id, `Game ${idx + 1} (${home} vs ${away})`]
+    }),
+  ])
   function resolveWarning(w) {
     return w.replace(
       /[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}/gi,
@@ -220,10 +228,6 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('fixture.schedFirstGame')}
             <input type="text" placeholder="HH:MM" maxLength={5} value={schedFirst} onChange={e => setSchedFirst(e.target.value)} style={inputStyle} />
-          </label>
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
-            {t('fixture.schedLastGame')}
-            <input type="text" placeholder="HH:MM" maxLength={5} value={schedLast} onChange={e => setSchedLast(e.target.value)} style={inputStyle} />
           </label>
           <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', gridColumn: '1 / -1', fontSize: '0.875rem', cursor: 'pointer' }}>
             <input type="checkbox" checked={schedLunchEnabled} onChange={e => setSchedLunchEnabled(e.target.checked)} />
@@ -315,19 +319,37 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                     <tbody>
                       {schedResult.schedule.map((item, i) => {
                         const fx = fixtures.find(f => f.id === item.fixtureId)
+                        const isKnockout = fx?.stages?.type === 'knockout' || (!fx?.home_team_id && !!fx?.home_placeholder)
+                        const prevFx = i > 0 ? fixtures.find(f => f.id === schedResult.schedule[i - 1].fixtureId) : null
+                        const prevIsKnockout = prevFx ? (prevFx?.stages?.type === 'knockout' || (!prevFx?.home_team_id && !!prevFx?.home_placeholder)) : false
+                        const showDivider = isKnockout && !prevIsKnockout
+
                         const pitchLabel = item.pitchId
                           ? (availablePitches.find(p => p.id === item.pitchId)?.label ?? `${t('fixture.pitch')} ${item.pitchIndex + 1}`)
                           : (pitches[item.pitchIndex]
                             ? `${pitches[item.pitchIndex].venue_name} — ${pitches[item.pitchIndex].name}`
                             : `${t('fixture.pitch')} ${item.pitchIndex + 1}`)
+                        const homeLabel = fx?.home_team?.name ?? fx?.home_placeholder ?? ''
+                        const awayLabel = fx?.away_team?.name ?? fx?.away_placeholder ?? ''
+                        const isPlaceholder = !fx?.home_team_id
+
                         return (
-                          <tr key={i} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                            <td style={{ padding: '0.5rem 0.75rem' }}>{item.kickoff ? item.kickoff.slice(11, 16) : ''}</td>
-                            <td style={{ padding: '0.5rem 0.75rem' }}>{pitchLabel}</td>
-                            <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>{fx?.home_team?.name ?? ''}</td>
-                            <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>{t('fixture.vs')}</td>
-                            <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600 }}>{fx?.away_team?.name ?? ''}</td>
-                          </tr>
+                          <Fragment key={i}>
+                            {showDivider && (
+                              <tr>
+                                <td colSpan={5} style={{ padding: '0.5rem 0.75rem', background: 'rgba(240,165,0,0.07)', borderTop: '2px solid rgba(240,165,0,0.3)', color: 'var(--color-accent)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                  {t('fixture.playoffStage')}
+                                </td>
+                              </tr>
+                            )}
+                            <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <td style={{ padding: '0.5rem 0.75rem' }}>{item.kickoff ? item.kickoff.slice(11, 16) : ''}</td>
+                              <td style={{ padding: '0.5rem 0.75rem' }}>{pitchLabel}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600, color: isPlaceholder ? 'var(--color-text-muted)' : 'inherit', fontStyle: isPlaceholder ? 'italic' : 'normal' }}>{homeLabel}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', textAlign: 'center', color: 'var(--color-text-muted)' }}>{t('fixture.vs')}</td>
+                              <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600, color: isPlaceholder ? 'var(--color-text-muted)' : 'inherit', fontStyle: isPlaceholder ? 'italic' : 'normal' }}>{awayLabel}</td>
+                            </tr>
+                          </Fragment>
                         )
                       })}
                     </tbody>
