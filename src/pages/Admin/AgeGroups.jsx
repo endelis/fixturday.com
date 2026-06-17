@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
+import { generateGroupStage } from '../../utils/generators/groupStage'
 
 export default function AgeGroups() {
   const { id: tournamentId } = useParams()
@@ -17,6 +18,7 @@ export default function AgeGroups() {
   const [editingId, setEditingId] = useState(null)
   const [lockedGroups, setLockedGroups] = useState(false)
   const [hasFixtures, setHasFixtures] = useState(false)
+  const [originalSettings, setOriginalSettings] = useState(null)
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm()
   const watchedFormat = watch('format')
   const watchedDepth  = watch('playoff_depth')
@@ -70,6 +72,11 @@ export default function AgeGroups() {
     }
     setLockedGroups(locked)
     setHasFixtures(fixturesExist)
+    setOriginalSettings({
+      groups_count: ag.groups_count ?? 2,
+      playoff_depth: ag.playoff_depth ?? 'sf',
+      bracket_seeding: ag.bracket_seeding ?? 'cross',
+    })
     setShowForm(true)
   }
 
@@ -78,6 +85,7 @@ export default function AgeGroups() {
     setEditingId(null)
     setLockedGroups(false)
     setHasFixtures(false)
+    setOriginalSettings(null)
     reset()
   }
 
@@ -112,6 +120,77 @@ export default function AgeGroups() {
       playoff_depth: playoffDepth,
       bracket_seeding: isGroupKnockout ? (values.bracket_seeding ?? 'cross') : null,
       teams_advancing: teamsAdvancing,
+    }
+
+    // When group+knockout settings changed and fixtures already exist → delete and regenerate
+    const groupSettingsChanged = originalSettings && isGroupKnockout && (
+      groupsCount !== (originalSettings.groups_count ?? 2) ||
+      playoffDepth !== (originalSettings.playoff_depth ?? 'sf') ||
+      (values.bracket_seeding ?? 'cross') !== (originalSettings.bracket_seeding ?? 'cross')
+    )
+
+    if (editingId && hasFixtures && groupSettingsChanged) {
+      if (!window.confirm(t('ageGroup.regenerateConfirm'))) return
+
+      // Delete existing stages → fixtures → results in cascade order
+      const { data: existingStages } = await supabase
+        .from('stages').select('id').eq('age_group_id', editingId)
+      if (existingStages?.length) {
+        const stageIds = existingStages.map(s => s.id)
+        const { data: fxList } = await supabase
+          .from('fixtures').select('id').in('stage_id', stageIds)
+        if (fxList?.length) {
+          await supabase.from('fixture_results').delete()
+            .in('fixture_id', fxList.map(f => f.id))
+          await supabase.from('fixtures').delete().in('stage_id', stageIds)
+        }
+        await supabase.from('stages').delete().in('id', stageIds)
+      }
+
+      // Save updated settings
+      const { error: upErr } = await supabase.from('age_groups').update(payload).eq('id', editingId)
+      if (upErr) { toast(t('common.error'), 'error'); return }
+
+      // Regenerate from confirmed teams (skip if not enough teams yet)
+      const { data: confirmedTeams } = await supabase
+        .from('teams').select('id, name')
+        .eq('age_group_id', editingId).eq('status', 'confirmed')
+
+      if ((confirmedTeams?.length ?? 0) >= 2) {
+        const { data: gsStage, error: gsErr } = await supabase.from('stages').insert({
+          age_group_id: editingId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: 1,
+        }).select().single()
+        if (!gsErr && gsStage) {
+          const { groupFixtures, knockoutFixtures } = generateGroupStage(
+            confirmedTeams, groupsCount, teamsAdvancing, null, values.bracket_seeding ?? 'cross'
+          )
+          if (groupFixtures.length > 0) {
+            await supabase.from('fixtures').insert(
+              groupFixtures.map(f => ({
+                stage_id: gsStage.id, home_team_id: f.homeTeamId, away_team_id: f.awayTeamId,
+                round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled',
+              }))
+            )
+          }
+          const { data: koStage } = await supabase.from('stages').insert({
+            age_group_id: editingId, name: t('fixture.stageKnockout'), type: 'knockout', sequence: 2,
+          }).select().single()
+          if (koStage && knockoutFixtures.length > 0) {
+            await supabase.from('fixtures').insert(
+              knockoutFixtures.map(f => ({
+                stage_id: koStage.id, home_team_id: null, away_team_id: null,
+                round: f.round, round_name: f.round_name ?? null, group_label: null,
+                home_placeholder: f.home_placeholder, away_placeholder: f.away_placeholder, status: 'scheduled',
+              }))
+            )
+          }
+        }
+      }
+
+      toast(t('ageGroup.regenerated'))
+      cancelForm()
+      load()
+      return
     }
 
     if (editingId) {
@@ -327,7 +406,7 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
             <div className="form-group">
               <label>{t('ageGroup.groupsCount')}</label>
-              <select {...register('groups_count')} disabled={locked}>
+              <select {...register('groups_count')}>
                 <option value="2">2</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
