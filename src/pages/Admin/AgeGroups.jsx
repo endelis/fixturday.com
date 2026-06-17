@@ -115,32 +115,12 @@ export default function AgeGroups() {
     }
 
     if (editingId) {
-      console.log('[AgeGroups] saving groups_count:', payload.groups_count, 'for age group:', editingId)
-      const { data: updatedRow, error } = await supabase
-        .from('age_groups').update(payload).eq('id', editingId)
-        .select('id, groups_count, playoff_depth, bracket_seeding').single()
-      console.log('[AgeGroups] update returned:', updatedRow, 'error:', error)
+      const { error } = await supabase.from('age_groups').update(payload).eq('id', editingId)
       if (error) { toast(t('common.error'), 'error'); return }
 
       if (isGroupKnockout) {
-        const { data: stages, error: stFetchErr } = await supabase
-          .from('stages').select('id').eq('age_group_id', editingId)
-        console.log('[AgeGroups] stages found:', stages?.length, stFetchErr)
-        if (stages?.length) {
-          const stageIds = stages.map(s => s.id)
-          const { data: fxList } = await supabase
-            .from('fixtures').select('id').in('stage_id', stageIds)
-          console.log('[AgeGroups] fixtures found:', fxList?.length)
-          if (fxList?.length) {
-            const { error: rrErr } = await supabase.from('fixture_results').delete()
-              .in('fixture_id', fxList.map(f => f.id))
-            console.log('[AgeGroups] results delete error:', rrErr)
-            const { error: fxErr } = await supabase.from('fixtures').delete().in('stage_id', stageIds)
-            console.log('[AgeGroups] fixtures delete error:', fxErr)
-          }
-          const { error: stErr } = await supabase.from('stages').delete().in('id', stageIds)
-          console.log('[AgeGroups] stages delete error:', stErr)
-        }
+        // stages → fixtures → fixture_results all cascade on delete
+        await supabase.from('stages').delete().eq('age_group_id', editingId)
         toast(t('ageGroup.savedAndCleared'))
       } else {
         toast(t('common.saved'))

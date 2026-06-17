@@ -54,7 +54,6 @@ export default function Fixtures() {
         ?? Math.max(2, Math.ceil(teams.length / (ageGroup.teams_per_group ?? 4)))
       const teamsAdvancing = ageGroup.teams_advancing ?? 2
       const bracketSeeding = ageGroup.bracket_seeding ?? 'cross'
-      console.log('[Fixtures] generate: ageGroup.groups_count=', ageGroup.groups_count, '→ using groupsCount=', groupsCount, 'teamsAdvancing=', teamsAdvancing)
 
       const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stages.length + 1 }).select().single()
       if (gsError) { toast(t('common.error'), 'error'); setGenerating(false); return }
