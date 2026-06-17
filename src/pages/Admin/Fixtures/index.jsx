@@ -49,14 +49,16 @@ export default function Fixtures() {
     setGenerating(true)
 
     if (ageGroup.format === 'group_knockout') {
-      const teamsPerGroup = ageGroup.teams_per_group ?? 4
-      const groupsCount = Math.max(2, Math.ceil(teams.length / teamsPerGroup))
+      // Use groups_count set by organiser; fall back to derivation from teams_per_group for legacy age groups
+      const groupsCount = ageGroup.groups_count
+        ?? Math.max(2, Math.ceil(teams.length / (ageGroup.teams_per_group ?? 4)))
       const teamsAdvancing = ageGroup.teams_advancing ?? 2
+      const bracketSeeding = ageGroup.bracket_seeding ?? 'cross'
 
       const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stages.length + 1 }).select().single()
       if (gsError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
-      const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing)
+      const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing, null, bracketSeeding)
       const groupRows = groupFixtures.map(f => ({ stage_id: groupStage.id, home_team_id: f.homeTeamId, away_team_id: f.awayTeamId, round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled' }))
       const { error: gfError } = await supabase.from('fixtures').insert(groupRows)
       if (gfError) { toast(t('common.error'), 'error'); setGenerating(false); return }

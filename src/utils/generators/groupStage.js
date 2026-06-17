@@ -27,7 +27,7 @@ import { generateMultiTierKnockout } from './multiTierKnockout'
  *  - < 4 teams → falls back to single round-robin group
  *  - Uneven split → extra teams go to earlier groups (groups[0] gets the remainder)
  */
-export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, tiersConfig = null) {
+export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, tiersConfig = null, bracketSeeding = 'cross') {
   if (!teams || teams.length < 2) return { groups: [], allFixtures: [], groupFixtures: [], knockoutFixtures: [] }
 
   // Clamp group count to a sensible value
@@ -81,7 +81,7 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, t
         groups: groups.map(g => ({ groupLabel: g.name, teams: g.teams })),
         tiersConfig,
       })
-    : generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams)
+    : generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams, bracketSeeding)
 
   // Shift every playoff fixture's round number past the last group round.
   const knockoutFixtures = rawKnockoutFixtures.map(f => ({
@@ -108,36 +108,48 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, t
  * number as the Final so the scheduler assigns it to a free pitch at Final
  * time (parallel if pitches allow, before the Final if only one pitch).
  */
-function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams) {
+/**
+ * Builds ordered round-1 placeholder slots based on seeding type:
+ *  cross  – position-first [A-1, B-1, A-2, B-2] → A-1 faces lowest seed (best vs worst)
+ *  mirror – group-first   [A-1, A-2, B-1, B-2] → same-group teams meet in round 1
+ *  ranked – overall rank  [Rank 1, Rank 2, ...]  → filled by overall standings at advance time
+ */
+function buildPlaceholders(groupsCount, teamsAdvancing, bracketSeeding) {
+  const placeholders = []
+  if (bracketSeeding === 'mirror') {
+    for (let g = 0; g < groupsCount; g++)
+      for (let pos = 1; pos <= teamsAdvancing; pos++)
+        placeholders.push(`Group ${String.fromCharCode(65 + g)}-${pos}`)
+  } else if (bracketSeeding === 'ranked') {
+    const total = groupsCount * teamsAdvancing
+    for (let r = 1; r <= total; r++) placeholders.push(`Rank ${r}`)
+  } else {
+    // cross (default)
+    for (let pos = 1; pos <= teamsAdvancing; pos++)
+      for (let g = 0; g < groupsCount; g++)
+        placeholders.push(`Group ${String.fromCharCode(65 + g)}-${pos}`)
+  }
+  return placeholders
+}
+
+function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams, bracketSeeding = 'cross') {
   if (totalPlayoffTeams < 2) return []
 
-  // Build round-1 placeholder codes: ordered by position then group so that
-  // standard seeding pairs 1st-place teams against lowest seeds.
-  // Format: "Group A-1" (group letter + position number).
-  const placeholders = []
-  for (let pos = 1; pos <= teamsAdvancing; pos++) {
-    for (let g = 0; g < groupsCount; g++) {
-      placeholders.push(`Group ${String.fromCharCode(65 + g)}-${pos}`)
-    }
-  }
-
+  const placeholders = buildPlaceholders(groupsCount, teamsAdvancing, bracketSeeding)
   const totalSlots = nextPowerOf2(totalPlayoffTeams)
   while (placeholders.length < totalSlots) placeholders.push(null)
 
   const numRounds = Math.log2(totalSlots)
   const fixtures = []
-
-  // Round 1: pair by group-position codes using standard seeding
   const half = totalSlots / 2
+
+  // Round 1 pairing:
+  //   mirror → sequential (0+1, 2+3 …) so same-group teams meet
+  //   cross/ranked → best-vs-worst (0 vs last, 1 vs second-to-last …)
   for (let i = 0; i < half; i++) {
-    fixtures.push({
-      homeTeamId: null,
-      awayTeamId: null,
-      round: 1,
-      group: null,
-      home_placeholder: placeholders[i],
-      away_placeholder: placeholders[totalSlots - 1 - i],
-    })
+    const homePH = bracketSeeding === 'mirror' ? placeholders[i * 2]     : placeholders[i]
+    const awayPH = bracketSeeding === 'mirror' ? placeholders[i * 2 + 1] : placeholders[totalSlots - 1 - i]
+    fixtures.push({ homeTeamId: null, awayTeamId: null, round: 1, group: null, home_placeholder: homePH, away_placeholder: awayPH })
   }
 
   // Rounds 2 … numRounds: pair winners of the previous round sequentially
@@ -145,29 +157,18 @@ function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffT
     const prevRoundName = getRoundName(totalSlots, r - 1)
     const matchCount = totalSlots / Math.pow(2, r)
 
-    // 3rd place match: pushed before the Final so that with a single pitch it
-    // runs before the Final, and with multiple pitches it runs in parallel.
-    // Only added in the Final round of brackets that have semi-finals (matchCount === 1
-    // is always true when r === numRounds, so this guards on numRounds ≥ 2).
+    // 3rd place match sits at the same round number as the Final
     if (r === numRounds && numRounds >= 2) {
       fixtures.push({
-        homeTeamId: null,
-        awayTeamId: null,
-        round: r,
-        group: null,
-        home_placeholder: 'SF1 Loser',
-        away_placeholder: 'SF2 Loser',
-        round_name: '3rd_place',
-        bracket_label: null,
+        homeTeamId: null, awayTeamId: null, round: r, group: null,
+        home_placeholder: 'SF1 Loser', away_placeholder: 'SF2 Loser',
+        round_name: '3rd_place', bracket_label: null,
       })
     }
 
     for (let i = 0; i < matchCount; i++) {
       fixtures.push({
-        homeTeamId: null,
-        awayTeamId: null,
-        round: r,
-        group: null,
+        homeTeamId: null, awayTeamId: null, round: r, group: null,
         home_placeholder: `${prevRoundName}${2 * i + 1} Winner`,
         away_placeholder: `${prevRoundName}${2 * i + 2} Winner`,
       })

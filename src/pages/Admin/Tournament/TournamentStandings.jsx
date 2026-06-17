@@ -214,14 +214,28 @@ export default function TournamentStandings() {
     setAdvancing(agData.ag.id)
     try {
       const teamsAdvancing = agData.ag.teams_advancing ?? 2
+      const bracketSeeding = agData.ag.bracket_seeding ?? 'cross'
 
-      // Build "Group A-1" → teamId map (matches generateKnockoutPlaceholders format)
       const placeholderMap = {}
-      agData.perGroup.forEach(({ label, rows }) => {
-        rows.slice(0, teamsAdvancing).forEach((row, posIndex) => {
-          placeholderMap[`Group ${label}-${posIndex + 1}`] = row.team.id
+
+      if (bracketSeeding === 'ranked') {
+        // Collect all advancing teams across groups, sort by overall standings
+        const allAdvancing = agData.perGroup.flatMap(({ rows }) => rows.slice(0, teamsAdvancing))
+        allAdvancing.sort((a, b) =>
+          b.points - a.points ||
+          (b.gf - b.ga) - (a.gf - a.ga) ||
+          b.gf - a.gf ||
+          a.team.name.localeCompare(b.team.name)
+        )
+        allAdvancing.forEach((row, i) => { placeholderMap[`Rank ${i + 1}`] = row.team.id })
+      } else {
+        // Cross and mirror both use "Group A-1" placeholder format
+        agData.perGroup.forEach(({ label, rows }) => {
+          rows.slice(0, teamsAdvancing).forEach((row, posIndex) => {
+            placeholderMap[`Group ${label}-${posIndex + 1}`] = row.team.id
+          })
         })
-      })
+      }
 
       for (const f of agData.knockoutFixtures) {
         const homeTeamId = f.home_placeholder ? (placeholderMap[f.home_placeholder] ?? null) : f.home_team_id
