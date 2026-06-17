@@ -15,7 +15,11 @@ export default function AgeGroups() {
   const [loading, setLoading] = useState(true)
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
-  const { register, handleSubmit, reset, setValue, formState: { errors, isSubmitting } } = useForm()
+  const [lockedGroups, setLockedGroups] = useState(false)
+  const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm()
+  const watchedFormat = watch('format')
+  const watchedDepth  = watch('playoff_depth')
+  const watchedGroups = watch('groups_count')
 
   async function load() {
     const [{ data: t_, error: tErr }, { data: ag, error: agErr }] = await Promise.all([
@@ -33,24 +37,42 @@ export default function AgeGroups() {
     load()
   }, [tournamentId, authLoading, user])
 
-  function startEdit(ag) {
-    // Toggle: if already editing this card, close the form
-    if (editingId === ag.id && showForm) {
-      cancelForm()
-      return
-    }
+  async function startEdit(ag) {
+    if (editingId === ag.id && showForm) { cancelForm(); return }
     setEditingId(ag.id)
     setValue('name', ag.name)
     setValue('format', ag.format)
     setValue('max_teams', ag.max_teams ?? '')
+    setValue('groups_count', ag.groups_count ?? 2)
+    setValue('playoff_depth', ag.playoff_depth ?? 'sf')
+    setValue('bracket_seeding', ag.bracket_seeding ?? 'cross')
     setValue('registration_open', ag.registration_open)
     setValue('auto_approve', ag.auto_approve ?? false)
+
+    // Lock groups_count once any group stage game has a result
+    let locked = false
+    if (ag.format === 'group_knockout') {
+      const { data: stages } = await supabase
+        .from('stages').select('id').eq('age_group_id', ag.id).eq('type', 'group_stage')
+      if (stages?.length) {
+        const { data: fxData } = await supabase
+          .from('fixtures').select('id').in('stage_id', stages.map(s => s.id))
+        if (fxData?.length) {
+          const { count } = await supabase
+            .from('fixture_results').select('id', { count: 'exact', head: true })
+            .in('fixture_id', fxData.map(f => f.id))
+          locked = (count ?? 0) > 0
+        }
+      }
+    }
+    setLockedGroups(locked)
     setShowForm(true)
   }
 
   function cancelForm() {
     setShowForm(false)
     setEditingId(null)
+    setLockedGroups(false)
     reset()
   }
 
@@ -60,7 +82,20 @@ export default function AgeGroups() {
     setShowForm(true)
   }
 
+  const PLAYOFF_SLOTS = { final: 2, sf: 4, qf: 8, r16: 16 }
+
   async function onSubmit(values) {
+    const isGroupKnockout = values.format === 'group_knockout'
+    const groupsCount = isGroupKnockout ? Number(values.groups_count ?? 2) : null
+    const playoffDepth = isGroupKnockout ? (values.playoff_depth ?? 'sf') : null
+    const slots = isGroupKnockout ? (PLAYOFF_SLOTS[playoffDepth] ?? 4) : null
+    const teamsAdvancing = isGroupKnockout ? slots / groupsCount : null
+
+    if (isGroupKnockout && !Number.isInteger(teamsAdvancing)) {
+      toast(t('ageGroup.advancingMismatch'), 'error')
+      return
+    }
+
     const payload = {
       name: values.name,
       format: values.format,
@@ -68,6 +103,10 @@ export default function AgeGroups() {
       max_teams: values.max_teams ? Number(values.max_teams) : null,
       registration_open: !!values.registration_open,
       auto_approve: !!values.auto_approve,
+      groups_count: groupsCount,
+      playoff_depth: playoffDepth,
+      bracket_seeding: isGroupKnockout ? (values.bracket_seeding ?? 'cross') : null,
+      teams_advancing: teamsAdvancing,
     }
 
     if (editingId) {
@@ -128,7 +167,10 @@ export default function AgeGroups() {
               handleSubmit={handleSubmit}
               errors={errors}
               isSubmitting={isSubmitting}
-
+              watchedFormat={watchedFormat}
+              watchedDepth={watchedDepth}
+              watchedGroups={watchedGroups}
+              locked={false}
               onSubmit={onSubmit}
               onCancel={cancelForm}
               t={t}
@@ -210,7 +252,10 @@ export default function AgeGroups() {
                       handleSubmit={handleSubmit}
                       errors={errors}
                       isSubmitting={isSubmitting}
-        
+                      watchedFormat={watchedFormat}
+                      watchedDepth={watchedDepth}
+                      watchedGroups={watchedGroups}
+                      locked={lockedGroups}
                       onSubmit={onSubmit}
                       onCancel={cancelForm}
                       t={t}
@@ -226,7 +271,15 @@ export default function AgeGroups() {
   )
 }
 
-function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, onSubmit, onCancel, t }) {
+const PLAYOFF_SLOTS = { final: 2, sf: 4, qf: 8, r16: 16 }
+
+function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, watchedDepth, watchedGroups, locked, onSubmit, onCancel, t }) {
+  const isGroupKnockout = watchedFormat === 'group_knockout'
+  const slots = PLAYOFF_SLOTS[watchedDepth] ?? 4
+  const groups = Number(watchedGroups) || 2
+  const advancingPerGroup = slots / groups
+  const advancingValid = Number.isInteger(advancingPerGroup) && advancingPerGroup >= 1
+
   return (
     <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(160px, 1fr))', gap: '1rem' }}>
@@ -248,6 +301,59 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, onSubmit, 
           <input type="number" {...register('max_teams')} min="2" />
         </div>
       </div>
+
+      {isGroupKnockout && (
+        <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '1rem', display: 'grid', gap: '1rem' }}>
+          <div style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+            {t('ageGroup.groupKnockoutSettings')}
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(150px, 1fr))', gap: '1rem' }}>
+            <div className="form-group">
+              <label>{t('ageGroup.groupsCount')}</label>
+              <select {...register('groups_count')} disabled={locked}>
+                <option value="2">2</option>
+                <option value="3">3</option>
+                <option value="4">4</option>
+              </select>
+              {locked && (
+                <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginTop: '0.25rem', display: 'block' }}>
+                  {t('ageGroup.configLocked')}
+                </span>
+              )}
+            </div>
+            <div className="form-group">
+              <label>{t('ageGroup.playoffDepth')}</label>
+              <select {...register('playoff_depth')}>
+                <option value="final">{t('ageGroup.playoffDepths.final')}</option>
+                <option value="sf">{t('ageGroup.playoffDepths.sf')}</option>
+                <option value="qf">{t('ageGroup.playoffDepths.qf')}</option>
+                <option value="r16">{t('ageGroup.playoffDepths.r16')}</option>
+              </select>
+            </div>
+            <div className="form-group">
+              <label>{t('ageGroup.bracketSeeding')}</label>
+              <select {...register('bracket_seeding')}>
+                <option value="cross">{t('ageGroup.bracketSeedings.cross')}</option>
+                <option value="mirror">{t('ageGroup.bracketSeedings.mirror')}</option>
+                <option value="ranked">{t('ageGroup.bracketSeedings.ranked')}</option>
+              </select>
+            </div>
+          </div>
+          <div style={{
+            padding: '0.6rem 0.75rem',
+            borderRadius: '6px',
+            background: advancingValid ? 'rgba(46,204,113,0.08)' : 'rgba(231,76,60,0.1)',
+            border: `1px solid ${advancingValid ? 'rgba(46,204,113,0.25)' : 'rgba(231,76,60,0.3)'}`,
+            fontSize: '0.82rem',
+            color: advancingValid ? 'var(--color-success)' : 'var(--color-danger)',
+          }}>
+            {advancingValid
+              ? `${groups} ${t('ageGroup.groupsCount').toLowerCase()} × ${advancingPerGroup} ${t('ageGroup.advancingPerGroup')} = ${slots} ${t('ageGroup.playoffSlots')}`
+              : t('ageGroup.advancingMismatch', { groups, slots })}
+          </div>
+        </div>
+      )}
+
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <input type="checkbox" id="reg_open" {...register('registration_open')} />
@@ -259,7 +365,7 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, onSubmit, 
         </div>
       </div>
       <div style={{ display: 'flex', gap: '0.75rem' }}>
-        <button type="submit" className="btn-primary" disabled={isSubmitting}>
+        <button type="submit" className="btn-primary" disabled={isSubmitting || (isGroupKnockout && !advancingValid)}>
           {isSubmitting ? t('common.saving') : t('common.save')}
         </button>
         <button type="button" className="btn-secondary" onClick={onCancel}>

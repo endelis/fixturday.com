@@ -109,7 +109,26 @@
       "round_robin": "Round robin",
       "knockout": "Knockout",
       "group_knockout": "Group + knockout"
-    }
+    },
+    "groupKnockoutSettings": "Group + knockout settings",
+    "groupsCount": "Number of groups",
+    "playoffDepth": "Playoff depth",
+    "playoffDepths": {
+      "final": "Final only (2 teams)",
+      "sf": "Semi-final (4 teams)",
+      "qf": "Quarter-final (8 teams)",
+      "r16": "Round of 16 (16 teams)"
+    },
+    "bracketSeeding": "Bracket seeding",
+    "bracketSeedings": {
+      "cross": "Cross (A1 vs B2, B1 vs A2)",
+      "mirror": "Mirror (A1 vs A2, B1 vs B2)",
+      "ranked": "Ranked (best teams overall)"
+    },
+    "configLocked": "Locked — a match has already been played",
+    "advancingPerGroup": "advancing per group",
+    "playoffSlots": "playoff spots",
+    "advancingMismatch": "{{groups}} groups cannot fill {{slots}} playoff spots evenly — change groups or depth"
   },
   "team": {
     "title": "Teams",
