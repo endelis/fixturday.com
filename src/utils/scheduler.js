@@ -231,14 +231,14 @@ export function generateSchedule({
     }
 
     if (fallbackPitch === null) {
-      warnings.push(`Spēle (fixture ${fixtureId}) nevar tikt ieplānota — nav brīvu laika nišu pirms ${lastGameTime}`);
+      warnings.push(`${fixtureId} cannot be scheduled — no free slots before ${lastGameTime}`);
       continue;
     }
 
     if (homeLastEnd !== null && fallbackKickoff - homeLastEnd < MIN_REST)
-      warnings.push(`Komanda '${homeTeamId}' atpūšas tikai ${fallbackKickoff - homeLastEnd} min starp spēlēm (min. ${MIN_REST} min)`);
+      warnings.push(`${homeTeamId} has only ${fallbackKickoff - homeLastEnd} min rest between games (min. ${MIN_REST} min)`);
     if (awayLastEnd !== null && fallbackKickoff - awayLastEnd < MIN_REST)
-      warnings.push(`Komanda '${awayTeamId}' atpūšas tikai ${fallbackKickoff - awayLastEnd} min starp spēlēm (min. ${MIN_REST} min)`);
+      warnings.push(`${awayTeamId} has only ${fallbackKickoff - awayLastEnd} min rest between games (min. ${MIN_REST} min)`);
 
     const endTime = commitSlot(fixtureId, homeTeamId, awayTeamId, fallbackPitch, fallbackKickoff);
     lastGroupEnd = Math.max(lastGroupEnd, endTime);
@@ -267,7 +267,7 @@ export function generateSchedule({
       if (!slot) continue;
 
       if (slot.kickoff + gameDuration > lastMins) {
-        warnings.push(`Brīdinājums: izslēgšanas spēle beidzas pēc ${lastGameTime}`);
+        warnings.push(`Playoff game ends after ${lastGameTime}`);
       }
 
       commitSlot(fixtureId, homeTeamId, awayTeamId, slot.pitch, slot.kickoff);

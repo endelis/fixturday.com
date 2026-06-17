@@ -235,7 +235,8 @@
     "stageRoundRobin": "Round robin",
     "pitchConflict": "Time conflict on pitch: {{games}}",
     "addTeamsFirst": "Add all teams before generating fixtures. Regenerating will delete existing results.",
-    "regenerateWarning": "{{count}} fixtures already have results entered. Saving a new schedule will overwrite them. Continue?"
+    "regenerateWarning": "{{count}} fixtures already have results entered. Saving a new schedule will overwrite them. Continue?",
+    "playoffStage": "Playoff stage"
   },
   "scheduler": {
     "gameDuration": "Game duration (min.)",
