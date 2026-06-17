@@ -118,21 +118,24 @@ export default function AgeGroups() {
       const { error } = await supabase.from('age_groups').update(payload).eq('id', editingId)
       if (error) { toast(t('common.error'), 'error'); return }
 
-      // group_knockout with existing fixtures: always clear so regeneration uses the new config.
-      // Change-detection is unreliable because groups_count may be null in older age groups.
-      if (hasFixtures && isGroupKnockout) {
-        const { data: stages } = await supabase
+      if (isGroupKnockout) {
+        const { data: stages, error: stFetchErr } = await supabase
           .from('stages').select('id').eq('age_group_id', editingId)
+        console.log('[AgeGroups] stages found:', stages?.length, stFetchErr)
         if (stages?.length) {
           const stageIds = stages.map(s => s.id)
           const { data: fxList } = await supabase
             .from('fixtures').select('id').in('stage_id', stageIds)
+          console.log('[AgeGroups] fixtures found:', fxList?.length)
           if (fxList?.length) {
-            await supabase.from('fixture_results').delete()
+            const { error: rrErr } = await supabase.from('fixture_results').delete()
               .in('fixture_id', fxList.map(f => f.id))
-            await supabase.from('fixtures').delete().in('stage_id', stageIds)
+            console.log('[AgeGroups] results delete error:', rrErr)
+            const { error: fxErr } = await supabase.from('fixtures').delete().in('stage_id', stageIds)
+            console.log('[AgeGroups] fixtures delete error:', fxErr)
           }
-          await supabase.from('stages').delete().in('id', stageIds)
+          const { error: stErr } = await supabase.from('stages').delete().in('id', stageIds)
+          console.log('[AgeGroups] stages delete error:', stErr)
         }
         toast(t('ageGroup.savedAndCleared'))
       } else {
