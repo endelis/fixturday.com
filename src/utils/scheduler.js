@@ -108,6 +108,7 @@ export function generateSchedule({
   pitchGap = 5,
   teamRest = null,
   pitchIds = null,
+  blockedSlots = [],
 }) {
   const firstMins = parseTime(firstGameTime);
   const lastMins  = parseTime(lastGameTime);
@@ -122,6 +123,18 @@ export function generateSchedule({
   const pitchAvailable = Array.from({ length: resolvedPitchCount }, () => firstMins);
   const teamLastEnd = {};
   const schedule = [];
+
+  // Build per-pitch blocked intervals from other age groups' existing fixtures.
+  // Only meaningful when pitchIds is provided (named-pitch mode).
+  const blockedByPitch = {};
+  if (pitchIds) {
+    for (const slot of blockedSlots) {
+      const idx = pitchIds.indexOf(slot.pitchId);
+      if (idx >= 0) {
+        (blockedByPitch[idx] = blockedByPitch[idx] ?? []).push(slot);
+      }
+    }
+  }
   const warnings = [];
 
   // --- Split and order fixtures ---
@@ -162,6 +175,25 @@ export function generateSchedule({
     return candidate;
   }
 
+  /** Advance t forward until it no longer overlaps any blocked interval on this pitch. */
+  function advancePastBlocked(pitchIdx, t) {
+    const blocked = blockedByPitch[pitchIdx];
+    if (!blocked || blocked.length === 0) return t;
+    let current = t;
+    for (let guard = 0; guard < 100; guard++) {
+      let advanced = false;
+      for (const b of blocked) {
+        if (current < b.endMins && current + gameDuration > b.startMins) {
+          current = applyLunch(roundUp5(b.endMins + PITCH_GAP));
+          advanced = true;
+          break;
+        }
+      }
+      if (!advanced) break;
+    }
+    return current;
+  }
+
   /** Find the best pitch slot. strict=true rejects slots that end past lastMins. */
   function findSlot(homeTeamId, awayTeamId, strict) {
     const homeLastEnd = homeTeamId != null ? (teamLastEnd[homeTeamId] ?? null) : null;
@@ -177,7 +209,7 @@ export function generateSchedule({
     let bestKickoff = Infinity;
 
     for (let p = 0; p < resolvedPitchCount; p++) {
-      let candidate = applyLunch(roundUp5(Math.max(pitchAvailable[p], teamEarliest)));
+      let candidate = advancePastBlocked(p, applyLunch(roundUp5(Math.max(pitchAvailable[p], teamEarliest))));
       if (strict && candidate + gameDuration > lastMins) continue;
       if (candidate < bestKickoff) { bestKickoff = candidate; bestPitch = p; }
     }
@@ -219,7 +251,7 @@ export function generateSchedule({
     let fallbackPitch = null, fallbackKickoff = Infinity, bestRest = null;
 
     for (let p = 0; p < resolvedPitchCount; p++) {
-      let candidate = applyLunch(roundUp5(Math.max(pitchAvailable[p], firstMins)));
+      let candidate = advancePastBlocked(p, applyLunch(roundUp5(Math.max(pitchAvailable[p], firstMins))));
       if (candidate + gameDuration > lastMins) continue;
       const worstRest = Math.min(
         homeLastEnd !== null ? candidate - homeLastEnd : Infinity,

@@ -33,6 +33,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   const [saving, setSaving] = useState(false)
   const [availablePitches, setAvailablePitches] = useState([])
   const [selectedPitchIds, setSelectedPitchIds] = useState(new Set())
+  const [allBookings, setAllBookings] = useState([])
 
   // Sync scheduling defaults when ageGroup data arrives
   useEffect(() => {
@@ -69,6 +70,20 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
         )
         setAvailablePitches(flat)
         setSelectedPitchIds(new Set(flat.map(p => p.id)))
+
+        // Fetch already-scheduled fixtures for these pitches from other age groups
+        const ids = flat.map(p => p.id)
+        if (ids.length > 0) {
+          supabase
+            .from('fixtures')
+            .select('kickoff_time, pitch_id, stages!inner(age_group_id)')
+            .in('pitch_id', ids)
+            .not('kickoff_time', 'is', null)
+            .then(({ data: bk }) => {
+              if (cancelled) return
+              setAllBookings((bk ?? []).filter(f => f.stages?.age_group_id !== ageGroup?.id))
+            })
+        }
       })
     return () => { cancelled = true }
   }, [open, ageGroup])
@@ -95,6 +110,15 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     }
     const selectedPitches = availablePitches.filter(p => selectedPitchIds.has(p.id))
     const pitchIds = selectedPitches.length > 0 ? selectedPitches.map(p => p.id) : null
+
+    const blockedSlots = allBookings
+      .filter(b => pitchIds?.includes(b.pitch_id) && b.kickoff_time?.slice(0, 10) === schedDate)
+      .map(b => ({
+        pitchId: b.pitch_id,
+        startMins: parseTimeMinutes(b.kickoff_time.slice(11, 16)),
+        endMins: parseTimeMinutes(b.kickoff_time.slice(11, 16)) + schedGameDuration,
+      }))
+
     const result = generateSchedule({
       fixtures: mapped,
       pitchCount: pitchIds ? pitchIds.length : Number(schedPitches),
@@ -107,6 +131,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
       date: schedDate,
       pitchGap: schedPitchGap,
       teamRest: ageGroup?.team_rest_minutes || null,
+      blockedSlots,
     })
     setSchedResult(result)
   }
@@ -166,6 +191,11 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   }
 
   const skippedCount = schedResult ? fixtures.length - schedResult.schedule.length : 0
+
+  // Cross-age-group pitch conflict detection
+  const crossGroupConflictCount = allBookings.filter(
+    b => selectedPitchIds.has(b.pitch_id) && b.kickoff_time?.slice(0, 10) === schedDate
+  ).length
 
   // Live duration estimate
   function parseTimeMinutes(str) {
@@ -272,6 +302,13 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                 </label>
               ))}
             </div>
+          </div>
+        )}
+
+        {crossGroupConflictCount > 0 && (
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', background: 'rgba(59,130,246,0.08)', border: '1px solid rgba(59,130,246,0.3)', borderRadius: 'var(--radius-sm)', padding: '0.65rem 0.9rem', fontSize: '0.82rem', color: '#7aadff', marginBottom: '1rem' }}>
+            <span style={{ flexShrink: 0, marginTop: '0.05rem' }}>ℹ</span>
+            <span>{t('fixture.pitchConflictCrossGroup', { count: crossGroupConflictCount })}</span>
           </div>
         )}
 
