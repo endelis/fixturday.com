@@ -31,6 +31,7 @@ export default function Register() {
 
   const [tournament, setTournament] = useState(null)
   const [allAgeGroups, setAllAgeGroups] = useState([])
+  const [teamCounts, setTeamCounts] = useState({})
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -76,13 +77,32 @@ export default function Register() {
         .order('name')
       if (agErr) { setLoading(false); return }
 
-      setAllAgeGroups(ag ?? [])
+      const groups = ag ?? []
+      setAllAgeGroups(groups)
+
+      // Count existing teams per age group to enforce max_teams at page load
+      const limitedIds = groups.filter(a => a.max_teams).map(a => a.id)
+      if (limitedIds.length > 0) {
+        const { data: tc } = await supabase
+          .from('teams')
+          .select('age_group_id')
+          .in('age_group_id', limitedIds)
+          .in('status', ['confirmed', 'pending'])
+        if (tc) {
+          const cm = {}
+          tc.forEach(row => { cm[row.age_group_id] = (cm[row.age_group_id] ?? 0) + 1 })
+          setTeamCounts(cm)
+        }
+      }
+
       setLoading(false)
     }
     load()
   }, [slug])
 
-  const openAgeGroups = allAgeGroups.filter(ag => ag.registration_open)
+  const openAgeGroups = allAgeGroups.filter(ag =>
+    ag.registration_open && !(ag.max_teams && (teamCounts[ag.id] ?? 0) >= ag.max_teams)
+  )
 
   const selectedGroup = allAgeGroups.find(ag => ag.id === selectedAgeGroupId)
   const selectedGroupClosed =
@@ -106,6 +126,20 @@ export default function Register() {
     setSubmitError('')
     try {
       const selectedAg = allAgeGroups.find(ag => ag.id === values.age_group_id)
+
+      // Re-check max_teams at submission time to guard against race conditions
+      if (selectedAg?.max_teams) {
+        const { count, error: cntErr } = await supabase
+          .from('teams')
+          .select('id', { count: 'exact', head: true })
+          .eq('age_group_id', values.age_group_id)
+          .in('status', ['confirmed', 'pending'])
+        if (!cntErr && count >= selectedAg.max_teams) {
+          setSubmitError(t('register.groupFull'))
+          return
+        }
+      }
+
       const isAutoApprove = selectedAg?.auto_approve ?? false
 
       if (isAutoApprove) {

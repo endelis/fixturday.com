@@ -48,21 +48,32 @@ export function useRegistrations(tournamentId) {
     const { data: { user } } = await supabase.auth.getUser()
     const now = new Date().toISOString()
 
+    // Fetch registration + age group limit before approving
+    const { data: reg, error: regErr } = await supabase
+      .from('team_registrations')
+      .select('team_name, age_group_id, manager_name, manager_email, manager_phone, age_group:age_groups(max_teams)')
+      .eq('id', id)
+      .single()
+
+    if (regErr) throw regErr
+
+    // Enforce max_teams: count confirmed teams and block if at limit
+    const maxTeams = reg.age_group?.max_teams
+    if (maxTeams) {
+      const { count, error: cntErr } = await supabase
+        .from('teams')
+        .select('id', { count: 'exact', head: true })
+        .eq('age_group_id', reg.age_group_id)
+        .eq('status', 'confirmed')
+      if (!cntErr && count >= maxTeams) throw new Error('MAX_TEAMS_REACHED')
+    }
+
     const { error: updErr } = await supabase
       .from('team_registrations')
       .update({ status: 'approved', reviewed_at: now, reviewed_by: user?.id })
       .eq('id', id)
 
     if (updErr) throw updErr
-
-    // Fetch the registration to get the data needed for team creation
-    const { data: reg, error: regErr } = await supabase
-      .from('team_registrations')
-      .select('team_name, age_group_id, manager_name, manager_email, manager_phone')
-      .eq('id', id)
-      .single()
-
-    if (regErr) throw regErr
 
     const { error: teamErr } = await supabase
       .from('teams')
