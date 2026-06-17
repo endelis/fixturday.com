@@ -5,7 +5,6 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
-import { generateGroupStage } from '../../utils/generators/groupStage'
 
 export default function AgeGroups() {
   const { id: tournamentId } = useParams()
@@ -18,7 +17,6 @@ export default function AgeGroups() {
   const [editingId, setEditingId] = useState(null)
   const [lockedGroups, setLockedGroups] = useState(false)
   const [hasFixtures, setHasFixtures] = useState(false)
-  const [originalSettings, setOriginalSettings] = useState(null)
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm()
   const watchedFormat = watch('format')
   const watchedDepth  = watch('playoff_depth')
@@ -72,11 +70,6 @@ export default function AgeGroups() {
     }
     setLockedGroups(locked)
     setHasFixtures(fixturesExist)
-    setOriginalSettings({
-      groups_count: ag.groups_count ?? 2,
-      playoff_depth: ag.playoff_depth ?? 'sf',
-      bracket_seeding: ag.bracket_seeding ?? 'cross',
-    })
     setShowForm(true)
   }
 
@@ -85,7 +78,6 @@ export default function AgeGroups() {
     setEditingId(null)
     setLockedGroups(false)
     setHasFixtures(false)
-    setOriginalSettings(null)
     reset()
   }
 
@@ -122,18 +114,13 @@ export default function AgeGroups() {
       teams_advancing: teamsAdvancing,
     }
 
-    const groupSettingsChanged = originalSettings && isGroupKnockout && (
-      groupsCount !== (originalSettings.groups_count ?? 2) ||
-      playoffDepth !== (originalSettings.playoff_depth ?? 'sf') ||
-      (values.bracket_seeding ?? 'cross') !== (originalSettings.bracket_seeding ?? 'cross')
-    )
-
     if (editingId) {
       const { error } = await supabase.from('age_groups').update(payload).eq('id', editingId)
       if (error) { toast(t('common.error'), 'error'); return }
 
-      // Group settings changed — clear fixtures so the new config is used on next generation
-      if (hasFixtures && groupSettingsChanged) {
+      // group_knockout with existing fixtures: always clear so regeneration uses the new config.
+      // Change-detection is unreliable because groups_count may be null in older age groups.
+      if (hasFixtures && isGroupKnockout) {
         const { data: stages } = await supabase
           .from('stages').select('id').eq('age_group_id', editingId)
         if (stages?.length) {
