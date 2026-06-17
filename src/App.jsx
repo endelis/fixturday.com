@@ -111,17 +111,13 @@ export default function App() {
           <Route path="/admin/tournaments/:id/print"
             element={<RequireAuth><Print /></RequireAuth>} />
 
-          {/* Age-group-scoped routes */}
-          <Route path="/admin/age-groups/:ageGroupId/teams"
-            element={<RequireAuth><Teams /></RequireAuth>} />
-          <Route path="/admin/age-groups/:ageGroupId/fixtures"
-            element={<RequireAuth><Fixtures /></RequireAuth>} />
-
           {/* Tournament workspace — nested routes with sidebar layout */}
           <Route path="/admin/tournaments/:id" element={<TournamentLayout />}>
             <Route index element={<Navigate to="overview" replace />} />
             <Route path="overview"   element={<TournamentOverview />} />
             <Route path="age-groups" element={<AgeGroups />} />
+            <Route path="age-groups/:ageGroupId/teams"    element={<Teams />} />
+            <Route path="age-groups/:ageGroupId/fixtures" element={<Fixtures />} />
             <Route path="venues"     element={<Venues />} />
             <Route path="stats"      element={<TournamentStats />} />
             <Route path="standings"  element={<TournamentStandings />} />

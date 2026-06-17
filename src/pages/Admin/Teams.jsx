@@ -137,7 +137,7 @@ export default function Teams() {
           ← {ageGroup?.tournaments?.name} / {ageGroup?.name}
         </Link>
         <div style={{ display: 'flex', gap: '0.5rem' }}>
-          <Link to={`/admin/age-groups/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
+          <Link to={`/admin/tournaments/${ageGroup?.tournaments?.id}/age-groups/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
             {t('fixture.title')}
           </Link>
         </div>

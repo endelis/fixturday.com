@@ -242,10 +242,10 @@ export default function AgeGroups() {
                     >
                       {t('ageGroup.edit')}
                     </button>
-                    <Link to={`/admin/age-groups/${ag.id}/teams`} className="btn-secondary btn-sm">
+                    <Link to={`/admin/tournaments/${tournamentId}/age-groups/${ag.id}/teams`} className="btn-secondary btn-sm">
                       {t('team.title')}
                     </Link>
-                    <Link to={`/admin/age-groups/${ag.id}/fixtures`} className="btn-secondary btn-sm">
+                    <Link to={`/admin/tournaments/${tournamentId}/age-groups/${ag.id}/fixtures`} className="btn-secondary btn-sm">
                       {t('fixture.title')}
                     </Link>
                     <button className="btn-danger btn-sm" onClick={() => deleteAgeGroup(ag)}>
@@ -269,7 +269,7 @@ export default function AgeGroups() {
                       watchedGroups={watchedGroups}
                       locked={lockedGroups}
                       hasFixtures={hasFixtures}
-                      fixturesUrl={`/admin/age-groups/${ag.id}/fixtures`}
+                      fixturesUrl={`/admin/tournaments/${tournamentId}/age-groups/${ag.id}/fixtures`}
                       onSubmit={onSubmit}
                       onCancel={cancelForm}
                       t={t}
