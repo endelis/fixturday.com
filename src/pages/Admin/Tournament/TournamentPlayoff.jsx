@@ -4,44 +4,33 @@ import { useTranslation } from 'react-i18next'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 
-const MOBILE_STYLE = `
-  @media (max-width: 767px) {
+const BRACKET_STYLE = `
+  .bracket-scroll::-webkit-scrollbar { display: none; }
+  .bracket-scroll { -ms-overflow-style: none; scrollbar-width: none; }
+
+  @media (max-width: 640px) {
     .bracket-wrapper {
       flex-direction: column !important;
       overflow-x: visible !important;
-      gap: 1.25rem !important;
+      gap: 1.5rem !important;
     }
     .bracket-round {
       min-width: 0 !important;
-      flex: none !important;
       width: 100% !important;
+      flex: none !important;
     }
-    .bracket-round-label {
-      text-align: left !important;
-    }
-    .bracket-match-team span {
-      max-width: none !important;
-    }
+    .bracket-round-label { text-align: left !important; }
   }
 `
 
 const PRINT_STYLE = `
   @media print {
     @page { size: A4 landscape; margin: 10mm 15mm; }
-
-    /* Isolate print content */
     body * { visibility: hidden; }
     .print-content, .print-content * { visibility: visible; }
     .print-content { position: absolute; top: 0; left: 0; width: 100%; }
-
-    /* Hide UI chrome */
-    .no-print,
-    .t-sidebar,
-    .admin-nav,
-    [class*="sidebar"],
-    [class*="nav"] { display: none !important; }
-
-    /* Reset */
+    .no-print, .t-sidebar, .admin-nav,
+    [class*="sidebar"], [class*="nav"] { display: none !important; }
     body {
       font-family: Arial, Helvetica, sans-serif !important;
       font-size: 11pt !important;
@@ -50,44 +39,13 @@ const PRINT_STYLE = `
     }
     h1 { font-size: 16pt !important; color: #000 !important; }
     h2 { font-size: 13pt !important; color: #000 !important; }
-
-    /* Bracket print layout */
-    .bracket-wrapper {
-      display: flex !important;
-      overflow: visible !important;
-      transform-origin: top left;
-    }
-    .bracket-round {
-      min-width: 0 !important;
-      flex: 1 !important;
-    }
-    .bracket-match {
-      background: #fff !important;
-      border: 1px solid #aaa !important;
-      color: #000 !important;
-      page-break-inside: avoid;
-      margin-bottom: 6pt;
-    }
-    .bracket-match-team {
-      color: #000 !important;
-      border-bottom: 0.5pt solid #ddd !important;
-      padding: 3pt 5pt !important;
-      font-size: 9pt !important;
-    }
-    .bracket-match-team:last-child { border-bottom: none !important; }
-    .bracket-match-score {
-      color: #000 !important;
-      font-weight: bold;
-    }
-    .bracket-round-label {
-      color: #555 !important;
-      font-size: 8pt !important;
-      font-weight: bold;
-      text-transform: uppercase;
-    }
-
+    .bracket-wrapper { display: flex !important; overflow: visible !important; transform-origin: top left; }
+    .bracket-round { min-width: 0 !important; flex: 1 !important; }
+    .bracket-match { background: #fff !important; border: 1px solid #aaa !important; page-break-inside: avoid; margin-bottom: 6pt; box-shadow: none !important; }
+    .bracket-team-row { color: #000 !important; padding: 3pt 5pt !important; font-size: 9pt !important; border-bottom: 0.5pt solid #ddd !important; background: #fff !important; }
+    .bracket-team-row:last-child { border-bottom: none !important; }
+    .bracket-round-label { color: #555 !important; font-size: 8pt !important; font-weight: bold; border: none !important; background: transparent !important; }
     .print-age-group + .print-age-group { page-break-before: always; }
-
     svg { display: none !important; }
   }
 `
@@ -102,7 +60,6 @@ export default function TournamentPlayoff() {
 
   useEffect(() => {
     async function load() {
-      // Fetch all age groups for this tournament
       const { data: ageGroups, error: agError } = await supabase
         .from('age_groups')
         .select('id, name')
@@ -115,7 +72,6 @@ export default function TournamentPlayoff() {
       const brackets = []
 
       for (const ag of ageGroups) {
-        // Fetch knockout fixtures for this age group via stages join
         const { data: fixtures, error: fixError } = await supabase
           .from('fixtures')
           .select(`
@@ -130,19 +86,13 @@ export default function TournamentPlayoff() {
 
         if (fixError || !fixtures || fixtures.length === 0) continue
 
-        // Fetch fixture_results separately (embedded joins can silently drop results)
         const fixIds = fixtures.map(f => f.id)
         const { data: results } = fixIds.length > 0
           ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fixIds)
           : { data: [] }
         const resultMap = Object.fromEntries((results ?? []).map(r => [r.fixture_id, r]))
-        const fixturesWithResults = fixtures.map(f => ({
-          ...f,
-          result: resultMap[f.id] ?? null,
-        }))
+        const fixturesWithResults = fixtures.map(f => ({ ...f, result: resultMap[f.id] ?? null }))
 
-        // Group into virtual rounds — 3rd-place and Final share a round number
-        // but must display as separate columns in the bracket
         const vMap = new Map()
         for (const fix of fixturesWithResults) {
           const round = fix.round ?? 0
@@ -173,7 +123,7 @@ export default function TournamentPlayoff() {
                 : n === 4 ? t('playoff.quarterFinal')
                 : `${t('fixture.round')} ${round}`
             }
-            return { roundNum: round, roundName, matches }
+            return { roundNum: round, roundName, matches, is3rd }
           })
 
         if (rounds.length > 0) {
@@ -194,17 +144,14 @@ export default function TournamentPlayoff() {
 
   return (
     <>
-      <style>{MOBILE_STYLE}</style>
+      <style>{BRACKET_STYLE}</style>
       <style>{PRINT_STYLE}</style>
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '1100px' }}>
         <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>
             {t('workspace.navPlayoff')}
           </h1>
-          <button
-            className="btn-secondary btn-sm"
-            onClick={() => window.print()}
-          >
+          <button className="btn-secondary btn-sm" onClick={() => window.print()}>
             🖨 {t('standings.print')}
           </button>
         </div>
@@ -222,105 +169,170 @@ export default function TournamentPlayoff() {
         <div className="print-content">
           {ageGroupBrackets.map(({ ageGroup, rounds }) => (
             <div key={ageGroup.id} className="print-age-group" style={{ marginBottom: '3rem' }}>
-              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
+              <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'var(--color-accent)', marginBottom: '1.25rem' }}>
                 {ageGroup.name}
               </h2>
 
-              {/* Horizontal bracket — one column per round */}
               <div
-                className="bracket-wrapper"
-                style={{ display: 'flex', gap: '1.5rem', overflowX: 'auto', paddingBottom: '0.5rem', alignItems: 'flex-start' }}
+                className="bracket-wrapper bracket-scroll"
+                style={{ display: 'flex', gap: '1rem', overflowX: 'auto', paddingBottom: '0.5rem', alignItems: 'flex-start' }}
               >
-                {rounds.map(({ roundNum, roundName, matches }) => (
-                  <div
-                    key={roundNum}
-                    className="bracket-round"
-                    style={{ minWidth: '180px', flex: '0 0 180px' }}
-                  >
+                {rounds.map(({ roundNum, roundName, matches, is3rd }) => {
+                  const isFinal = !is3rd && matches.length === 1 && roundName === t('playoff.final')
+
+                  const decodePlaceholder = (p) => {
+                    if (!p) return '?'
+                    const m = p.match(/^Group ([A-Z])-(\d+)$/) ?? p.match(/^G(\d+)P(\d+)$/)
+                    if (m) return t('standings.groupPlaceholder', { group: m[1], pos: m[2] })
+                    return p.replace('uzvarētājs', 'Winner').replace('zaudētājs', 'Loser')
+                  }
+
+                  return (
                     <div
-                      className="bracket-round-label"
-                      style={{
-                        fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase',
-                        letterSpacing: '0.06em', color: 'var(--color-text-muted)',
-                        marginBottom: '0.75rem', textAlign: 'center',
-                      }}
+                      key={`${roundNum}:${is3rd}`}
+                      className="bracket-round"
+                      style={{ minWidth: isFinal ? '210px' : '190px', flex: `0 0 ${isFinal ? '210px' : '190px'}` }}
                     >
-                      {roundName}
-                    </div>
+                      {/* Round label */}
+                      <div
+                        className="bracket-round-label"
+                        style={{
+                          textAlign: 'center',
+                          marginBottom: '0.75rem',
+                          padding: '0.3rem 0.6rem',
+                          borderRadius: 'var(--radius-sm)',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          textTransform: 'uppercase',
+                          letterSpacing: '0.08em',
+                          background: isFinal ? 'rgba(240,165,0,0.12)' : is3rd ? 'rgba(255,255,255,0.04)' : 'transparent',
+                          color: isFinal ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                          border: isFinal ? '1px solid rgba(240,165,0,0.25)' : '1px solid transparent',
+                        }}
+                      >
+                        {isFinal ? '🏆 ' : is3rd ? '🥉 ' : ''}{roundName}
+                      </div>
 
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.75rem' }}>
-                      {matches.map((match) => {
-                        const decodePlaceholder = (p) => {
-                          if (!p) return '?'
-                          const m = p.match(/^Group ([A-Z])-(\d+)$/) ?? p.match(/^G(\d+)P(\d+)$/)
-                          if (m) return t('standings.groupPlaceholder', { group: m[1], pos: m[2] })
-                          return p.replace('uzvarētājs', 'Winner').replace('zaudētājs', 'Loser')
-                        }
-                        const homeTeam = match.home_team?.name ?? decodePlaceholder(match.home_placeholder)
-                        const awayTeam = match.away_team?.name ?? decodePlaceholder(match.away_placeholder)
-                        const result = match.result ?? null
-                        const hasResult = result != null
-                        const homeGoals = hasResult ? result.home_goals : null
-                        const awayGoals = hasResult ? result.away_goals : null
-                        const homeWon = hasResult && homeGoals > awayGoals
-                        const awayWon = hasResult && awayGoals > homeGoals
+                      {/* Match cards */}
+                      <div style={{ display: 'flex', flexDirection: 'column', gap: '0.65rem' }}>
+                        {matches.map((match) => {
+                          const homeTeam = match.home_team?.name ?? decodePlaceholder(match.home_placeholder)
+                          const awayTeam = match.away_team?.name ?? decodePlaceholder(match.away_placeholder)
+                          const homeIsReal = !!match.home_team?.name
+                          const awayIsReal = !!match.away_team?.name
+                          const result = match.result ?? null
+                          const hasResult = result != null
+                          const homeGoals = hasResult ? result.home_goals : null
+                          const awayGoals = hasResult ? result.away_goals : null
+                          const homeWon = hasResult && homeGoals > awayGoals
+                          const awayWon = hasResult && awayGoals > homeGoals
 
-                        return (
-                          <div
-                            key={match.id}
-                            className="bracket-match card"
-                            style={{ padding: '0.65rem 0.75rem', fontSize: '0.85rem' }}
-                          >
+                          return (
                             <div
-                              className="bracket-match-team"
+                              key={match.id}
+                              className="bracket-match"
                               style={{
-                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                marginBottom: '0.35rem',
-                                fontWeight: homeWon ? 700 : 400,
-                                color: homeWon ? 'var(--color-accent)' : 'var(--color-text)',
+                                borderRadius: 'var(--radius)',
+                                overflow: 'hidden',
+                                border: isFinal
+                                  ? '1px solid rgba(240,165,0,0.45)'
+                                  : '1px solid var(--color-border)',
+                                boxShadow: isFinal
+                                  ? '0 0 28px rgba(240,165,0,0.12)'
+                                  : 'none',
                               }}
                             >
-                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
-                                {homeTeam}
-                              </span>
-                              {hasResult && (
-                                <span className="bracket-match-score" style={{ fontWeight: 700, minWidth: '1.5rem', textAlign: 'right' }}>
-                                  {homeGoals}
+                              {/* Home row */}
+                              <div
+                                className="bracket-team-row"
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '0.55rem 0.75rem',
+                                  background: homeWon
+                                    ? 'rgba(240,165,0,0.1)'
+                                    : 'var(--color-surface)',
+                                  borderBottom: '1px solid var(--color-border)',
+                                  gap: '0.5rem',
+                                }}
+                              >
+                                <span style={{
+                                  fontWeight: homeWon ? 700 : 400,
+                                  color: homeWon
+                                    ? 'var(--color-accent)'
+                                    : homeIsReal ? 'var(--color-text)' : 'var(--color-text-muted)',
+                                  fontStyle: homeIsReal ? 'normal' : 'italic',
+                                  fontSize: '0.85rem',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}>
+                                  {homeTeam}
                                 </span>
-                              )}
-                            </div>
+                                {hasResult && (
+                                  <span style={{
+                                    fontWeight: 700,
+                                    fontSize: '0.95rem',
+                                    color: homeWon ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                    minWidth: '1.25rem',
+                                    textAlign: 'right',
+                                    flexShrink: 0,
+                                  }}>
+                                    {homeGoals}
+                                  </span>
+                                )}
+                              </div>
 
-                            <div style={{
-                              display: 'flex', justifyContent: 'center', alignItems: 'center',
-                              fontSize: '0.7rem', color: 'var(--color-text-muted)',
-                              marginBottom: '0.35rem',
-                            }}>
-                              {hasResult ? ':' : t('fixture.vs')}
-                            </div>
-
-                            <div
-                              className="bracket-match-team"
-                              style={{
-                                display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                                fontWeight: awayWon ? 700 : 400,
-                                color: awayWon ? 'var(--color-accent)' : 'var(--color-text)',
-                              }}
-                            >
-                              <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '140px' }}>
-                                {awayTeam}
-                              </span>
-                              {hasResult && (
-                                <span className="bracket-match-score" style={{ fontWeight: 700, minWidth: '1.5rem', textAlign: 'right' }}>
-                                  {awayGoals}
+                              {/* Away row */}
+                              <div
+                                className="bracket-team-row"
+                                style={{
+                                  display: 'flex',
+                                  justifyContent: 'space-between',
+                                  alignItems: 'center',
+                                  padding: '0.55rem 0.75rem',
+                                  background: awayWon
+                                    ? 'rgba(240,165,0,0.1)'
+                                    : 'var(--color-surface-2)',
+                                  gap: '0.5rem',
+                                }}
+                              >
+                                <span style={{
+                                  fontWeight: awayWon ? 700 : 400,
+                                  color: awayWon
+                                    ? 'var(--color-accent)'
+                                    : awayIsReal ? 'var(--color-text)' : 'var(--color-text-muted)',
+                                  fontStyle: awayIsReal ? 'normal' : 'italic',
+                                  fontSize: '0.85rem',
+                                  overflow: 'hidden',
+                                  textOverflow: 'ellipsis',
+                                  whiteSpace: 'nowrap',
+                                  flex: 1,
+                                }}>
+                                  {awayTeam}
                                 </span>
-                              )}
+                                {hasResult && (
+                                  <span style={{
+                                    fontWeight: 700,
+                                    fontSize: '0.95rem',
+                                    color: awayWon ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                                    minWidth: '1.25rem',
+                                    textAlign: 'right',
+                                    flexShrink: 0,
+                                  }}>
+                                    {awayGoals}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                        )
-                      })}
+                          )
+                        })}
+                      </div>
                     </div>
-                  </div>
-                ))}
+                  )
+                })}
               </div>
             </div>
           ))}

@@ -130,6 +130,12 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                     {item.label}
                   </Link>
                 ))}
+                <Link to="/admin/register" style={startFreeBtnStyle}
+                  onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-accent-hover)' }}
+                  onMouseLeave={e => { e.currentTarget.style.background = 'var(--color-accent)' }}
+                >
+                  {t('nav.start')}
+                </Link>
                 <Link to="/admin" style={loginBtnStyle}
                   onMouseEnter={e => { e.currentTarget.style.background = 'var(--color-accent)'; e.currentTarget.style.color = '#0a0f1e' }}
                   onMouseLeave={e => { e.currentTarget.style.background = 'transparent'; e.currentTarget.style.color = 'var(--color-accent)' }}
@@ -277,7 +283,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           ))}
 
           <Link
-            to="/admin"
+            to="/admin/register"
             onClick={closeDrawer}
             style={{
               marginTop: '1.25rem',
@@ -294,6 +300,28 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               padding: '0.875rem 1rem',
               textDecoration: 'none',
               textTransform: 'uppercase',
+            }}
+          >
+            {t('nav.start')}
+          </Link>
+          <Link
+            to="/admin"
+            onClick={closeDrawer}
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              border: '1px solid rgba(240,165,0,0.35)',
+              color: 'var(--color-accent)',
+              fontFamily: 'var(--font-heading)',
+              fontWeight: 600,
+              fontSize: '0.9rem',
+              letterSpacing: '0.03em',
+              borderRadius: 'var(--radius)',
+              padding: '0.75rem 1rem',
+              textDecoration: 'none',
+              textTransform: 'uppercase',
+              marginTop: '0.5rem',
             }}
           >
             {t('nav.login')}
@@ -344,6 +372,22 @@ const desktopNavLink = {
   padding: '0.3rem 0.6rem',
   borderRadius: 'var(--radius-sm)',
   transition: 'color var(--transition-fast)',
+}
+
+const startFreeBtnStyle = {
+  marginLeft: '0.5rem',
+  background: 'var(--color-accent)',
+  color: '#0a0f1e',
+  borderRadius: 'var(--radius-sm)',
+  padding: '0.35rem 0.875rem',
+  fontSize: '0.875rem',
+  fontWeight: 700,
+  fontFamily: 'var(--font-heading)',
+  letterSpacing: '0.03em',
+  textDecoration: 'none',
+  whiteSpace: 'nowrap',
+  transition: 'background var(--transition-fast)',
+  textTransform: 'uppercase',
 }
 
 const loginBtnStyle = {

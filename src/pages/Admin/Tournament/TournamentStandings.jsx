@@ -52,9 +52,14 @@ const PRINT_STYLE = `
     thead { display: table-header-group; }
 
     .print-age-group + .print-age-group { page-break-before: always; }
+    .ag-tab-hidden { display: block !important; }
 
     svg { display: none !important; }
   }
+`
+
+const AG_TAB_STYLE = `
+  .ag-tab-hidden { display: none; }
 `
 
 const STANDINGS_MOBILE_STYLE = `
@@ -137,6 +142,7 @@ export default function TournamentStandings() {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [ageGroupData, setAgeGroupData] = useState([])
+  const [selectedAgId, setSelectedAgId] = useState(null)
   const [error, setError] = useState(null)
   const [advancing, setAdvancing] = useState(null)
 
@@ -258,8 +264,11 @@ export default function TournamentStandings() {
   if (authLoading || loading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
 
+  const activeAgId = selectedAgId ?? ageGroupData[0]?.ag.id
+
   return (
     <>
+      <style>{AG_TAB_STYLE}</style>
       <style>{STANDINGS_MOBILE_STYLE}</style>
       <style>{PRINT_STYLE}</style>
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '900px' }}>
@@ -271,6 +280,35 @@ export default function TournamentStandings() {
             🖨 {t('standings.print')}
           </button>
         </div>
+
+        {ageGroupData.length > 1 && (
+          <div className="no-print" style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', marginBottom: '1.5rem' }}>
+            {ageGroupData.map(agData => {
+              const isActive = activeAgId === agData.ag.id
+              return (
+                <button
+                  key={agData.ag.id}
+                  onClick={() => setSelectedAgId(agData.ag.id)}
+                  style={{
+                    padding: '0.35rem 0.875rem',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.875rem',
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 600,
+                    letterSpacing: '0.03em',
+                    cursor: 'pointer',
+                    background: isActive ? 'var(--color-accent)' : 'transparent',
+                    color: isActive ? '#0a0f1e' : 'var(--color-text-muted)',
+                    border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    transition: 'all var(--transition-fast)',
+                  }}
+                >
+                  {agData.ag.name}
+                </button>
+              )
+            })}
+          </div>
+        )}
 
         {error && (
           <div className="no-print" style={{ color: 'var(--color-danger)', marginBottom: '1rem' }}>
@@ -284,7 +322,11 @@ export default function TournamentStandings() {
 
         <div className="print-content">
           {ageGroupData.map(agData => (
-            <div key={agData.ag.id} className="print-age-group" style={{ marginBottom: '2.5rem' }}>
+            <div
+              key={agData.ag.id}
+              className={`print-age-group${activeAgId !== agData.ag.id ? ' ag-tab-hidden' : ''}`}
+              style={{ marginBottom: '2.5rem' }}
+            >
               <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
                 {agData.ag.name}
               </h2>

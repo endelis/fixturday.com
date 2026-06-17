@@ -267,9 +267,30 @@ export default function Register() {
 
         {openAgeGroups.length === 0 ? (
           <div>
-            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1rem' }}>
+            <p style={{ color: 'var(--color-text-muted)', marginBottom: '1.5rem' }}>
               {t('register.closed')}
             </p>
+            {(tournament.contact_email || tournament.contact_phone) && (
+              <div style={{ background: 'var(--color-surface)', border: '1px solid var(--color-border)', borderRadius: 'var(--radius)', padding: '1rem 1.25rem', marginBottom: '1.5rem' }}>
+                <p style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)', marginBottom: '0.6rem', textTransform: 'uppercase', letterSpacing: '0.05em', fontWeight: 600 }}>
+                  {t('register.contactOrganiser')}
+                </p>
+                {tournament.contact_email && (
+                  <p style={{ marginBottom: '0.3rem' }}>
+                    <a href={`mailto:${tournament.contact_email}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
+                      {tournament.contact_email}
+                    </a>
+                  </p>
+                )}
+                {tournament.contact_phone && (
+                  <p>
+                    <a href={`tel:${tournament.contact_phone}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
+                      {tournament.contact_phone}
+                    </a>
+                  </p>
+                )}
+              </div>
+            )}
             <Link to={`/t/${slug}`} className="btn-secondary">
               {t('register.backToTournament')}
             </Link>
