@@ -279,8 +279,9 @@ export default function Standings() {
         <div style={{ position: 'sticky', top: 0, background: 'var(--color-bg)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
           <ClassFilter
             tournamentId={tournament.id}
-            value={selectedAgeGroupId}
+            value={selectedAgeGroupId ?? ageGroupId}
             onChange={handleFilterChange}
+            showAll={false}
           />
         </div>
 

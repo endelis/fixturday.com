@@ -16,6 +16,7 @@ export default function AgeGroups() {
   const [showForm, setShowForm] = useState(false)
   const [editingId, setEditingId] = useState(null)
   const [lockedGroups, setLockedGroups] = useState(false)
+  const [hasFixtures, setHasFixtures] = useState(false)
   const { register, handleSubmit, reset, setValue, watch, formState: { errors, isSubmitting } } = useForm()
   const watchedFormat = watch('format')
   const watchedDepth  = watch('playoff_depth')
@@ -51,6 +52,7 @@ export default function AgeGroups() {
 
     // Lock groups_count once any group stage game has a result
     let locked = false
+    let fixturesExist = false
     if (ag.format === 'group_knockout') {
       const { data: stages } = await supabase
         .from('stages').select('id').eq('age_group_id', ag.id).eq('type', 'group_stage')
@@ -58,6 +60,7 @@ export default function AgeGroups() {
         const { data: fxData } = await supabase
           .from('fixtures').select('id').in('stage_id', stages.map(s => s.id))
         if (fxData?.length) {
+          fixturesExist = true
           const { count } = await supabase
             .from('fixture_results').select('id', { count: 'exact', head: true })
             .in('fixture_id', fxData.map(f => f.id))
@@ -66,6 +69,7 @@ export default function AgeGroups() {
       }
     }
     setLockedGroups(locked)
+    setHasFixtures(fixturesExist)
     setShowForm(true)
   }
 
@@ -73,6 +77,7 @@ export default function AgeGroups() {
     setShowForm(false)
     setEditingId(null)
     setLockedGroups(false)
+    setHasFixtures(false)
     reset()
   }
 
@@ -245,7 +250,7 @@ export default function AgeGroups() {
                 {editingId === ag.id && showForm && (
                   <div className="card" style={{ marginTop: '0.5rem', borderTop: '2px solid var(--color-accent)' }}>
                     <h2 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1rem' }}>
-                      {t('common.edit')} — {ag.name}
+                      {t('ageGroup.edit')} — {ag.name}
                     </h2>
                     <AgeGroupForm
                       register={register}
@@ -256,6 +261,8 @@ export default function AgeGroups() {
                       watchedDepth={watchedDepth}
                       watchedGroups={watchedGroups}
                       locked={lockedGroups}
+                      hasFixtures={hasFixtures}
+                      fixturesUrl={`/admin/age-groups/${ag.id}/fixtures`}
                       onSubmit={onSubmit}
                       onCancel={cancelForm}
                       t={t}
@@ -273,7 +280,7 @@ export default function AgeGroups() {
 
 const PLAYOFF_SLOTS = { final: 2, sf: 4, qf: 8, r16: 16 }
 
-function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, watchedDepth, watchedGroups, locked, onSubmit, onCancel, t }) {
+function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, watchedDepth, watchedGroups, locked, hasFixtures, fixturesUrl, onSubmit, onCancel, t }) {
   const isGroupKnockout = watchedFormat === 'group_knockout'
   const slots = PLAYOFF_SLOTS[watchedDepth] ?? 4
   const groups = Number(watchedGroups) || 2
@@ -301,6 +308,16 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
           <input type="number" {...register('max_teams')} min="2" />
         </div>
       </div>
+
+      {isGroupKnockout && hasFixtures && (
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', background: 'rgba(240,165,0,0.08)', border: '1px solid rgba(240,165,0,0.3)', borderRadius: '6px', padding: '0.65rem 0.9rem', fontSize: '0.82rem', color: 'var(--color-accent)' }}>
+          <span style={{ flexShrink: 0, marginTop: '0.05rem' }}>⚠</span>
+          <span>
+            {t('ageGroup.fixturesExistWarning')}{' '}
+            <Link to={fixturesUrl} style={{ color: 'var(--color-accent)', fontWeight: 600 }}>→ Fixtures</Link>
+          </span>
+        </div>
+      )}
 
       {isGroupKnockout && (
         <div style={{ background: 'rgba(255,255,255,0.03)', border: '1px solid rgba(255,255,255,0.08)', borderRadius: '8px', padding: '1rem', display: 'grid', gap: '1rem' }}>

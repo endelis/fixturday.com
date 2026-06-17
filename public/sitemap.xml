@@ -92,40 +92,76 @@
 
   <!-- BEGIN:dynamic -->
   <url>
+    <loc>https://www.fixturday.com/blog/how-to-estimate-tournament-duration</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/blog/how-to-limit-tournament-registration</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/blog/how-to-choose-tournament-playoff-depth</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/blog/tournament-bracket-seeding-explained</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/blog/how-to-configure-group-stage-brackets</loc>
+    <lastmod>2026-06-17</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.75</priority>
+  </url>
+  <url>
     <loc>https://www.fixturday.com/blog/five-a-side-tournament-guide</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.fixturday.com/blog/how-to-make-a-football-tournament-schedule</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.fixturday.com/blog/how-to-organize-a-school-football-tournament</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.fixturday.com/blog/how-to-organize-a-sports-tournament</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.fixturday.com/blog/knockout-vs-round-robin</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
   </url>
   <url>
     <loc>https://www.fixturday.com/blog/round-robin-tournament-format</loc>
-    <lastmod>2026-06-13</lastmod>
+    <lastmod>2026-06-17</lastmod>
     <changefreq>monthly</changefreq>
     <priority>0.75</priority>
+  </url>
+  <url>
+    <loc>https://www.fixturday.com/t/malpils-zemenu-svetku-futbola-turnirs-2026</loc>
+    <lastmod>2026-07-11</lastmod>
+    <changefreq>daily</changefreq>
+    <priority>0.85</priority>
   </url>
   <url>
     <loc>https://www.fixturday.com/t/siguldas-novada-skolu-futbola-kauss-2026</loc>

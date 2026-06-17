@@ -159,6 +159,28 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
 
   const skippedCount = schedResult ? fixtures.length - schedResult.schedule.length : 0
 
+  // Live duration estimate
+  function parseTimeMinutes(str) {
+    const parts = (str || '').split(':').map(Number)
+    return parts.length === 2 && !parts.some(isNaN) ? parts[0] * 60 + parts[1] : 0
+  }
+  const activePitchCount = Math.max(
+    availablePitches.length > 0 ? selectedPitchIds.size : Number(schedPitches) || 1,
+    1
+  )
+  const slotsNeeded = fixtures.length > 0 ? Math.ceil(fixtures.length / activePitchCount) : 0
+  const lunchMinutes = schedLunchEnabled && schedLunchStart && schedLunchEnd
+    ? Math.max(0, parseTimeMinutes(schedLunchEnd) - parseTimeMinutes(schedLunchStart))
+    : 0
+  const totalMinutes = slotsNeeded * schedGameDuration
+    + (slotsNeeded > 1 ? (slotsNeeded - 1) * schedPitchGap : 0)
+    + lunchMinutes
+  const estHours = Math.floor(totalMinutes / 60)
+  const estMins = totalMinutes % 60
+  const estimatedStr = totalMinutes > 0
+    ? (estHours > 0 ? `${estHours}h ${estMins}min` : `${estMins}min`)
+    : '—'
+
   const inputStyle = { background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }
 
   return (
@@ -248,6 +270,15 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
             </div>
           </div>
         )}
+
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', background: 'rgba(240,165,0,0.08)', border: '1px solid rgba(240,165,0,0.25)', borderRadius: 'var(--radius-sm)', padding: '0.6rem 1rem', marginBottom: '1.25rem' }}>
+          <span style={{ fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            {t('scheduler.estimatedDuration')} · {fixtures.length} {t('scheduler.fixtures')} · {activePitchCount} {t('scheduler.pitches')}
+          </span>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.15rem', color: 'var(--color-accent)', fontWeight: 700 }}>
+            {estimatedStr}
+          </span>
+        </div>
 
         <button className="btn-primary" onClick={runPreview} style={{ marginBottom: '1.5rem' }}>
           {t('fixture.schedPreview')}

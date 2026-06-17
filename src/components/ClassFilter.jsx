@@ -18,7 +18,7 @@ const pillStyle = (active) => ({
   whiteSpace: 'nowrap',
 })
 
-export default function ClassFilter({ tournamentId, value, onChange }) {
+export default function ClassFilter({ tournamentId, value, onChange, showAll = true }) {
   const { t } = useTranslation()
   const [ageGroups, setAgeGroups] = useState([])
   const [loading, setLoading] = useState(true)
@@ -46,9 +46,11 @@ export default function ClassFilter({ tournamentId, value, onChange }) {
         aria-label={t('classFilter.label')}
         role="toolbar"
       >
-        <button style={pillStyle(value === null)} onClick={() => onChange(null)}>
-          {t('classFilter.all')}
-        </button>
+        {showAll && (
+          <button style={pillStyle(value === null)} onClick={() => onChange(null)}>
+            {t('classFilter.all')}
+          </button>
+        )}
         {ageGroups.map(ag => (
           <button key={ag.id} style={pillStyle(value === ag.id)} onClick={() => onChange(ag.id)}>
             {ag.name}

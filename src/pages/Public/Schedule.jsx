@@ -138,9 +138,42 @@ export default function Schedule() {
     return '?'
   }
 
-  function FixtureRow({ f, gameNumbers, t, teamName }) {
+  // Groups a fixture list into [[displayTime, fixtures[]]] sorted chronologically.
+  // Uses local display time so grouping matches what the user sees.
+  function groupByKickoffTime(list) {
+    const acc = {}
+    list.forEach(f => {
+      const key = f.kickoff_time ? format(new Date(f.kickoff_time), 'HH:mm') : '__NO_TIME__'
+      ;(acc[key] = acc[key] ?? []).push(f)
+    })
+    return Object.entries(acc).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
+  }
+
+  function TimeSlotSection({ timeStr, games }) {
+    return (
+      <div style={{ marginBottom: '1rem' }}>
+        {timeStr !== '__NO_TIME__' && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
+            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.9rem', color: 'var(--color-accent)', flexShrink: 0 }}>
+              {timeStr}
+            </span>
+            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.08)' }} />
+          </div>
+        )}
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: games.length > 1 ? 'repeat(auto-fill, minmax(280px, 1fr))' : '1fr',
+          gap: '0.5rem',
+        }}>
+          {games.map(f => <FixtureRow key={f.id} f={f} gameNumbers={gameNumbers} t={t} teamName={teamName} hideTime />)}
+        </div>
+      </div>
+    )
+  }
+
+  function FixtureRow({ f, gameNumbers, t, teamName, hideTime = false }) {
     const result = f.fixture_results?.[0]
-    const hasMeta = gameNumbers[f.id] != null || f.kickoff_time || f.pitch
+    const hasMeta = gameNumbers[f.id] != null || (!hideTime && f.kickoff_time) || f.pitch
     return (
       <div className="card" style={{ padding: '0.75rem 1rem' }}>
         {/* Match row — full width, teams never squeezed */}
@@ -165,12 +198,12 @@ export default function Schedule() {
             </span>
           </span>
         </div>
-        {/* Meta row — time, game number, venue on their own line */}
+        {/* Meta row — game number and venue/pitch */}
         {hasMeta && (
           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '0.4rem', gap: '0.5rem' }}>
             <div style={{ display: 'flex', gap: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
               {gameNumbers[f.id] != null && <span>{t('schedule.gameNumber', { n: gameNumbers[f.id] })}</span>}
-              {f.kickoff_time && <span>{formatTime(f.kickoff_time)}</span>}
+              {!hideTime && f.kickoff_time && <span>{formatTime(f.kickoff_time)}</span>}
             </div>
             {f.pitch && (
               <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', textAlign: 'right' }}>
@@ -326,9 +359,9 @@ export default function Schedule() {
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
               {t('schedule.groupStage')}
             </h2>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              {groupFixtures.map(f => <FixtureRow key={f.id} f={f} gameNumbers={gameNumbers} t={t} teamName={teamName} />)}
-            </div>
+            {groupByKickoffTime(groupFixtures).map(([timeStr, games]) => (
+              <TimeSlotSection key={timeStr} timeStr={timeStr} games={games} />
+            ))}
           </div>
         )}
 
@@ -350,15 +383,15 @@ export default function Schedule() {
           </div>
         )}
 
-        {/* round_robin / knockout: flat date list */}
+        {/* round_robin / knockout: date → time-slot list */}
         {!isGroupKnockout && Object.keys(grouped).sort().map(day => (
           <div key={day} style={{ marginBottom: '2rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', color: 'var(--color-accent)', marginBottom: '0.75rem' }}>
               {day === '__NO_DATE__' ? t('schedule.noDate') : formatDate(day)}
             </h2>
-            <div style={{ display: 'grid', gap: '0.5rem' }}>
-              {grouped[day].map(f => <FixtureRow key={f.id} f={f} gameNumbers={gameNumbers} t={t} teamName={teamName} />)}
-            </div>
+            {groupByKickoffTime(grouped[day]).map(([timeStr, games]) => (
+              <TimeSlotSection key={timeStr} timeStr={timeStr} games={games} />
+            ))}
           </div>
         ))}
       </div>

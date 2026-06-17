@@ -101,7 +101,8 @@
     "teamRest": "Min. rest time (min.)",
     "teamsPerGroup": "Teams per group",
     "teamsAdvancing": "Teams advancing",
-    "edit": "Edit",
+    "edit": "Settings",
+    "fixturesExistWarning": "Fixtures already generated with the old configuration. After saving, go to Fixtures and regenerate to apply these changes.",
     "confirmedCount": "confirmed",
     "pendingCount": "pending",
     "minutes": "min.",
@@ -240,7 +241,10 @@
     "pitchGap": "Gap between games (min.)",
     "skippedWarning": "{{count}} game(s) could not be scheduled — time window is too narrow",
     "pitchAssignment": "Pitch assignment",
-    "selectPitches": "Select pitches to include in the schedule:"
+    "selectPitches": "Select pitches to include in the schedule:",
+    "estimatedDuration": "Estimated duration",
+    "fixtures": "games",
+    "pitches": "pitches"
   },
   "standings": {
     "title": "Standings",
