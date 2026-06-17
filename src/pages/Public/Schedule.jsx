@@ -1,12 +1,11 @@
 import { useEffect, useState } from 'react'
-import { useParams, Link, useSearchParams } from 'react-router-dom'
+import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
 import TeamLogo from '../../components/TeamLogo'
-import ClassFilter from '../../components/ClassFilter'
 import { useSEO } from '../../hooks/useSEO'
 
 export default function Schedule() {
@@ -17,8 +16,6 @@ export default function Schedule() {
   const [fixtures, setFixtures] = useState([])
   const [loading, setLoading] = useState(true)
   const [lastUpdated, setLastUpdated] = useState(null)
-  const [searchParams, setSearchParams] = useSearchParams()
-  const selectedAgeGroupId = searchParams.get('ageGroupId') || null
 
   const seoTitle = ag ? `${ag.tournaments.name} — ${ag.name} Schedule` : 'Tournament Schedule'
   const seoDesc = ag
@@ -49,15 +46,6 @@ export default function Schedule() {
   } : null
   useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/schedule`, schema: seoSchema })
 
-  function handleFilterChange(id) {
-    setSearchParams(prev => {
-      const next = new URLSearchParams(prev)
-      if (id) next.set('ageGroupId', id)
-      else next.delete('ageGroupId')
-      return next
-    })
-  }
-
   useEffect(() => {
     async function load() {
       const { data: agData, error: agErr } = await supabase
@@ -85,7 +73,7 @@ export default function Schedule() {
           pitch:pitches(name, venues(name)),
           stages!inner(age_group_id)
         `)
-        .eq('stages.age_group_id', selectedAgeGroupId ?? ageGroupId)
+        .eq('stages.age_group_id', ageGroupId)
         .order('kickoff_time', { ascending: true })
 
       if (fxErr) { setLoading(false); return }
@@ -127,7 +115,7 @@ export default function Schedule() {
       supabase.removeChannel(channel)
       clearInterval(poll)
     }
-  }, [ageGroupId, selectedAgeGroupId])
+  }, [ageGroupId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (!ag) return <div className="loading">{t('common.error')}</div>
@@ -320,14 +308,6 @@ export default function Schedule() {
             </span>
           </Link>
         )}
-
-        <div style={{ position: 'sticky', top: 0, background: 'var(--color-bg)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
-          <ClassFilter
-            tournamentId={ag?.tournaments?.id}
-            value={selectedAgeGroupId}
-            onChange={handleFilterChange}
-          />
-        </div>
 
         {fixtures.filter(f => f.status === 'live').length > 0 && (
           <div style={{ marginBottom: '2rem' }}>
