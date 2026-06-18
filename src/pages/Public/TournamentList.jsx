@@ -296,7 +296,7 @@ export default function TournamentList() {
               return (
                 <div
                   key={tournament.id}
-                  style={{ cursor: 'pointer', display: 'block' }}
+                  style={{ cursor: 'pointer', display: 'block', minWidth: 0 }}
                   onClick={() => navigate(`/t/${tournament.slug}`)}
                 >
                   <article className="t-card">
@@ -500,6 +500,7 @@ export default function TournamentList() {
           padding: 1.125rem;
           transition: border-color 200ms ease;
           height: 100%;
+          overflow: hidden;
         }
         .t-card:hover {
           border-color: rgba(240,165,0,0.5);
