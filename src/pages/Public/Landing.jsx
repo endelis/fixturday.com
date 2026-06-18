@@ -54,6 +54,7 @@ export default function Landing() {
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', overflowX: 'hidden' }}>
 
       <PublicNav />
+      <main>
 
       {/* ── Hero ─────────────────────────────────────────────────── */}
       <section style={{
@@ -346,6 +347,7 @@ export default function Landing() {
         </div>
       </section>
 
+      </main>
       <Footer />
 
       <style>{`

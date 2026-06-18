@@ -62,6 +62,7 @@ export default function ServiceLanding({
   return (
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', overflowX: 'hidden' }}>
       <PublicNav />
+      <main>
 
       {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
@@ -337,6 +338,7 @@ export default function ServiceLanding({
         </section>
       )}
 
+      </main>
       <Footer />
     </div>
   )

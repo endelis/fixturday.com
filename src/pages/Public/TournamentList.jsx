@@ -113,6 +113,7 @@ export default function TournamentList() {
   return (
     <div style={{ background: '#0a1628', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
+      <main style={{ display: 'contents' }}>
 
       {/* ── Hero ──────────────────────────────────────────────────── */}
       <section style={{
@@ -507,6 +508,7 @@ export default function TournamentList() {
         }
       `}</style>
 
+      </main>
       <Footer />
     </div>
   )
