@@ -4,6 +4,7 @@
  * Order: newest first.
  */
 
+import WhyExcelFails,    { meta as metaExcel }        from './posts/why-excel-fails-tournament-management'
 import HowToOrganize,    { meta as metaOrganize }    from './posts/how-to-organize-a-sports-tournament'
 import RoundRobin,        { meta as metaRoundRobin }   from './posts/round-robin-tournament-format'
 import KnockoutVsRR,      { meta as metaKnockout }     from './posts/knockout-vs-round-robin'
@@ -17,6 +18,7 @@ import LimitRegistration, { meta as metaLimitReg }       from './posts/how-to-li
 import TournamentDuration,{ meta as metaDuration }       from './posts/how-to-estimate-tournament-duration'
 
 export const posts = [
+  { ...metaExcel,         Component: WhyExcelFails },
   { ...metaDuration,      Component: TournamentDuration },
   { ...metaLimitReg,      Component: LimitRegistration },
   { ...metaPlayoffDepth,  Component: PlayoffDepth },

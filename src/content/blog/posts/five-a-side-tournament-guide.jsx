@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 
 export const meta = {
   slug: 'five-a-side-tournament-guide',
-  title: 'How to Organize a 5-a-Side Tournament: The Complete Guide',
-  description: 'Everything you need to run a 5-a-side tournament — rules, pitch setup, format selection, scheduling for any number of teams, and match day management. Free tournament software included.',
+  title: 'How to Organize a 5 a Side Tournament: The Complete Guide',
+  description: 'Everything you need to run a 5 a side tournament — rules, pitch setup, format selection, scheduling for any team count, and match day management. Free to get started.',
   date: '2026-06-13',
   readTime: '8 min read',
   tags: ['5-a-side', 'football', 'tournament organization'],
-  keywords: ['5-a-side tournament', 'five a side tournament', 'organize 5 a side tournament', '5v5 football tournament', '5-a-side tournament rules'],
+  keywords: ['5 a side tournament', '5-a-side tournament', 'five a side tournament', 'organize 5 a side tournament', '5v5 football tournament', '5-a-side tournament rules'],
 }
 
 const faqs = [

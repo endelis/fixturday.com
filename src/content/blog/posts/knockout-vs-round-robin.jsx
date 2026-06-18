@@ -3,12 +3,12 @@ import { Link } from 'react-router-dom'
 
 export const meta = {
   slug: 'knockout-vs-round-robin',
-  title: 'Knockout vs Round Robin: Which Tournament Format Should You Use?',
-  description: 'Knockout or round robin? This guide compares both tournament formats on fairness, drama, game count, and time — so you can pick the right one for your event.',
+  title: 'Knockout Tournament vs Round Robin: Which Format Should You Use?',
+  description: 'Knockout tournament or round robin tournament? Compare both formats on fairness, drama, game count, and time — with a decision guide to pick the right one for your event.',
   date: '2026-06-12',
   readTime: '6 min read',
   tags: ['formats', 'knockout', 'round-robin', 'comparison'],
-  keywords: ['knockout tournament format', 'knockout vs round robin', 'single elimination tournament', 'cup format tournament', 'which tournament format to choose', 'tournament format comparison'],
+  keywords: ['knockout tournament', 'what is round robin tournament', 'knockout tournament format', 'knockout vs round robin', 'elimination tournament', 'single elimination tournament', 'tournament format comparison'],
 }
 
 const faqs = [
@@ -66,8 +66,8 @@ export default function KnockoutVsRRPost() {
 
       <h2>What Is a Knockout Tournament?</h2>
       <p>
-        In a knockout tournament (also called single elimination, cup format, or direct elimination),
-        every match is decisive. Win and you advance. Lose and you are out.
+        In a knockout tournament (also called a single elimination tournament, cup format, or direct
+        elimination tournament), every match is decisive. Win and you advance. Lose and you are out.
         The bracket narrows each round until one team remains — the champion.
       </p>
       <p>
@@ -80,8 +80,10 @@ export default function KnockoutVsRRPost() {
       <p>
         In a{' '}
         <Link to="/blog/round-robin-tournament-format">round-robin tournament</Link>,
-        every team plays every other team. The team with the most points after all matches is the winner.
-        No elimination — every team plays the full schedule regardless of results.
+        every team plays every other team exactly once. The round robin schedule is generated so
+        that no two teams meet more than once. Each team plays N−1 games — the team with the most
+        points after all matches is the winner. No elimination — every player or team plays the
+        full schedule regardless of results.
       </p>
 
       <h2>Head to Head: The Key Differences</h2>
@@ -136,6 +138,15 @@ export default function KnockoutVsRRPost() {
           </tr>
         </tbody>
       </table>
+
+      <h2>Double Elimination: A Knockout Variation</h2>
+      <p>
+        Standard knockout is single elimination — one loss and you are out. Double elimination gives
+        each team a second chance: losers enter a separate losers bracket and can still reach the
+        final. Double elimination is common in esports and American sports; single elimination is
+        standard in football and futsal cup competitions. It roughly doubles the number of matches,
+        so factor that into your venue and time planning.
+      </p>
 
       <h2>When Knockout Beats Round Robin</h2>
       <h3>Large team counts (16+)</h3>
