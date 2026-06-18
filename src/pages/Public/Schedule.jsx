@@ -170,7 +170,7 @@ export default function Schedule() {
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
               {teamName(f.home_team_id, f.home_team?.name, f.home_placeholder_label)}
             </span>
-            <TeamLogo size="sm" logoPath={f.home_team?.logo_path} alt={f.home_team?.name ?? ''} />
+            {f.home_team?.logo_path && <TeamLogo size="sm" logoPath={f.home_team.logo_path} alt={f.home_team?.name ?? ''} />}
           </span>
           <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', flexShrink: 0, width: '4.5rem', textAlign: 'center' }}>
             {result
@@ -180,7 +180,7 @@ export default function Schedule() {
                 : t('fixture.vs')}
           </span>
           <span style={{ flex: 1, display: 'flex', alignItems: 'center', gap: '0.35rem', overflow: 'hidden' }}>
-            <TeamLogo size="sm" logoPath={f.away_team?.logo_path} alt={f.away_team?.name ?? ''} />
+            {f.away_team?.logo_path && <TeamLogo size="sm" logoPath={f.away_team.logo_path} alt={f.away_team?.name ?? ''} />}
             <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', minWidth: 0 }}>
               {teamName(f.away_team_id, f.away_team?.name, f.away_placeholder_label)}
             </span>
