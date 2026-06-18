@@ -1,31 +1,47 @@
 # Fixturday
-> Bezmaksas sporta turnīru organizēšanas platforma Latvijā.
-> Izstrādātājs: Silvestrs Endelis (mail@endelis.co)
+
+> Free sports tournament management platform. Automatic schedules, real-time standings, online team registration, and a public participant page. Supports football, futsal, basketball, and other team sports.
+> Developer: Silvestrs Endelis (mail@endelis.co)
 > URL: https://www.fixturday.com
 
-## Par platformu
-Fixturday ir tīmekļa platforma sporta turnīru organizēšanai.
-Platforma ļauj izveidot turnīrus futbolā, telpu futbolā,
-basketbolā, volejbolā, handbolā un citos sporta veidos.
+## What Fixturday Does
 
-## Galvenās funkcijas
-- Automātisks spēļu grafika ģenerators
-- Trīs turnīra formāti: apļa, izslēgšanas, grupu+playoff
-- Reāllaika tabula un rezultātu uzskaite
-- Publiskā turnīra lapa dalībniekiem (bez reģistrācijas)
-- Komandu tiešsaistes reģistrācija
-- Vairāku laukumu plānošana
+Fixturday lets sports organisers create and run tournaments in minutes. Organisers add teams, choose a format (round-robin, knockout, or group stage + knockout), and generate the full match schedule automatically. Results are entered on match day and standings update in real time. Every tournament gets a public page participants can follow from their phone — no login required.
 
-## Mērķauditorija
-Sporta organizatori Latvijā: futbola klubi, skolas,
-pašvaldību sporta centri, biedrības, darba komandas.
+## Core Features
 
-## Cena
-Bezmaksas pamata plāns visiem lietotājiem.
+- Automatic schedule generation — round-robin, knockout, and group stage formats
+- Multi-pitch scheduling with conflict detection
+- Real-time standings and results
+- Public tournament page for participants (mobile-first, no login)
+- Online team registration with organiser approval
+- Player roster management per team
+- Print-ready match day schedule
 
-## Lapas
-- / — Sākumlapa
-- /turniri — Aktīvie turnīri
-- /par-mums — Par platformu
-- /kontakti — Kontaktinformācija
-- /admin — Administrācijas panelis (aizsargāts)
+## Pricing
+
+Free for all tournament organisers. No subscription, no hidden fees.
+
+## Key Pages
+
+- [Home](https://www.fixturday.com/) — Platform overview and features
+- [Active Tournaments](https://www.fixturday.com/tournaments) — Browse all live and upcoming tournaments
+- [Guide](https://www.fixturday.com/guide) — Step-by-step guide to creating a tournament
+- [About](https://www.fixturday.com/about) — About Fixturday and the team
+- [Blog](https://www.fixturday.com/blog) — Tournament organisation guides and tips
+- [Changelog](https://www.fixturday.com/changelog) — Platform updates and new features
+- [Admin / Sign in](https://www.fixturday.com/admin) — Organiser login (protected)
+
+## Blog Articles
+
+- [How to Organize a Sports Tournament](https://www.fixturday.com/blog/how-to-organize-a-sports-tournament)
+- [Round Robin Tournament Format Explained](https://www.fixturday.com/blog/round-robin-tournament-format)
+- [Knockout Tournament vs Round Robin](https://www.fixturday.com/blog/knockout-vs-round-robin)
+- [How to Make a Football Tournament Schedule](https://www.fixturday.com/blog/how-to-make-a-football-tournament-schedule)
+- [How to Organize a School Football Tournament](https://www.fixturday.com/blog/how-to-organize-a-school-football-tournament)
+- [How to Organize a 5 a Side Tournament](https://www.fixturday.com/blog/five-a-side-tournament-guide)
+- [How to Configure Group Stage Brackets](https://www.fixturday.com/blog/how-to-configure-group-stage-brackets)
+- [Tournament Bracket Seeding Explained](https://www.fixturday.com/blog/tournament-bracket-seeding-explained)
+- [How to Choose Tournament Playoff Depth](https://www.fixturday.com/blog/how-to-choose-tournament-playoff-depth)
+- [How to Limit Tournament Registration](https://www.fixturday.com/blog/how-to-limit-tournament-registration)
+- [Why an Excel Tournament Schedule Template Fails](https://www.fixturday.com/blog/why-excel-fails-tournament-management)
