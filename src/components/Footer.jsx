@@ -33,6 +33,8 @@ export default function Footer() {
             {[
               { to: '/tournaments', key: 'nav.tournaments' },
               { to: '/guide',       key: 'nav.guide' },
+              { to: '/blog',        label: 'Blog' },
+              { to: '/changelog',   label: "What's new" },
               { to: '/about',       key: 'nav.about' },
               { to: '/contact',     key: 'nav.contact' },
             ].map(item => (
@@ -43,7 +45,7 @@ export default function Footer() {
                 onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
                 onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
               >
-                {t(item.key)}
+                {item.label ?? t(item.key)}
               </Link>
             ))}
           </div>

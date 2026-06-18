@@ -21,6 +21,7 @@ const DataDeletion    = lazy(() => import('./pages/Public/DataDeletion'))
 const Guide           = lazy(() => import('./pages/Public/Guide'))
 const Blog            = lazy(() => import('./pages/Public/Blog'))
 const BlogPost        = lazy(() => import('./pages/Public/BlogPost'))
+const Changelog       = lazy(() => import('./pages/Public/Changelog'))
 const Match           = lazy(() => import('./pages/Public/Match'))
 
 // ── Service / landing pages ───────────────────────────────────────
@@ -69,6 +70,7 @@ export default function App() {
           <Route path="/guide"                               element={<Guide />} />
           <Route path="/blog"                                element={<Blog />} />
           <Route path="/blog/:slug"                          element={<BlogPost />} />
+          <Route path="/changelog"                           element={<Changelog />} />
 
           {/* Service / landing pages */}
           <Route path="/football-tournament-software"        element={<FootballTournament />} />
