@@ -113,20 +113,42 @@ export default function About() {
           }}>
             {t('about.ctaTitle')}
           </h2>
-          <Link to="/contact" style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            background: 'var(--color-accent)',
-            color: '#0a0f1e',
-            borderRadius: 'var(--radius)',
-            padding: '0.85rem 2.25rem',
-            fontWeight: 700,
-            fontSize: '0.9375rem',
-            textDecoration: 'none',
-            minHeight: '44px',
-          }}>
-            {t('nav.contact')}
-          </Link>
+          <div style={{ display: 'flex', gap: '0.75rem', justifyContent: 'center', flexWrap: 'wrap' }}>
+            <Link to="/admin/register" style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              background: 'var(--color-accent)',
+              color: '#0a0f1e',
+              borderRadius: 'var(--radius)',
+              padding: '0.85rem 2.25rem',
+              fontWeight: 700,
+              fontSize: '0.9375rem',
+              textDecoration: 'none',
+              minHeight: '44px',
+            }}>
+              Start free →
+            </Link>
+            <Link to="/contact" style={{
+              display: 'inline-flex',
+              alignItems: 'center',
+              border: '1px solid var(--color-border)',
+              color: 'var(--color-text-muted)',
+              borderRadius: 'var(--radius)',
+              padding: '0.85rem 2.25rem',
+              fontWeight: 500,
+              fontSize: '0.9375rem',
+              textDecoration: 'none',
+              minHeight: '44px',
+            }}>
+              {t('nav.contact')}
+            </Link>
+          </div>
+          <p style={{ marginTop: '1.25rem', fontSize: '0.875rem', color: 'var(--color-text-muted)' }}>
+            Or explore{' '}
+            <Link to="/" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
+              active tournaments on Fixturday
+            </Link>
+          </p>
         </div>
       </section>
 

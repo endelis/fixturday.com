@@ -807,6 +807,12 @@ export default function Guide() {
                 <Link to="/admin/register" style={ctaPrimaryBtn}>{t('guide.ctaPrimary')}</Link>
                 <Link to="/tournaments" style={ctaSecondaryBtn}>{t('guide.ctaSecondary')}</Link>
               </div>
+              <p style={{ marginTop: '1.25rem', fontSize: '0.875rem', color: 'rgba(255,255,255,0.5)', position: 'relative' }}>
+                Learn more about the{' '}
+                <Link to="/" style={{ color: 'rgba(240,165,0,0.85)', textDecoration: 'none' }}>
+                  Fixturday tournament management platform
+                </Link>
+              </p>
             </section>
 
             {/* ── FAQ ───────────────────────────────────────────────── */}

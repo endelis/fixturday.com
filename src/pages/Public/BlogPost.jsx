@@ -126,6 +126,53 @@ export default function BlogPost() {
         {/* Divider */}
         <div style={{ borderTop: '1px solid var(--color-border)', margin: '3rem 0 2rem' }} />
 
+        {/* CTA — homepage link */}
+        <div style={{
+          background: 'var(--color-surface)',
+          border: '1px solid var(--color-border)',
+          borderRadius: 'var(--radius-lg)',
+          padding: '1.5rem 1.75rem',
+          marginBottom: '2.5rem',
+          display: 'flex',
+          flexWrap: 'wrap',
+          justifyContent: 'space-between',
+          alignItems: 'center',
+          gap: '1rem',
+        }}>
+          <div style={{ minWidth: 0 }}>
+            <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1.1rem', margin: '0 0 0.3rem' }}>
+              Ready to run your next tournament?
+            </p>
+            <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', margin: 0, lineHeight: 1.5 }}>
+              <Link to="/" style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>Fixturday</Link>
+              {' '}is a free tournament management platform — automatic schedule, live standings, and team registration in one place.
+            </p>
+          </div>
+          <div style={{ display: 'flex', gap: '0.65rem', flexShrink: 0, flexWrap: 'wrap' }}>
+            <Link
+              to="/admin/register"
+              style={{
+                background: 'var(--color-accent)', color: '#0a0f1e',
+                padding: '0.5rem 1.1rem', borderRadius: 'var(--radius-sm)',
+                fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.9rem',
+                textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Start free →
+            </Link>
+            <Link
+              to="/tournaments"
+              style={{
+                border: '1px solid var(--color-border)', color: 'var(--color-text-muted)',
+                padding: '0.5rem 1.1rem', borderRadius: 'var(--radius-sm)',
+                fontSize: '0.875rem', textDecoration: 'none', whiteSpace: 'nowrap',
+              }}
+            >
+              Browse tournaments
+            </Link>
+          </div>
+        </div>
+
         {/* Prev / Next navigation */}
         <nav style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
           {prevPost ? (
