@@ -128,7 +128,7 @@ export default function BracketSeedingPost() {
 
       <h2>How to Set Seeding in Fixturday</h2>
       <p>
-        In the Age Groups editor, under the Group + Knockout format settings, there is a
+        In the Divisions editor, under the Group + Knockout format settings, there is a
         <strong> Bracket seeding</strong> selector with all three options. Choose before generating
         fixtures. The bracket is built at fixture-generation time for cross and mirror (placeholders
         like "Group A-1" and "Group B-2" are set immediately). For ranked, the placeholders are

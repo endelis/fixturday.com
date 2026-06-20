@@ -95,7 +95,7 @@ export default function SchoolFootballPost() {
         <Link to="/blog/knockout-vs-round-robin">Read our full breakdown of knockout vs round-robin</Link>.
       </p>
 
-      <h2>2. Set Up Age Groups and Teams</h2>
+      <h2>2. Set Up Divisions and Teams</h2>
       <p>
         In a school setting, the most natural split is by year group. This keeps physical development roughly
         equal and reduces the risk of older, bigger students dominating younger ones.

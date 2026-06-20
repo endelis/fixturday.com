@@ -130,7 +130,7 @@ export default function TournamentDurationPost() {
       </p>
       <p>
         The formula used is the one above. If the estimate is too long, you can reduce game duration,
-        add more pitches, or go back to the Age Groups settings and reduce playoff depth or team count.
+        add more pitches, or go back to the Divisions settings and reduce playoff depth or team count.
         The estimate changes the moment you adjust the input — no need to generate the schedule first
         to find out it won't fit.
       </p>
