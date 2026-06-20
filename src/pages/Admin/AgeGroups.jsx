@@ -309,8 +309,12 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
           <label>{t('ageGroup.format')} *</label>
           <select {...register('format', { required: true })}>
             <option value="round_robin">{t('ageGroup.formats.round_robin')}</option>
-            <option value="knockout">{t('ageGroup.formats.knockout')}</option>
-            <option value="group_knockout">{t('ageGroup.formats.group_knockout')}</option>
+            {!isBeachVolleyball && (
+              <>
+                <option value="knockout">{t('ageGroup.formats.knockout')}</option>
+                <option value="group_knockout">{t('ageGroup.formats.group_knockout')}</option>
+              </>
+            )}
             {isBeachVolleyball && (
               <>
                 <option value="double_elimination">{t('ageGroup.formats.double_elimination')}</option>
