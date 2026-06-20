@@ -321,14 +321,16 @@ export default function Teams() {
                       {t('common.confirm')}
                     </button>
                   )}
-                  <button className="btn-secondary btn-sm" onClick={() => toggleExpand(team.id)}>
-                    {expandedTeam === team.id ? t('common.close') : t('team.players')}
-                  </button>
+                  {!isBeachVolleyball && (
+                    <button className="btn-secondary btn-sm" onClick={() => toggleExpand(team.id)}>
+                      {expandedTeam === team.id ? t('common.close') : t('team.players')}
+                    </button>
+                  )}
                   <button className="btn-danger btn-sm" onClick={() => deleteTeam(team.id)}>×</button>
                 </div>
               </div>
 
-              {expandedTeam === team.id && (
+              {!isBeachVolleyball && expandedTeam === team.id && (
                 <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
 
                   {/* Logo + meta fields */}
