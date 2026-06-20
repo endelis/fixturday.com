@@ -14,7 +14,7 @@ export const meta = {
 const faqs = [
   {
     q: 'What happens when a tournament reaches its team limit?',
-    a: 'The age group disappears from the public registration form automatically. New visitors cannot see or submit a registration for that category. Teams that have already registered and are pending approval are unaffected.',
+    a: 'The division disappears from the public registration form automatically. New visitors cannot see or submit a registration for that category. Teams that have already registered and are pending approval are unaffected.',
   },
   {
     q: 'Can I approve a registration that would exceed the team limit?',
@@ -75,8 +75,8 @@ export default function LimitRegistrationPost() {
       </p>
       <p>
         <strong>Layer 1 — The public registration form.</strong> When a visitor opens the registration
-        page, the system fetches the current count of confirmed and pending teams for each age group.
-        If an age group has reached its max, it doesn't appear in the list. A late-arriving team simply
+        page, the system fetches the current count of confirmed and pending teams for each division.
+        If a division has reached its max, it doesn't appear in the list. A late-arriving team simply
         has no form to fill in. This handles the common case: the bracket is full, registration should
         be closed.
       </p>
@@ -95,26 +95,26 @@ export default function LimitRegistrationPost() {
 
       <h2>How to Set a Team Limit</h2>
       <ol>
-        <li>In the admin panel, go to <strong>Age Groups</strong> and click Edit on the relevant group.</li>
+        <li>In the admin panel, go to <strong>Divisions</strong> and click Edit on the relevant division.</li>
         <li>Enter a number in the <strong>Max teams</strong> field.</li>
         <li>Save. The limit takes effect immediately — no need to regenerate fixtures.</li>
       </ol>
       <p>
-        The limit applies per age group, not per tournament. If your tournament has U10, U12, and
-        Pieaugušie categories, each can have its own cap. An age group with no max teams set has
+        The limit applies per division, not per tournament. If your tournament has U10, U12, and
+        Open categories, each can have its own cap. A division with no max teams set has
         unlimited registration.
       </p>
 
       <h2>What Teams See When Registration Closes</h2>
       <p>
         Teams visiting the registration page after the cap is reached do not see a confusing error.
-        The full age group is simply absent from the dropdown — if it was the only available category,
+        The full division is simply absent from the dropdown — if it was the only available category,
         the page shows a "registration is closed" message. No frustration, no ambiguity.
       </p>
       <p>
         Registration can still be reopened manually at any time. If a confirmed team withdraws, the
         admin can reduce the confirmed count, and the next visitor to the registration page will see
-        the age group available again — up to the cap.
+        the division available again — up to the cap.
       </p>
 
       <h2>Auto-Approve and the Cap</h2>

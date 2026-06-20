@@ -60,7 +60,7 @@ export default function HowToOrganizeBeachVolleyballPost() {
     <div className="post-content">
       <p className="post-lead">
         A beach volleyball tournament has moving parts that punish a disorganised plan: courts shared
-        across age groups, set scores that decide standings, and a double elimination bracket where
+        across divisions, set scores that decide standings, and a double elimination bracket where
         every loss sends a team somewhere new. Here is how to organize a beach volleyball tournament
         without spending match day buried in a spreadsheet.
       </p>

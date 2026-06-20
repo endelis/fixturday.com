@@ -197,7 +197,7 @@ export default function BeachVolleyballDePost() {
 
       <h2>Setting Up the Draw in Fixturday</h2>
       <p>
-        When you create an age group in Fixturday and select the double elimination format, the bracket
+        When you create a division in Fixturday and select the double elimination format, the bracket
         is generated as soon as teams are added. The draw populates based on registration order until
         pool play is complete, then reseeds automatically when you advance teams from pool standings.
       </p>
