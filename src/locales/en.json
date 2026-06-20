@@ -263,7 +263,8 @@
     "selectPitches": "Select pitches to include in the schedule:",
     "estimatedDuration": "Estimated duration",
     "fixtures": "games",
-    "pitches": "pitches"
+    "pitches": "pitches",
+    "bvGameNote": "Beach volleyball games typically last 25–45 min (~30 min used for estimate)"
   },
   "standings": {
     "title": "Standings",
@@ -435,6 +436,7 @@
     "title": "Fixture schedule",
     "backToStandings": "← Standings",
     "gameNumber": "#{{n}}",
+    "pitchGame": "P{{p}}·G{{g}}",
     "groupStage": "Group Stage",
     "playoffStage": "Playoff"
   },

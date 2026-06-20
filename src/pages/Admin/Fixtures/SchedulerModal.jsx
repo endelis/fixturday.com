@@ -38,7 +38,9 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   // Sync scheduling defaults when ageGroup data arrives
   useEffect(() => {
     if (!ageGroup) return
+    const isBV = ageGroup?.tournaments?.sport === 'beach_volleyball'
     if (ageGroup.game_duration_minutes) setSchedGameDuration(ageGroup.game_duration_minutes)
+    else if (isBV) setSchedGameDuration(30)
     if (ageGroup.pitch_gap_minutes != null) setSchedPitchGap(ageGroup.pitch_gap_minutes)
     if (!ageGroup.tournaments) return
     const { start_date, first_game_time, lunch_start, lunch_end } = ageGroup.tournaments
@@ -219,7 +221,16 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     ? (estHours > 0 ? `${estHours}h ${estMins}min` : `${estMins}min`)
     : '—'
 
+  const isBV = ageGroup?.tournaments?.sport === 'beach_volleyball'
   const inputStyle = { background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.6rem', borderRadius: 'var(--radius-sm)' }
+
+  // Per-pitch game numbers for the preview table (schedule is already time-ordered)
+  const previewPitchCounters = {}
+  const scheduleWithNums = (schedResult?.schedule ?? []).map(item => {
+    const key = item.pitchId ?? item.pitchIndex
+    previewPitchCounters[key] = (previewPitchCounters[key] ?? 0) + 1
+    return { ...item, _pitchGameNum: previewPitchCounters[key] }
+  })
 
   return (
     <div
@@ -247,10 +258,18 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
               <input type="number" min={1} value={schedPitches} onChange={e => setSchedPitches(e.target.value)} style={inputStyle} />
             </label>
           )}
-          <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
-            {t('scheduler.gameDuration')}
-            <input type="number" min={5} max={90} value={schedGameDuration} onChange={e => setSchedGameDuration(Number(e.target.value))} style={inputStyle} />
-          </label>
+          {isBV ? (
+            <div style={{ display: 'flex', alignItems: 'flex-end', paddingBottom: '0.1rem' }}>
+              <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', fontStyle: 'italic', lineHeight: 1.4 }}>
+                {t('scheduler.bvGameNote')}
+              </span>
+            </div>
+          ) : (
+            <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
+              {t('scheduler.gameDuration')}
+              <input type="number" min={5} max={90} value={schedGameDuration} onChange={e => setSchedGameDuration(Number(e.target.value))} style={inputStyle} />
+            </label>
+          )}
           <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
             {t('scheduler.pitchGap')}
             <input type="number" min={0} value={schedPitchGap} onChange={e => setSchedPitchGap(Number(e.target.value))} style={inputStyle} />
@@ -346,6 +365,7 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                   <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
                     <thead>
                       <tr style={{ borderBottom: '1px solid var(--color-border)', color: 'var(--color-text-muted)' }}>
+                        <th style={{ padding: '0.5rem 0.5rem', textAlign: 'left', whiteSpace: 'nowrap' }}>#</th>
                         <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.schedColTime')}</th>
                         <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.schedColPitch')}</th>
                         <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('fixture.home')}</th>
@@ -354,10 +374,10 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                       </tr>
                     </thead>
                     <tbody>
-                      {schedResult.schedule.map((item, i) => {
+                      {scheduleWithNums.map((item, i) => {
                         const fx = fixtures.find(f => f.id === item.fixtureId)
                         const isKnockout = fx?.stages?.type === 'knockout' || (!fx?.home_team_id && !!fx?.home_placeholder)
-                        const prevFx = i > 0 ? fixtures.find(f => f.id === schedResult.schedule[i - 1].fixtureId) : null
+                        const prevFx = i > 0 ? fixtures.find(f => f.id === scheduleWithNums[i - 1].fixtureId) : null
                         const prevIsKnockout = prevFx ? (prevFx?.stages?.type === 'knockout' || (!prevFx?.home_team_id && !!prevFx?.home_placeholder)) : false
                         const showDivider = isKnockout && !prevIsKnockout
 
@@ -369,17 +389,19 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
                         const homeLabel = fx?.home_team?.name ?? fx?.home_placeholder ?? ''
                         const awayLabel = fx?.away_team?.name ?? fx?.away_placeholder ?? ''
                         const isPlaceholder = !fx?.home_team_id
+                        const gameLabel = t('schedule.pitchGame', { p: item.pitchIndex + 1, g: item._pitchGameNum })
 
                         return (
                           <Fragment key={i}>
                             {showDivider && (
                               <tr>
-                                <td colSpan={5} style={{ padding: '0.5rem 0.75rem', background: 'rgba(240,165,0,0.07)', borderTop: '2px solid rgba(240,165,0,0.3)', color: 'var(--color-accent)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                                <td colSpan={6} style={{ padding: '0.5rem 0.75rem', background: 'rgba(240,165,0,0.07)', borderTop: '2px solid rgba(240,165,0,0.3)', color: 'var(--color-accent)', fontSize: '0.75rem', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                                   {t('fixture.playoffStage')}
                                 </td>
                               </tr>
                             )}
                             <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <td style={{ padding: '0.5rem 0.5rem', color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600, whiteSpace: 'nowrap' }}>{gameLabel}</td>
                               <td style={{ padding: '0.5rem 0.75rem' }}>{item.kickoff ? item.kickoff.slice(11, 16) : ''}</td>
                               <td style={{ padding: '0.5rem 0.75rem' }}>{pitchLabel}</td>
                               <td style={{ padding: '0.5rem 0.75rem', fontWeight: 600, color: isPlaceholder ? 'var(--color-text-muted)' : 'inherit', fontStyle: isPlaceholder ? 'italic' : 'normal' }}>{homeLabel}</td>

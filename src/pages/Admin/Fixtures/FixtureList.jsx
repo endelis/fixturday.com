@@ -18,13 +18,15 @@ export default function FixtureList({ fixtures, format: agFormat, pitches, teams
 
   useEffect(() => { setKickoffDrafts({}) }, [fixtures])
 
-  // Sequential game numbers by kickoff time (unscheduled fixtures get no number)
-  const gameNumbers = Object.fromEntries(
-    [...fixtures]
-      .filter(f => f.kickoff_time)
+  // Per-pitch sequential game numbers ordered by kickoff time
+  const pitchNumMap = Object.fromEntries(pitches.map((p, i) => [p.id, i + 1]))
+  const pitchGameNums = {}
+  pitches.forEach(p => {
+    fixtures
+      .filter(f => f.pitch_id === p.id && f.kickoff_time)
       .sort((a, b) => new Date(a.kickoff_time) - new Date(b.kickoff_time))
-      .map((f, i) => [f.id, i + 1])
-  )
+      .forEach((f, i) => { pitchGameNums[f.id] = i + 1 })
+  })
 
   async function handleKickoffBlur(f, value) {
     const kickoffValue = value || null
@@ -74,9 +76,9 @@ export default function FixtureList({ fixtures, format: agFormat, pitches, teams
     return (
       <div className="card" style={{ padding: '0.75rem 1rem' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-          {gameNumbers[f.id] != null && (
-            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600, minWidth: '2rem', flexShrink: 0 }}>
-              {t('schedule.gameNumber', { n: gameNumbers[f.id] })}
+          {f.pitch_id && pitchGameNums[f.id] != null && (
+            <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem', fontWeight: 600, minWidth: '3.5rem', flexShrink: 0, whiteSpace: 'nowrap' }}>
+              {t('schedule.pitchGame', { p: pitchNumMap[f.pitch_id], g: pitchGameNums[f.id] })}
             </span>
           )}
           <span style={{ flex: 1, textAlign: 'right', fontWeight: 600 }}>
