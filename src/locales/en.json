@@ -113,7 +113,14 @@
       "knockout": "Knockout",
       "group_knockout": "Group + knockout",
       "double_elimination": "Double elimination",
-      "round_robin_playoff": "Round robin + playoff"
+      "round_robin_playoff": "Round robin + playoff",
+      "bv": {
+        "round_robin": "Pool Play",
+        "knockout": "Single Elimination",
+        "group_knockout": "Pool Play + Single Elimination",
+        "double_elimination": "Double Elimination",
+        "round_robin_playoff": "Pool Play + Double Elimination"
+      }
     },
     "groupKnockoutSettings": "Group + knockout settings",
     "groupsCount": "Number of groups",
@@ -130,6 +137,7 @@
       "mirror": "Mirror (A1 vs A2, B1 vs B2)",
       "ranked": "Ranked (best teams overall)"
     },
+    "formatsGuide": "How to choose a format →",
     "configLocked": "Locked — a match has already been played",
     "advancingPerGroup": "advancing per group",
     "playoffSlots": "playoff spots",

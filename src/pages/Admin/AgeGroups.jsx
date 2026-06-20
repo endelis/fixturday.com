@@ -201,7 +201,9 @@ export default function AgeGroups() {
                   <div>
                     <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>{ag.name}</strong>
                     <span style={{ marginLeft: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                      {t(`ageGroup.formats.${ag.format}`)}
+                      {tournament?.sport === 'beach_volleyball'
+                        ? t(`ageGroup.formats.bv.${ag.format}`)
+                        : t(`ageGroup.formats.${ag.format}`)}
                     </span>
                     {ag.max_teams && (
                       <span style={{ marginLeft: '0.5rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
@@ -308,20 +310,31 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
         <div className="form-group">
           <label>{t('ageGroup.format')} *</label>
           <select {...register('format', { required: true })}>
-            <option value="round_robin">{t('ageGroup.formats.round_robin')}</option>
             {!isBeachVolleyball && (
               <>
+                <option value="round_robin">{t('ageGroup.formats.round_robin')}</option>
                 <option value="knockout">{t('ageGroup.formats.knockout')}</option>
                 <option value="group_knockout">{t('ageGroup.formats.group_knockout')}</option>
               </>
             )}
             {isBeachVolleyball && (
               <>
-                <option value="double_elimination">{t('ageGroup.formats.double_elimination')}</option>
-                <option value="round_robin_playoff">{t('ageGroup.formats.round_robin_playoff')}</option>
+                <option value="round_robin">{t('ageGroup.formats.bv.round_robin')}</option>
+                <option value="knockout">{t('ageGroup.formats.bv.knockout')}</option>
+                <option value="double_elimination">{t('ageGroup.formats.bv.double_elimination')}</option>
+                <option value="group_knockout">{t('ageGroup.formats.bv.group_knockout')}</option>
+                <option value="round_robin_playoff">{t('ageGroup.formats.bv.round_robin_playoff')}</option>
               </>
             )}
           </select>
+          <a
+            href={isBeachVolleyball ? '/blog/beach-volleyball-tournament-formats' : '/blog/football-tournament-formats'}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: 'inline-block', marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--color-accent)', textDecoration: 'none', opacity: 0.85 }}
+          >
+            {t('ageGroup.formatsGuide')}
+          </a>
         </div>
         <div className="form-group">
           <label>{t('ageGroup.maxTeams')}</label>

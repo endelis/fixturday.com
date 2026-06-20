@@ -4,6 +4,8 @@
  * Order: newest first.
  */
 
+import FootballFormats,  { meta as metaFootballFormats } from './posts/football-tournament-formats'
+import BvbFormats,       { meta as metaBvbFormats }    from './posts/beach-volleyball-tournament-formats'
 import BvbDe,            { meta as metaBvbDe }         from './posts/beach-volleyball-double-elimination-bracket'
 import BvbOrganise,      { meta as metaBvbOrganise }  from './posts/how-to-organize-a-beach-volleyball-tournament'
 import BvbScoring,       { meta as metaBvbScoring }   from './posts/beach-volleyball-scoring-rules'
@@ -21,9 +23,11 @@ import LimitRegistration, { meta as metaLimitReg }       from './posts/how-to-li
 import TournamentDuration,{ meta as metaDuration }       from './posts/how-to-estimate-tournament-duration'
 
 export const posts = [
-  { ...metaBvbDe,         Component: BvbDe },
-  { ...metaBvbOrganise,   Component: BvbOrganise },
-  { ...metaBvbScoring,    Component: BvbScoring },
+  { ...metaFootballFormats, Component: FootballFormats },
+  { ...metaBvbFormats,      Component: BvbFormats },
+  { ...metaBvbDe,           Component: BvbDe },
+  { ...metaBvbOrganise,     Component: BvbOrganise },
+  { ...metaBvbScoring,      Component: BvbScoring },
   { ...metaExcel,         Component: WhyExcelFails },
   { ...metaDuration,      Component: TournamentDuration },
   { ...metaLimitReg,      Component: LimitRegistration },
