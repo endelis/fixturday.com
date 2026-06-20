@@ -28,7 +28,7 @@ const steps = [
   {
     n: '01',
     title: 'Create your tournament',
-    desc: 'Sign up free, create a tournament, set the sport to Football, add your age groups (U10, U12, Open, etc.) and venue details.',
+    desc: 'Sign up free, create a tournament, set the sport to Football, add your divisions (U10, U12, Open, etc.) and venue details.',
   },
   {
     n: '02',
@@ -43,7 +43,7 @@ const steps = [
 ]
 
 const benefits = [
-  'Unlimited tournaments, age groups, and teams',
+  'Unlimited tournaments, divisions, and teams',
   'Round-robin, knockout, and group stage formats',
   'Multi-pitch scheduling with automatic time slots',
   'Real-time standings with goal difference tiebreakers',
@@ -61,8 +61,8 @@ const faqs = [
     a: 'Fixturday supports round-robin (every team plays every other team), knockout/cup (single elimination), and group stage + knockout (groups followed by a playoff bracket). All three are standard in grassroots and amateur football.',
   },
   {
-    q: 'Can I run a football tournament with multiple age groups?',
-    a: 'Yes. Each tournament can have multiple age groups (e.g. U10, U12, U14, Open). Each age group has its own teams, schedule, and standings. All managed from one tournament.',
+    q: 'Can I run a football tournament with multiple divisions?',
+    a: 'Yes. Each tournament can have multiple divisions (e.g. U10, U12, U14, Open). Each division has its own teams, schedule, and standings. All managed from one tournament.',
   },
   {
     q: 'How does the schedule handle odd numbers of teams?',
@@ -70,7 +70,7 @@ const faqs = [
   },
   {
     q: 'Can teams register themselves online?',
-    a: 'Yes. You can open public registration for any age group. Teams get a registration link, fill in their details, and you approve or reject from the admin panel.',
+    a: 'Yes. You can open public registration for any division. Teams get a registration link, fill in their details, and you approve or reject from the admin panel.',
   },
   {
     q: 'Does it work for futsal (indoor football) too?',

@@ -28,7 +28,7 @@ const steps = [
   {
     n: '01',
     title: 'Create tournament and select Beach Volleyball',
-    desc: 'Sign up free, create a tournament, and choose Beach Volleyball as the sport. Add your age groups or pools — each pool gets its own bracket and standings.',
+    desc: 'Sign up free, create a tournament, and choose Beach Volleyball as the sport. Add your divisions (Men, Women, Mixed, U18, etc.) — each gets its own bracket and standings.',
   },
   {
     n: '02',
@@ -48,14 +48,14 @@ const benefits = [
   'Set ratio and point ratio tiebreakers for pool standings',
   'Real-time bracket view for players and spectators',
   'Online team registration with organiser approval',
-  'Multi-pool support via age groups — one tournament, multiple draws',
+  'Multi-division support — one tournament, multiple pools and brackets',
   'Free forever — no subscription, no credit card',
 ]
 
 const faqs = [
   {
     q: 'Is this beach volleyball tournament software free?',
-    a: 'Yes. Fixturday is completely free for tournament organizers. You can run unlimited beach volleyball tournaments with unlimited teams, brackets, and age groups at no cost.',
+    a: 'Yes. Fixturday is completely free for tournament organizers. You can run unlimited beach volleyball tournaments with unlimited teams, brackets, and divisions at no cost.',
   },
   {
     q: 'What scoring rules does it follow?',
@@ -63,7 +63,7 @@ const faqs = [
   },
   {
     q: 'What tournament formats are supported for beach volleyball?',
-    a: 'Fixturday supports double elimination (full WB/LB bracket with grand final and bracket reset) and round robin (pool play with set ratio and point ratio standings). You can combine them by using multiple age groups.',
+    a: 'Fixturday supports double elimination (full WB/LB bracket with grand final and bracket reset) and round robin (pool play with set ratio and point ratio standings). You can combine them by using multiple divisions.',
   },
   {
     q: 'How are standings calculated in beach volleyball pool play?',
@@ -71,7 +71,7 @@ const faqs = [
   },
   {
     q: 'Can I run multiple pools in one tournament?',
-    a: 'Yes. Each age group in Fixturday is a separate pool with its own teams, schedule, and standings. Create as many age groups as you need — Mixed Open, Women, U18, etc. — all managed inside one tournament.',
+    a: 'Yes. Each division in Fixturday is a separate pool with its own teams, schedule, and standings. Create as many divisions as you need — Mixed Open, Women, U18, etc. — all managed inside one tournament.',
   },
   {
     q: 'Does double elimination include the bracket reset?',

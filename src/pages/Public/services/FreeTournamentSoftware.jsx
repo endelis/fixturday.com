@@ -33,7 +33,7 @@ const steps = [
   {
     n: '02',
     title: 'Build your tournament',
-    desc: 'Add age groups, teams, venues, and pitches. Choose your format. Generate the full fixture schedule automatically.',
+    desc: 'Add divisions, teams, venues, and pitches. Choose your format. Generate the full fixture schedule automatically.',
   },
   {
     n: '03',
@@ -44,7 +44,7 @@ const steps = [
 
 const benefits = [
   'No credit card required — free forever, not a trial',
-  'Unlimited tournaments, teams, and age groups',
+  'Unlimited tournaments, teams, and divisions',
   'Round-robin, knockout, and group stage + playoff formats',
   'Multi-pitch and multi-venue scheduling',
   'Real-time standings with automatic tiebreaker calculation',
@@ -72,7 +72,7 @@ const faqs = [
   },
   {
     q: 'Does it work for large tournaments (32+ teams)?',
-    a: 'Yes. Fixturday handles large tournaments with multiple age groups. A national-level tournament with 8 age groups of 16 teams each is well within its scope.',
+    a: 'Yes. Fixturday handles large tournaments with multiple divisions. A national-level tournament with 8 divisions of 16 teams each is well within its scope.',
   },
   {
     q: 'Do participants need to create accounts?',
