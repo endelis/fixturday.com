@@ -21,12 +21,14 @@ export default function Teams() {
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [loading, setLoading] = useState(true)
   const [metaDraft, setMetaDraft] = useState({ contact_name: '', country_code: 'LV' })
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
+  const watchedP1 = watch('player1_name', '')
+  const watchedP2 = watch('player2_name', '')
   const playerForm = useForm()
 
   async function load() {
     const [{ data: ag, error: agErr }, { data: t_, error: tErr }] = await Promise.all([
-      supabase.from('age_groups').select('*, tournaments(id, name)').eq('id', ageGroupId).single(),
+      supabase.from('age_groups').select('*, tournaments(id, name, sport)').eq('id', ageGroupId).single(),
       supabase.from('teams').select('*').eq('age_group_id', ageGroupId).order('name'),
     ])
     if (agErr || tErr) { toast(t('common.error'), 'error'); setLoading(false); return }
@@ -47,7 +49,20 @@ export default function Teams() {
   }
 
   async function onSubmit(values) {
-    const { error } = await supabase.from('teams').insert({ ...values, age_group_id: ageGroupId, status: 'pending' })
+    const isBV = ageGroup?.tournaments?.sport === 'beach_volleyball'
+    const teamName = isBV
+      ? `${values.player1_name.trim()} / ${values.player2_name.trim()}`
+      : values.name
+    const payload = {
+      name: teamName,
+      age_group_id: ageGroupId,
+      status: 'pending',
+      club: isBV ? null : (values.club || null),
+      contact_name: isBV ? values.player1_name.trim() : (values.contact_name || null),
+      contact_email: values.contact_email || null,
+      contact_phone: values.contact_phone || null,
+    }
+    const { error } = await supabase.from('teams').insert(payload)
     if (error) { toast(t('common.error'), 'error'); return }
     toast(t('team.added'))
     reset()
@@ -162,6 +177,8 @@ export default function Teams() {
   if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
+  const isBeachVolleyball = ageGroup?.tournaments?.sport === 'beach_volleyball'
+
   return (
     <div>
       <nav className="admin-nav">
@@ -194,29 +211,64 @@ export default function Teams() {
           <div className="card" style={{ marginBottom: '1.5rem' }}>
             <h2 style={{ fontFamily: 'var(--font-heading)', marginBottom: '1rem' }}>{t('team.new')}</h2>
             <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                <div className="form-group">
-                  <label>{t('team.name')} *</label>
-                  <input {...register('name', { required: t('common.required') })} />
-                  {errors.name && <span className="error-message">{errors.name.message}</span>}
+              {isBeachVolleyball ? (
+                <>
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label>{t('team.player1')} *</label>
+                      <input {...register('player1_name', { required: t('common.required') })} placeholder="Ainis" autoFocus />
+                      {errors.player1_name && <span className="error-message">{errors.player1_name.message}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('team.player2')} *</label>
+                      <input {...register('player2_name', { required: t('common.required') })} placeholder="Kaspars" />
+                      {errors.player2_name && <span className="error-message">{errors.player2_name.message}</span>}
+                    </div>
+                  </div>
+                  {(watchedP1 || watchedP2) && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginTop: '-0.25rem' }}>
+                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('team.pairPreview')}:</span>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-accent)' }}>
+                        {[watchedP1, watchedP2].filter(Boolean).join(' / ')}
+                      </span>
+                    </div>
+                  )}
+                  <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                    <div className="form-group">
+                      <label>{t('team.contactEmail')}</label>
+                      <input type="email" {...register('contact_email')} />
+                    </div>
+                    <div className="form-group">
+                      <label>{t('team.contactPhone')}</label>
+                      <input {...register('contact_phone')} />
+                    </div>
+                  </div>
+                </>
+              ) : (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="form-group">
+                    <label>{t('team.name')} *</label>
+                    <input {...register('name', { required: t('common.required') })} />
+                    {errors.name && <span className="error-message">{errors.name.message}</span>}
+                  </div>
+                  <div className="form-group">
+                    <label>{t('team.club')}</label>
+                    <input {...register('club')} />
+                  </div>
+                  <div className="form-group">
+                    <label>{t('team.contactName')}</label>
+                    <input {...register('contact_name')} />
+                  </div>
+                  <div className="form-group">
+                    <label>{t('team.contactEmail')}</label>
+                    <input type="email" {...register('contact_email')} />
+                  </div>
+                  <div className="form-group">
+                    <label>{t('team.contactPhone')}</label>
+                    <input {...register('contact_phone')} />
+                  </div>
                 </div>
-                <div className="form-group">
-                  <label>{t('team.club')}</label>
-                  <input {...register('club')} />
-                </div>
-                <div className="form-group">
-                  <label>{t('team.contactName')}</label>
-                  <input {...register('contact_name')} />
-                </div>
-                <div className="form-group">
-                  <label>{t('team.contactEmail')}</label>
-                  <input type="email" {...register('contact_email')} />
-                </div>
-                <div className="form-group">
-                  <label>{t('team.contactPhone')}</label>
-                  <input {...register('contact_phone')} />
-                </div>
-              </div>
+              )}
               <div style={{ display: 'flex', gap: '0.75rem' }}>
                 <button type="submit" className="btn-primary" disabled={isSubmitting}>
                   {isSubmitting ? t('common.saving') : t('common.add')}

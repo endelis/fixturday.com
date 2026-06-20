@@ -48,6 +48,8 @@ export default function Register() {
   } = useForm()
 
   const selectedAgeGroupId = watch('age_group_id')
+  const watchedP1 = watch('player1_name', '')
+  const watchedP2 = watch('player2_name', '')
 
   useEffect(() => {
     document.title = `${t('register.title')} — Fixturday`
@@ -126,6 +128,7 @@ export default function Register() {
     setSubmitError('')
     try {
       const selectedAg = allAgeGroups.find(ag => ag.id === values.age_group_id)
+      const isBV = tournament?.sport === 'beach_volleyball'
 
       // Re-check max_teams at submission time to guard against race conditions
       if (selectedAg?.max_teams) {
@@ -140,37 +143,27 @@ export default function Register() {
         }
       }
 
+      const teamName = isBV
+        ? `${values.player1_name.trim()} / ${values.player2_name.trim()}`
+        : values.name
+      const contactName = isBV ? values.player1_name.trim() : values.contact_name
+
       const isAutoApprove = selectedAg?.auto_approve ?? false
 
       if (isAutoApprove) {
         // Auto-approve: insert directly into teams as confirmed
-        const teamId = crypto.randomUUID()
         const { error: teamError } = await supabase
           .from('teams')
           .insert({
-            id: teamId,
             age_group_id: values.age_group_id,
-            name: values.name,
-            club: values.club,
-            contact_name: values.contact_name,
+            name: teamName,
+            club: isBV ? null : (values.club || null),
+            contact_name: contactName,
             contact_email: values.contact_email,
-            contact_phone: values.contact_phone,
+            contact_phone: values.contact_phone || null,
             status: 'confirmed',
           })
         if (teamError) throw teamError
-
-        const playerRows = players
-          .filter(p => p.name?.trim())
-          .map(p => ({
-            team_id: teamId,
-            name: p.name.trim(),
-            dob: p.dob || null,
-            number: p.jersey ? Number(p.jersey) : null,
-          }))
-        if (playerRows.length > 0) {
-          const { error: playersError } = await supabase.from('team_players').insert(playerRows)
-          if (playersError) throw playersError
-        }
       } else {
         // Standard flow: submit application for admin review
         const { error: regError } = await supabase
@@ -178,18 +171,20 @@ export default function Register() {
           .insert({
             tournament_id: tournament.id,
             age_group_id: values.age_group_id,
-            team_name: values.name,
-            manager_name: values.contact_name,
+            team_name: teamName,
+            manager_name: contactName,
             manager_email: values.contact_email,
             manager_phone: values.contact_phone || null,
-            player_roster: {
-              club: values.club || null,
-              players: players.filter(p => p.name?.trim()).map(p => ({
-                name: p.name.trim(),
-                dob: p.dob || null,
-                number: p.jersey ? Number(p.jersey) : null,
-              })),
-            },
+            player_roster: isBV
+              ? { players: [{ name: values.player1_name.trim() }, { name: values.player2_name.trim() }] }
+              : {
+                  club: values.club || null,
+                  players: players.filter(p => p.name?.trim()).map(p => ({
+                    name: p.name.trim(),
+                    dob: p.dob || null,
+                    number: p.jersey ? Number(p.jersey) : null,
+                  })),
+                },
           })
         if (regError) throw regError
       }
@@ -328,56 +323,71 @@ export default function Register() {
 
             {!selectedGroupClosed && (
               <>
-                {/* Team name */}
-                <div className="form-group">
-                  <label>{t('register.teamName')} *</label>
-                  <input {...register('name', { required: true })} />
-                  {errors.name && (
-                    <span className="error-message">{t('common.required')}</span>
-                  )}
-                </div>
+                {tournament?.sport === 'beach_volleyball' ? (
+                  <>
+                    {/* BV: Player 1 + Player 2 */}
+                    <div className="form-group">
+                      <label>{t('register.player1Name')} *</label>
+                      <input {...register('player1_name', { required: true })} placeholder="Ainis" autoFocus />
+                      {errors.player1_name && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('register.player2Name')} *</label>
+                      <input {...register('player2_name', { required: true })} placeholder="Kaspars" />
+                      {errors.player2_name && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    {(watchedP1 || watchedP2) && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.5rem 0' }}>
+                        <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.05em' }}>{t('register.pairName')}:</span>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-accent)' }}>
+                          {[watchedP1, watchedP2].filter(Boolean).join(' / ')}
+                        </span>
+                      </div>
+                    )}
+                    <div className="form-group">
+                      <label>{t('register.email')} *</label>
+                      <input type="email" {...register('contact_email', { required: true })} />
+                      {errors.contact_email && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('register.phone')} *</label>
+                      <input {...register('contact_phone', { required: true })} />
+                      {errors.contact_phone && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    {/* Football: Team name, Club, Contact, Email, Phone */}
+                    <div className="form-group">
+                      <label>{t('register.teamName')} *</label>
+                      <input {...register('name', { required: true })} />
+                      {errors.name && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('register.club')} *</label>
+                      <input {...register('club', { required: true })} />
+                      {errors.club && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('register.contactName')} *</label>
+                      <input {...register('contact_name', { required: true })} />
+                      {errors.contact_name && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('register.email')} *</label>
+                      <input type="email" {...register('contact_email', { required: true })} />
+                      {errors.contact_email && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                    <div className="form-group">
+                      <label>{t('register.phone')} *</label>
+                      <input {...register('contact_phone', { required: true })} />
+                      {errors.contact_phone && <span className="error-message">{t('common.required')}</span>}
+                    </div>
+                  </>
+                )}
 
-                {/* Club */}
-                <div className="form-group">
-                  <label>{t('register.club')} *</label>
-                  <input {...register('club', { required: true })} />
-                  {errors.club && (
-                    <span className="error-message">{t('common.required')}</span>
-                  )}
-                </div>
-
-                {/* Contact name */}
-                <div className="form-group">
-                  <label>{t('register.contactName')} *</label>
-                  <input {...register('contact_name', { required: true })} />
-                  {errors.contact_name && (
-                    <span className="error-message">{t('common.required')}</span>
-                  )}
-                </div>
-
-                {/* Email */}
-                <div className="form-group">
-                  <label>{t('register.email')} *</label>
-                  <input
-                    type="email"
-                    {...register('contact_email', { required: true })}
-                  />
-                  {errors.contact_email && (
-                    <span className="error-message">{t('common.required')}</span>
-                  )}
-                </div>
-
-                {/* Phone */}
-                <div className="form-group">
-                  <label>{t('register.phone')} *</label>
-                  <input {...register('contact_phone', { required: true })} />
-                  {errors.contact_phone && (
-                    <span className="error-message">{t('common.required')}</span>
-                  )}
-                </div>
-
-                {/* Players collapsible */}
-                <div
+                {/* Players collapsible — football only */}
+                {tournament?.sport !== 'beach_volleyball' && <div
                   style={{
                     border: '1px solid var(--color-border, #e2e8f0)',
                     borderRadius: '8px',
@@ -517,7 +527,7 @@ export default function Register() {
                       </button>
                     </div>
                   )}
-                </div>
+                </div>}
 
                 {/* Submit error */}
                 {submitError && (

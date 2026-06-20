@@ -201,7 +201,10 @@
     "away": "Away",
     "upcomingFixtures": "Upcoming fixtures",
     "completedFixtures": "Completed fixtures",
-    "noFixtures": "No fixtures"
+    "noFixtures": "No fixtures",
+    "player1": "Player 1",
+    "player2": "Player 2",
+    "pairPreview": "Pair name"
   },
   "fixture": {
     "title": "Fixtures",
@@ -368,7 +371,10 @@
     "groupFull": "This division is full. No more spots available.",
     "notFound": "Tournament not found.",
     "error": "An error occurred. Please try again.",
-    "removePlayer": "Remove player"
+    "removePlayer": "Remove player",
+    "player1Name": "Player 1 name",
+    "player2Name": "Player 2 name",
+    "pairName": "Pair name"
   },
   "registration": {
     "title": "Team application",
