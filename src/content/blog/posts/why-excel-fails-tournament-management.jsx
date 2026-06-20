@@ -73,7 +73,7 @@ export default function WhyExcelFailsPost() {
         Sunday, it is probably fine.
       </p>
       <p>
-        The problems start at scale — multiple age groups, multiple pitches, 20+ teams,
+        The problems start at scale — multiple divisions, multiple pitches, 20+ teams,
         real-time pressure, coaches demanding updates. That is when the tournament spreadsheet
         reveals three failure modes that no formula can fix.
       </p>
@@ -129,7 +129,7 @@ export default function WhyExcelFailsPost() {
       <h2>Failure Mode 3: Multi-Pitch Scheduling Becomes a Puzzle</h2>
       <p>
         A single-pitch tournament schedule in Excel is manageable. Two or more pitches and
-        multiple age groups sharing the same venue is where it breaks completely.
+        multiple divisions sharing the same venue is where it breaks completely.
       </p>
       <p>
         Manual multi-pitch scheduling in a tournament spreadsheet means enforcing these
@@ -139,11 +139,11 @@ export default function WhyExcelFailsPost() {
         <li>No team plays twice at the same time</li>
         <li>No two matches on the same pitch at the same time</li>
         <li>Minimum rest time between consecutive games for each team</li>
-        <li>Age groups do not share a pitch in the same slot if field sizes differ</li>
+        <li>Divisions do not share a pitch in the same slot if field sizes differ</li>
       </ul>
       <p>
         Excel has no concept of "this team is already playing." You check it visually,
-        manually, for every fixture. A 3-pitch, 3-age-group tournament with 60 matches
+        manually, for every fixture. A 3-pitch, 3-division tournament with 60 matches
         means hundreds of manual cross-checks. Miss one and two teams show up at Pitch 2
         at 10:30 with no referee and no resolution plan.
       </p>
@@ -151,7 +151,7 @@ export default function WhyExcelFailsPost() {
         <strong>What works instead:</strong> automatic schedule generation with conflict
         detection built in. You set match duration, rest time, and the number of pitches.
         The software distributes fixtures across pitches and time slots without conflicts.
-        The entire schedule for all age groups is generated in seconds.
+        The entire schedule for all divisions is generated in seconds.
       </p>
 
       <h2>The Hidden Cost of "Free"</h2>
@@ -163,7 +163,7 @@ export default function WhyExcelFailsPost() {
       </p>
       <p>
         For a one-off 4-team kickabout, the spreadsheet is fine. For anything with more
-        than one pitch, more than one age group, or participants who expect live information,
+        than one pitch, more than one division, or participants who expect live information,
         it creates more work than it saves.
       </p>
 

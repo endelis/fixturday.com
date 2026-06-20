@@ -18,8 +18,8 @@ const entries = [
       },
       {
         type: 'new',
-        title: 'Age group tabs on admin Standings',
-        body: 'When a tournament has multiple age groups, pill tabs appear at the top of the Standings page so you can switch between categories with a single click. Print still outputs all groups.',
+        title: 'Division tabs on admin Standings',
+        body: 'When a tournament has multiple divisions, pill tabs appear at the top of the Standings page so you can switch between categories with a single click. Print still outputs all divisions.',
       },
       {
         type: 'improved',
@@ -28,8 +28,8 @@ const entries = [
       },
       {
         type: 'improved',
-        title: 'Scheduler avoids cross-age-group pitch conflicts',
-        body: 'When generating a fixture schedule, the system now checks all other age groups\' existing bookings on the same pitches and date, then automatically works around them. A banner shows how many existing games were detected.',
+        title: 'Scheduler avoids cross-division pitch conflicts',
+        body: 'When generating a fixture schedule, the system now checks all other divisions\' existing bookings on the same pitches and date, then automatically works around them. A banner shows how many existing games were detected.',
       },
       {
         type: 'improved',
