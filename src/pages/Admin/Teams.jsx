@@ -56,10 +56,20 @@ export default function Teams() {
   }
 
   async function updateStatus(teamId, status) {
+    if (status === 'confirmed' && ageGroup?.max_teams) {
+      const { count, error: cntErr } = await supabase
+        .from('teams')
+        .select('id', { count: 'exact', head: true })
+        .eq('age_group_id', ageGroupId)
+        .eq('status', 'confirmed')
+      if (!cntErr && count >= ageGroup.max_teams) {
+        toast(t('team.maxTeamsReached'), 'error')
+        return
+      }
+    }
     const { error } = await supabase.from('teams').update({ status }).eq('id', teamId)
     if (error) { toast(t('common.error'), 'error'); return }
-    const msg = status === 'confirmed' ? t('team.confirmed') : t('team.rejected')
-    toast(msg)
+    toast(status === 'confirmed' ? t('team.confirmed') : t('team.rejected'))
     load()
   }
 
@@ -113,13 +123,38 @@ export default function Teams() {
 
   async function bulkApprove() {
     if (!confirm(t('team.confirmApproveAll'))) return
-    const pendingIds = teams.filter(t => t.status === 'pending').map(t => t.id)
+    const pendingTeams = teams.filter(tm => tm.status === 'pending')
+
+    let idsToApprove = pendingTeams.map(tm => tm.id)
+
+    if (ageGroup?.max_teams) {
+      const { count: confirmedCount, error: cntErr } = await supabase
+        .from('teams')
+        .select('id', { count: 'exact', head: true })
+        .eq('age_group_id', ageGroupId)
+        .eq('status', 'confirmed')
+      if (!cntErr) {
+        const slots = Math.max(0, ageGroup.max_teams - (confirmedCount ?? 0))
+        if (slots === 0) {
+          toast(t('team.maxTeamsReached'), 'error')
+          return
+        }
+        idsToApprove = idsToApprove.slice(0, slots)
+      }
+    }
+
     const { error } = await supabase
       .from('teams')
       .update({ status: 'confirmed' })
-      .in('id', pendingIds)
+      .in('id', idsToApprove)
     if (error) { toast(t('common.error'), 'error'); return }
-    toast(t('team.allApproved'))
+
+    const skipped = pendingTeams.length - idsToApprove.length
+    if (skipped > 0) {
+      toast(t('team.bulkPartial', { approved: idsToApprove.length, skipped }), 'error')
+    } else {
+      toast(t('team.allApproved'))
+    }
     load()
   }
 

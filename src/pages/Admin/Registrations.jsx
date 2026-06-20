@@ -10,7 +10,7 @@ export default function Registrations() {
   const { user, loading: authLoading } = useAuth()
   const { t } = useTranslation()
   const { tournament } = useOutletContext()
-  const { registrations, approve, reject, loading, error } = useRegistrations(tournament.id)
+  const { registrations, capacity, approve, reject, loading, error } = useRegistrations(tournament.id)
   const [tab, setTab] = useState('pending')
   const [approvingAll, setApprovingAll] = useState(false)
 
@@ -22,26 +22,53 @@ export default function Registrations() {
   const rejected = registrations.filter(r => r.status === 'rejected')
   const displayed = { pending, approved, rejected }[tab]
 
-  async function handleApprove(id) {
+  function isDivisionFull(ageGroupId) {
+    const cap = capacity[ageGroupId]
+    return cap ? cap.confirmed >= cap.max : false
+  }
+
+  function capacityLabel(ageGroupId) {
+    const cap = capacity[ageGroupId]
+    if (!cap) return null
+    if (cap.confirmed >= cap.max) return { text: t('admin.registrations.divisionFull'), full: true }
+    const left = cap.max - cap.confirmed
+    return { text: `${cap.confirmed}/${cap.max}`, full: false, left }
+  }
+
+  async function handleApprove(id, ageGroupId) {
+    if (isDivisionFull(ageGroupId)) {
+      toast(t('team.maxTeamsReached'), 'error')
+      return
+    }
     if (!window.confirm(t('admin.registrations.approveConfirm'))) return
     try {
       await approve(id)
       toast(t('admin.registrations.approved'))
-    } catch {
-      toast(t('common.error'), 'error')
+    } catch (err) {
+      toast(err?.message === 'MAX_TEAMS_REACHED' ? t('team.maxTeamsReached') : t('common.error'), 'error')
     }
   }
 
   async function handleApproveAll() {
     if (!window.confirm(t('admin.registrations.approveAllConfirm', { count: pending.length }))) return
     setApprovingAll(true)
-    let failed = 0
+    let approved = 0
+    let hitCapacity = false
     for (const reg of pending) {
-      try { await approve(reg.id) } catch { failed++ }
+      if (hitCapacity) break
+      try {
+        await approve(reg.id)
+        approved++
+      } catch (err) {
+        if (err?.message === 'MAX_TEAMS_REACHED') { hitCapacity = true }
+      }
     }
     setApprovingAll(false)
-    if (failed > 0) toast(t('common.error'), 'error')
-    else toast(t('admin.registrations.approveAllDone'), 'success')
+    if (hitCapacity) {
+      toast(t('team.maxTeamsReached'), 'error')
+    } else {
+      toast(t('admin.registrations.approveAllDone'), 'success')
+    }
   }
 
   async function handleReject(id) {
@@ -126,43 +153,67 @@ export default function Registrations() {
               </tr>
             </thead>
             <tbody>
-              {displayed.map(reg => (
-                <tr key={reg.id}>
-                  <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
-                    {format(new Date(reg.created_at), 'dd.MM.yyyy HH:mm')}
-                  </td>
-                  <td style={{ fontWeight: 600 }}>{reg.team_name}</td>
-                  <td>{reg.age_group?.name ?? '—'}</td>
-                  <td>{reg.manager_name}</td>
-                  <td>
-                    <a
-                      href={`mailto:${reg.manager_email}`}
-                      style={{ color: 'var(--color-accent)', textDecoration: 'none' }}
-                    >
-                      {reg.manager_email}
-                    </a>
-                  </td>
-                  {tab === 'pending' && (
-                    <td>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          className="btn-primary btn-sm"
-                          onClick={() => handleApprove(reg.id)}
-                        >
-                          {t('admin.registrations.approve')}
-                        </button>
-                        <button
-                          className="btn-secondary btn-sm"
-                          onClick={() => handleReject(reg.id)}
-                          style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
-                        >
-                          {t('admin.registrations.reject')}
-                        </button>
-                      </div>
+              {displayed.map(reg => {
+                const cap = capacityLabel(reg.age_group_id)
+                const full = isDivisionFull(reg.age_group_id)
+                return (
+                  <tr key={reg.id}>
+                    <td style={{ whiteSpace: 'nowrap', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                      {format(new Date(reg.created_at), 'dd.MM.yyyy HH:mm')}
                     </td>
-                  )}
-                </tr>
-              ))}
+                    <td style={{ fontWeight: 600 }}>{reg.team_name}</td>
+                    <td>
+                      <span>{reg.age_group?.name ?? '—'}</span>
+                      {cap && (
+                        <span style={{
+                          marginLeft: '0.4rem',
+                          fontSize: '0.72rem',
+                          fontWeight: 700,
+                          padding: '0.1rem 0.4rem',
+                          borderRadius: '4px',
+                          background: cap.full ? 'rgba(231,76,60,0.15)' : 'rgba(240,165,0,0.12)',
+                          color: cap.full ? 'var(--color-danger)' : 'var(--color-accent)',
+                          border: `1px solid ${cap.full ? 'rgba(231,76,60,0.3)' : 'rgba(240,165,0,0.3)'}`,
+                          whiteSpace: 'nowrap',
+                        }}>
+                          {cap.text}
+                        </span>
+                      )}
+                    </td>
+                    <td>{reg.manager_name}</td>
+                    <td>
+                      <a
+                        href={`mailto:${reg.manager_email}`}
+                        style={{ color: 'var(--color-accent)', textDecoration: 'none' }}
+                      >
+                        {reg.manager_email}
+                      </a>
+                    </td>
+                    {tab === 'pending' && (
+                      <td>
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button
+                            className="btn-primary btn-sm"
+                            onClick={() => handleApprove(reg.id, reg.age_group_id)}
+                            disabled={full}
+                            title={full ? t('team.maxTeamsReached') : undefined}
+                            style={full ? { opacity: 0.45, cursor: 'not-allowed' } : {}}
+                          >
+                            {t('admin.registrations.approve')}
+                          </button>
+                          <button
+                            className="btn-secondary btn-sm"
+                            onClick={() => handleReject(reg.id)}
+                            style={{ color: 'var(--color-danger)', borderColor: 'var(--color-danger)' }}
+                          >
+                            {t('admin.registrations.reject')}
+                          </button>
+                        </div>
+                      </td>
+                    )}
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>

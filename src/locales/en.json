@@ -172,6 +172,8 @@
     "approveAll": "Approve all",
     "confirmApproveAll": "Approve all pending teams?",
     "allApproved": "All teams approved!",
+    "maxTeamsReached": "Division is full — no more teams can be confirmed.",
+    "bulkPartial": "{{approved}} approved — division is now full, {{skipped}} skipped.",
     "position": "Position",
     "positionAny": "— Position —",
     "positions": {
@@ -832,7 +834,10 @@
       "colActions": "Actions",
       "approveAll": "Approve all ({{count}})",
       "approveAllConfirm": "Approve all {{count}} pending applications?",
-      "approveAllDone": "All applications approved."
+      "approveAllDone": "All applications approved.",
+      "divisionFull": "Full",
+      "spotsLeft": "{{n}} spot left",
+      "spotsLeft_plural": "{{n}} spots left"
     },
     "tournamentLogo": {
       "title": "Tournament logo (Storage)",
