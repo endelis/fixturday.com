@@ -71,7 +71,7 @@ export default function PlayoffDepthPost() {
       <p>
         The advancing teams per group must be a whole number. This isn't a software preference — it's
         bracket arithmetic. If you choose Semi-Finals (4 slots) with 3 groups, you'd need 1.33 teams
-        advancing per group, which is impossible. Fixturday shows this validation live in the Age Groups
+        advancing per group, which is impossible. Fixturday shows this validation live in the Divisions
         editor and blocks saving until the numbers work.
       </p>
       <p>
@@ -118,7 +118,7 @@ export default function PlayoffDepthPost() {
 
       <h2>How to Set It</h2>
       <p>
-        In the Age Groups editor: set format to Group + Knockout, choose Playoff depth, then pick
+        In the Divisions editor: set format to Group + Knockout, choose Playoff depth, then pick
         your group count. The live validation row shows the advancing-per-group number in green
         (valid) or red (invalid). Once it's green, save and generate fixtures from the Fixtures page.
         The full bracket — group games and all knockout placeholder matchups — is generated in one step.

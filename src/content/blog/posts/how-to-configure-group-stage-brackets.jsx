@@ -112,7 +112,7 @@ export default function GroupStageBracketsPost() {
 
       <h2>How to Set It in Fixturday</h2>
       <ol>
-        <li>Go to <strong>Age Groups</strong> and click Edit on the relevant group.</li>
+        <li>Go to <strong>Divisions</strong> and click Edit on the relevant division.</li>
         <li>Set the format to <strong>Group + Knockout</strong>.</li>
         <li>Choose <strong>Number of groups</strong> (2, 3, or 4) and <strong>Playoff depth</strong>.</li>
         <li>The live validation row shows advancing teams per group. Green means it divides cleanly; red means pick a different combination.</li>

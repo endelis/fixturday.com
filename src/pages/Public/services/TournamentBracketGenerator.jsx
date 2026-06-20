@@ -28,7 +28,7 @@ const steps = [
   {
     n: '01',
     title: 'Enter your teams',
-    desc: 'Add team names manually or let teams register themselves online. Works for 4 to 64+ teams across multiple age groups or divisions.',
+    desc: 'Add team names manually or let teams register themselves online. Works for 4 to 64+ teams across multiple divisions.',
   },
   {
     n: '02',
