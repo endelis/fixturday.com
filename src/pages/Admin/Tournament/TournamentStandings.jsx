@@ -84,22 +84,35 @@ const thCStyle = { ...thStyle, textAlign: 'center' }
 const tdStyle = { padding: '0.6rem 0.4rem' }
 const tdCStyle = { ...tdStyle, textAlign: 'center' }
 
-function StandingsTable({ rows, advancingCount, t }) {
+function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
+  const isBvb = sport === 'beach_volleyball'
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table className="standings-table" style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+      <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
         <thead>
           <tr style={{ borderBottom: '2px solid rgba(255,255,255,0.12)' }}>
             <th style={thStyle}>#</th>
             <th style={thStyle}>{t('standings.team')}</th>
             <th style={thCStyle}>{t('standings.played')}</th>
             <th style={thCStyle}>{t('standings.won')}</th>
-            <th style={thCStyle}>{t('standings.drawn')}</th>
-            <th style={thCStyle}>{t('standings.lost')}</th>
-            <th style={thCStyle}>{t('standings.gf')}</th>
-            <th style={thCStyle}>{t('standings.ga')}</th>
-            <th style={thCStyle}>{t('standings.gd')}</th>
-            <th style={{ ...thCStyle, color: 'var(--color-accent)', fontWeight: 700 }}>{t('standings.points')}</th>
+            {isBvb ? (
+              <>
+                <th style={thCStyle}>{t('standings.lost')}</th>
+                <th style={thCStyle}>{t('standings.setsWon')}</th>
+                <th style={thCStyle}>{t('standings.setsAgainst')}</th>
+                <th style={thCStyle}>{t('standings.setRatio')}</th>
+                <th style={{ ...thCStyle, color: 'var(--color-accent)', fontWeight: 700 }}>{t('standings.pointRatio')}</th>
+              </>
+            ) : (
+              <>
+                <th style={thCStyle}>{t('standings.drawn')}</th>
+                <th style={thCStyle}>{t('standings.lost')}</th>
+                <th style={thCStyle}>{t('standings.gf')}</th>
+                <th style={thCStyle}>{t('standings.ga')}</th>
+                <th style={thCStyle}>{t('standings.gd')}</th>
+                <th style={{ ...thCStyle, color: 'var(--color-accent)', fontWeight: 700 }}>{t('standings.points')}</th>
+              </>
+            )}
           </tr>
         </thead>
         <tbody>
@@ -122,12 +135,24 @@ function StandingsTable({ rows, advancingCount, t }) {
               </td>
               <td style={tdCStyle}>{row.played}</td>
               <td style={tdCStyle}>{row.won}</td>
-              <td style={tdCStyle}>{row.drawn}</td>
-              <td style={tdCStyle}>{row.lost}</td>
-              <td style={tdCStyle}>{row.gf}</td>
-              <td style={tdCStyle}>{row.ga}</td>
-              <td style={tdCStyle}>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-              <td style={{ ...tdCStyle, fontWeight: 700 }}>{row.points}</td>
+              {isBvb ? (
+                <>
+                  <td style={tdCStyle}>{row.lost}</td>
+                  <td style={tdCStyle}>{row.sets_won ?? 0}</td>
+                  <td style={tdCStyle}>{(row.sets_played ?? 0) - (row.sets_won ?? 0)}</td>
+                  <td style={tdCStyle}>{row.set_ratio != null ? row.set_ratio.toFixed(3) : '—'}</td>
+                  <td style={{ ...tdCStyle, fontWeight: 700 }}>{row.point_ratio != null ? row.point_ratio.toFixed(3) : '—'}</td>
+                </>
+              ) : (
+                <>
+                  <td style={tdCStyle}>{row.drawn}</td>
+                  <td style={tdCStyle}>{row.lost}</td>
+                  <td style={tdCStyle}>{row.gf}</td>
+                  <td style={tdCStyle}>{row.ga}</td>
+                  <td style={tdCStyle}>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                  <td style={{ ...tdCStyle, fontWeight: 700 }}>{row.points}</td>
+                </>
+              )}
             </tr>
           ))}
         </tbody>
@@ -145,15 +170,18 @@ export default function TournamentStandings() {
   const [selectedAgId, setSelectedAgId] = useState(null)
   const [error, setError] = useState(null)
   const [advancing, setAdvancing] = useState(null)
+  const [tournamentSport, setTournamentSport] = useState('football')
 
   async function load() {
     setLoading(true)
 
-    const { data: ageGroups, error: agError } = await supabase
-      .from('age_groups')
-      .select('id, name, format, teams_advancing')
-      .eq('tournament_id', id)
-      .order('name')
+    const [{ data: tournRow }, { data: ageGroups, error: agError }] = await Promise.all([
+      supabase.from('tournaments').select('sport').eq('id', id).single(),
+      supabase.from('age_groups').select('id, name, format, teams_advancing').eq('tournament_id', id).order('name'),
+    ])
+
+    const sport = tournRow?.sport ?? 'football'
+    setTournamentSport(sport)
 
     if (agError) { setError(agError.message); setLoading(false); return }
     if (!ageGroups?.length) { setLoading(false); return }
@@ -182,7 +210,7 @@ export default function TournamentStandings() {
 
       const fixtureIds = (allFixtures ?? []).filter(f => f.home_team_id || f.away_team_id).map(f => f.id)
       const { data: fixtureResults } = fixtureIds.length > 0
-        ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fixtureIds)
+        ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals, sport_data').in('fixture_id', fixtureIds)
         : { data: [] }
 
       if (ag.format === 'group_knockout' && groupStageIds.size > 0) {
@@ -194,7 +222,7 @@ export default function TournamentStandings() {
           const gFix = groupFixtures.filter(f => f.group_label === label)
           const teamIds = new Set([...gFix.map(f => f.home_team_id), ...gFix.map(f => f.away_team_id)].filter(Boolean))
           const gTeams = (teams ?? []).filter(t => teamIds.has(t.id))
-          return { label, rows: calculateStandings(gTeams, gFix, fixtureResults ?? []) }
+          return { label, rows: calculateStandings(gTeams, gFix, fixtureResults ?? [], sport) }
         })
 
         const allGroupDone = groupFixtures.length > 0 && groupFixtures.every(f => f.status === 'completed')
@@ -202,7 +230,7 @@ export default function TournamentStandings() {
 
         results.push({ ag, type: 'group_knockout', perGroup, knockoutFixtures, allGroupDone, knockoutHasTeams })
       } else {
-        const rows = calculateStandings(teams ?? [], allFixtures ?? [], fixtureResults ?? [])
+        const rows = calculateStandings(teams ?? [], allFixtures ?? [], fixtureResults ?? [], sport)
         results.push({ ag, type: 'simple', rows })
       }
     }
@@ -344,7 +372,7 @@ export default function TournamentStandings() {
                       </h4>
                       {rows.length === 0
                         ? <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
-                        : <StandingsTable rows={rows} advancingCount={agData.ag.teams_advancing ?? 2} t={t} />
+                        : <StandingsTable rows={rows} advancingCount={agData.ag.teams_advancing ?? 2} t={t} sport={tournamentSport} />
                       }
                     </div>
                   ))}
@@ -369,7 +397,7 @@ export default function TournamentStandings() {
               ) : (
                 agData.rows.length === 0
                   ? <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
-                  : <StandingsTable rows={agData.rows} t={t} />
+                  : <StandingsTable rows={agData.rows} t={t} sport={tournamentSport} />
               )}
             </div>
           ))}

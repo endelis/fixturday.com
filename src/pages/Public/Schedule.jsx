@@ -7,6 +7,7 @@ import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
 import TeamLogo from '../../components/TeamLogo'
 import { useSEO } from '../../hooks/useSEO'
+import { formatBeachScore } from '../../utils/beachVolleyball'
 
 export default function Schedule() {
   const { t } = useTranslation()
@@ -50,7 +51,7 @@ export default function Schedule() {
     async function load() {
       const { data: agData, error: agErr } = await supabase
         .from('age_groups')
-        .select('*, tournaments(id, name, slug)')
+        .select('*, tournaments(id, name, slug, sport)')
         .eq('id', ageGroupId)
         .single()
 
@@ -86,7 +87,7 @@ export default function Schedule() {
         const fixtureIds = fixtureList.map(f => f.id)
         const { data: results } = await supabase
           .from('fixture_results')
-          .select('fixture_id, home_goals, away_goals')
+          .select('fixture_id, home_goals, away_goals, sport_data')
           .in('fixture_id', fixtureIds)
         if (results?.length) {
           const resultMap = Object.fromEntries(results.map(r => [r.fixture_id, r]))
@@ -119,6 +120,8 @@ export default function Schedule() {
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (!ag) return <div className="loading">{t('common.error')}</div>
+
+  const tournamentSport = ag.tournaments?.sport ?? 'football'
 
   function teamName(teamId, name, placeholder) {
     if (teamId) return name ?? '?'
@@ -172,9 +175,11 @@ export default function Schedule() {
             </span>
             {f.home_team?.logo_path && <TeamLogo size="sm" logoPath={f.home_team.logo_path} alt={f.home_team?.name ?? ''} />}
           </span>
-          <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', flexShrink: 0, width: '4.5rem', textAlign: 'center' }}>
+          <span style={{ fontFamily: 'var(--font-heading)', fontSize: tournamentSport === 'beach_volleyball' ? '0.78rem' : '1.125rem', flexShrink: 0, width: tournamentSport === 'beach_volleyball' ? '7.5rem' : '4.5rem', textAlign: 'center' }}>
             {result
-              ? `${result.home_goals} : ${result.away_goals}`
+              ? tournamentSport === 'beach_volleyball'
+                ? formatBeachScore(result.sport_data)
+                : `${result.home_goals} : ${result.away_goals}`
               : f.status === 'live'
                 ? <span className="live-badge">LIVE</span>
                 : t('fixture.vs')}

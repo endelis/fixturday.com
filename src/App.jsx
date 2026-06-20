@@ -28,6 +28,7 @@ const Match           = lazy(() => import('./pages/Public/Match'))
 const FootballTournament        = lazy(() => import('./pages/Public/services/FootballTournament'))
 const TournamentBracketGenerator = lazy(() => import('./pages/Public/services/TournamentBracketGenerator'))
 const FreeTournamentSoftware    = lazy(() => import('./pages/Public/services/FreeTournamentSoftware'))
+const BeachVolleyballTournament = lazy(() => import('./pages/Public/services/BeachVolleyballTournament'))
 const Team            = lazy(() => import('./pages/Public/Team'))
 const PublicInfo      = lazy(() => import('./pages/Public/Info'))
 const Registration    = lazy(() => import('./pages/Public/Registration'))
@@ -76,6 +77,7 @@ export default function App() {
           <Route path="/football-tournament-software"        element={<FootballTournament />} />
 <Route path="/tournament-bracket-generator"        element={<TournamentBracketGenerator />} />
           <Route path="/free-tournament-software"            element={<FreeTournamentSoftware />} />
+          <Route path="/beach-volleyball-tournament-software" element={<BeachVolleyballTournament />} />
           <Route path="/privacy-policy"                      element={<Privacy />} />
           <Route path="/terms-of-use"                        element={<Terms />} />
           <Route path="/cookie-policy"                       element={<CookiesPage />} />

@@ -25,9 +25,10 @@ export default function TournamentNew() {
   const { user, loading: authLoading } = useAuth()
   const navigate = useNavigate()
   const { t } = useTranslation()
-  const { register, handleSubmit, setValue, formState: { errors, isSubmitting } } = useForm({
+  const { register, handleSubmit, setValue, watch, formState: { errors, isSubmitting } } = useForm({
     defaultValues: { sport: 'football', is_active: true, first_game_time: '09:00', last_game_time: '18:00' }
   })
+  const selectedSport = watch('sport')
   const [logoFile, setLogoFile] = useState(null)
   const [logoPreview, setLogoPreview] = useState(null)
   const [logoFileName, setLogoFileName] = useState(null)
@@ -74,7 +75,6 @@ export default function TournamentNew() {
   async function onSubmit(values) {
     const submitData = {
       ...values,
-      sport: 'football',
       participant_type: 'team',
       start_date: startDate || null,
       end_date: endDate || null,
@@ -152,6 +152,41 @@ export default function TournamentNew() {
             <label>{t('tournament.slug')} *</label>
             <input {...register('slug', { required: t('common.required') })} />
             {errors.slug && <span className="error-message">{errors.slug.message}</span>}
+          </div>
+
+          {/* Sport selector */}
+          <input type="hidden" {...register('sport')} />
+          <div className="form-group">
+            <label>{t('tournament.sport')}</label>
+            <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap' }}>
+              {[
+                { value: 'football',         label: t('sports.football'),         emoji: '⚽' },
+                { value: 'beach_volleyball', label: t('sports.beach_volleyball'), emoji: '🏐' },
+              ].map(({ value, label, emoji }) => {
+                const active = selectedSport === value
+                return (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setValue('sport', value, { shouldValidate: true })}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      padding: '0.625rem 1.25rem',
+                      borderRadius: 'var(--radius)',
+                      border: `1px solid ${active ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                      background: active ? 'rgba(240,165,0,0.12)' : 'transparent',
+                      color: active ? 'var(--color-accent)' : 'var(--color-text-muted)',
+                      cursor: 'pointer',
+                      fontWeight: active ? 600 : 400,
+                      fontSize: '0.9rem',
+                      transition: 'all var(--transition-fast)',
+                    }}
+                  >
+                    <span>{emoji}</span> {label}
+                  </button>
+                )
+              })}
+            </div>
           </div>
 
           {/* Country */}

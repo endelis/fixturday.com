@@ -7,6 +7,14 @@ import { formatTime } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
+import {
+  validateBeachVolleyballMatch,
+  computeSportData,
+  setWinner,
+  setsFromSportData,
+  emptySetSlots,
+  formatBeachScore,
+} from '../../utils/beachVolleyball'
 
 const inputSx = {
   background: 'var(--color-surface)',
@@ -16,6 +24,102 @@ const inputSx = {
   borderRadius: 'var(--radius-sm)',
   fontSize: '0.875rem',
   fontFamily: 'var(--font-body)',
+}
+
+const setInputSx = {
+  width: '3.5rem',
+  textAlign: 'center',
+  fontSize: '1.25rem',
+  fontFamily: 'var(--font-heading)',
+  padding: '0.4rem 0.25rem',
+  minHeight: '44px',
+  background: 'var(--color-surface)',
+  border: '2px solid var(--color-accent)',
+  color: 'var(--color-text)',
+  borderRadius: '6px',
+}
+
+/**
+ * Set-by-set score entry for beach volleyball.
+ * Set 2 unlocks when Set 1 is complete.
+ * Set 3 unlocks only when it's 1-1 after Set 2.
+ */
+function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, isPostponed, t }) {
+  function updateSet(idx, side, value) {
+    const next = sets.map((s, i) => i === idx ? { ...s, [side]: value } : s)
+    onSetsChange(next)
+  }
+
+  const w1 = setWinner(sets[0].home, sets[0].away, false)
+  const w2 = setWinner(sets[1].home, sets[1].away, false)
+  const show2 = w1 !== null
+  const show3 = w1 !== null && w2 !== null && w1 !== w2
+
+  const SET_LABELS = ['Set 1', 'Set 2', 'Set 3 (to 15)']
+
+  return (
+    <div>
+      <div style={{ display: 'flex', alignItems: 'flex-start', gap: '1rem', flexWrap: 'wrap', marginBottom: '0.75rem' }}>
+        <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem', paddingTop: '0.4rem' }}>
+          {f.home_team?.name}
+        </span>
+
+        <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
+          {[0, 1, 2].map(idx => {
+            if (idx === 1 && !show2) return null
+            if (idx === 2 && !show3) return null
+            const isWon = idx === 0 ? w1 : idx === 1 ? w2 : setWinner(sets[2].home, sets[2].away, true)
+            return (
+              <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
+                <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  {SET_LABELS[idx]}
+                </span>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.25rem' }}>
+                  <input
+                    type="number" min="0" max="99"
+                    value={sets[idx].home}
+                    disabled={isPostponed}
+                    onChange={e => updateSet(idx, 'home', e.target.value)}
+                    style={{
+                      ...setInputSx,
+                      borderColor: isWon === 'home' ? 'var(--color-success)' : isWon === 'away' ? 'var(--color-danger)' : 'var(--color-accent)',
+                    }}
+                  />
+                  <span style={{ color: 'var(--color-text-muted)', fontSize: '1rem' }}>:</span>
+                  <input
+                    type="number" min="0" max="99"
+                    value={sets[idx].away}
+                    disabled={isPostponed}
+                    onChange={e => updateSet(idx, 'away', e.target.value)}
+                    style={{
+                      ...setInputSx,
+                      borderColor: isWon === 'away' ? 'var(--color-success)' : isWon === 'home' ? 'var(--color-danger)' : 'var(--color-accent)',
+                    }}
+                  />
+                </div>
+              </div>
+            )
+          })}
+        </div>
+
+        <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem', paddingTop: '0.4rem' }}>
+          {f.away_team?.name}
+        </span>
+
+        {!isPostponed && (
+          <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem', alignSelf: 'flex-end' }} onClick={onSave} disabled={saving}>
+            {saving ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
+          </button>
+        )}
+      </div>
+
+      {hasResult && f.fixture_results?.[0]?.sport_data && (
+        <div style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', paddingLeft: '0.25rem' }}>
+          {formatBeachScore(f.fixture_results[0].sport_data)}
+        </div>
+      )}
+    </div>
+  )
 }
 
 export default function Matchday() {
@@ -32,6 +136,9 @@ export default function Matchday() {
   const [filterStatus, setFilterStatus] = useState('all')
   const [tournamentId, setTournamentId] = useState(null)
   const [playoffFixtures, setPlayoffFixtures] = useState([])
+  const [tournamentSport, setTournamentSport] = useState('football')
+  // Beach volleyball set scores: { [fixtureId]: [{home,away},{home,away},{home,away}] }
+  const [sets, setSets] = useState({})
 
   // Events state: { [fixtureId]: [event, ...] }
   const [events, setEvents] = useState({})
@@ -53,7 +160,7 @@ export default function Matchday() {
         home_team:teams!home_team_id(id, name),
         away_team:teams!away_team_id(id, name),
         pitch:pitches(name, venues(name)),
-        stages(age_groups(name, tournaments(id, name)))
+        stages(age_groups(name, tournaments(id, name, sport)))
       `)
       .gte('kickoff_time', start)
       .lte('kickoff_time', end)
@@ -68,7 +175,7 @@ export default function Matchday() {
 
     // Fetch fixture_results separately — embedded joins silently drop rows for authenticated users
     const { data: resultData } = fixtureIds.length > 0
-      ? await supabase.from('fixture_results').select('id, fixture_id, home_goals, away_goals').in('fixture_id', fixtureIds)
+      ? await supabase.from('fixture_results').select('id, fixture_id, home_goals, away_goals, sport_data').in('fixture_id', fixtureIds)
       : { data: [] }
     const resultMap = Object.fromEntries((resultData ?? []).map(r => [r.fixture_id, r]))
     const allFxWithResults = allFx.map(f => ({
@@ -81,12 +188,18 @@ export default function Matchday() {
     const tId = allFxWithResults[0]?.stages?.age_groups?.tournaments?.id ?? null
     setTournamentId(tId)
 
+    const tSport = allFxWithResults[0]?.stages?.age_groups?.tournaments?.sport ?? 'football'
+    setTournamentSport(tSport)
+
     const init = {}
+    const initSets = {}
     allFxWithResults.forEach(f => {
       const r = f.fixture_results?.[0]
       init[f.id] = { home: r?.home_goals ?? 0, away: r?.away_goals ?? 0 }
+      initSets[f.id] = setsFromSportData(r?.sport_data)
     })
     setScores(init)
+    setSets(initSets)
 
     // Load events for all fixtures
     if (fixtureIds.length > 0) {
@@ -118,7 +231,7 @@ export default function Matchday() {
           const koFxIds = koList.map(f => f.id)
           let koResMap = {}
           if (koFxIds.length > 0) {
-            const { data: koRes } = await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', koFxIds)
+            const { data: koRes } = await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals, sport_data').in('fixture_id', koFxIds)
             koResMap = Object.fromEntries((koRes ?? []).map(r => [r.fixture_id, r]))
             const { data: koEvs } = await supabase.from('fixture_events').select('*, player:team_players(id, name, number), team:teams(id, name)').in('fixture_id', koFxIds).order('minute', { ascending: true, nullsFirst: false })
             const koEvMap = {}
@@ -152,8 +265,14 @@ export default function Matchday() {
           }
 
           const koScores = {}
-          koFull.forEach(f => { const r = f.fixture_results?.[0]; koScores[f.id] = { home: r?.home_goals ?? 0, away: r?.away_goals ?? 0 } })
+          const koSets = {}
+          koFull.forEach(f => {
+            const r = f.fixture_results?.[0]
+            koScores[f.id] = { home: r?.home_goals ?? 0, away: r?.away_goals ?? 0 }
+            koSets[f.id] = setsFromSportData(r?.sport_data)
+          })
           setScores(prev => ({ ...prev, ...koScores }))
+          setSets(prev => ({ ...prev, ...koSets }))
           setPlayoffFixtures(koFull)
         } else { setPlayoffFixtures([]) }
       } else { setPlayoffFixtures([]) }
@@ -255,9 +374,36 @@ export default function Matchday() {
 
   async function saveScore(f) {
     setSaving(prev => ({ ...prev, [f.id]: true }))
-    const score = scores[f.id] ?? { home: 0, away: 0 }
     const hasExisting = !!f.fixture_results?.[0]
 
+    if (tournamentSport === 'beach_volleyball') {
+      const allSlots = sets[f.id] ?? emptySetSlots()
+      const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
+      const validation = validateBeachVolleyballMatch(filledSets)
+      if (!validation.valid) {
+        toast(validation.error, 'error')
+        setSaving(prev => ({ ...prev, [f.id]: false }))
+        return
+      }
+      const sportData = computeSportData(filledSets)
+      const payload = {
+        home_goals: sportData.sets_home,
+        away_goals: sportData.sets_away,
+        sport_data: sportData,
+      }
+      const { error: resErr } = hasExisting
+        ? await supabase.from('fixture_results').update(payload).eq('fixture_id', f.id)
+        : await supabase.from('fixture_results').insert({ fixture_id: f.id, ...payload })
+      if (resErr) { toast(`${t('common.error')}: ${resErr.message}`, 'error'); setSaving(prev => ({ ...prev, [f.id]: false })); return }
+      await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+      toast(t('common.saved'))
+      setSaving(prev => ({ ...prev, [f.id]: false }))
+      load()
+      return
+    }
+
+    // ── Football ──────────────────────────────────────────────────────────────
+    const score = scores[f.id] ?? { home: 0, away: 0 }
     const { error: resErr } = hasExisting
       ? await supabase
           .from('fixture_results')
@@ -435,27 +581,40 @@ export default function Matchday() {
             )}
           </div>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-          <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.home_team?.name}</span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-            <input type="number" min="0" max="99" value={score.home} disabled={isPostponed}
-              onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } }))}
-              style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
-            />
-            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
-            <input type="number" min="0" max="99" value={score.away} disabled={isPostponed}
-              onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } }))}
-              style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
-            />
+        {tournamentSport === 'beach_volleyball' ? (
+          <BeachVolleyballScoreEntry
+            f={f}
+            sets={sets[f.id] ?? emptySetSlots()}
+            onSetsChange={newSets => setSets(p => ({ ...p, [f.id]: newSets }))}
+            onSave={() => saveScore(f)}
+            saving={saving[f.id]}
+            hasResult={hasResult}
+            isPostponed={isPostponed}
+            t={t}
+          />
+        ) : (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+            <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.home_team?.name}</span>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+              <input type="number" min="0" max="99" value={score.home} disabled={isPostponed}
+                onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } }))}
+                style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
+              />
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
+              <input type="number" min="0" max="99" value={score.away} disabled={isPostponed}
+                onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } }))}
+                style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
+              />
+            </div>
+            <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.away_team?.name}</span>
+            {!isPostponed && (
+              <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem' }} onClick={() => saveScore(f)} disabled={saving[f.id]}>
+                {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
+              </button>
+            )}
           </div>
-          <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.away_team?.name}</span>
-          {!isPostponed && (
-            <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem' }} onClick={() => saveScore(f)} disabled={saving[f.id]}>
-              {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
-            </button>
-          )}
-        </div>
-        {!isPostponed && (
+        )}
+        {!isPostponed && tournamentSport !== 'beach_volleyball' && (
           <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('matchday.events')}</div>
             {fixtureEvents.length > 0 && (

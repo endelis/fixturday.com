@@ -1,6 +1,7 @@
 {
   "sports": {
     "football": "Football",
+    "beach_volleyball": "Beach Volleyball",
     "unsupported": "Unsupported sport"
   },
   "participants": {
@@ -110,7 +111,9 @@
     "formats": {
       "round_robin": "Round robin",
       "knockout": "Knockout",
-      "group_knockout": "Group + knockout"
+      "group_knockout": "Group + knockout",
+      "double_elimination": "Double elimination",
+      "round_robin_playoff": "Round robin + playoff"
     },
     "groupKnockoutSettings": "Group + knockout settings",
     "groupsCount": "Number of groups",
@@ -279,7 +282,11 @@
     "teamsTitle": "Teams",
     "nextMatch": "Next match",
     "share": "Share",
-    "shareCopied": "Copied!"
+    "shareCopied": "Copied!",
+    "setsWon": "SW",
+    "setsAgainst": "SA",
+    "setRatio": "SR",
+    "pointRatio": "PR"
   },
   "playoff": {
     "final": "Final",
@@ -878,6 +885,18 @@
     "colHome": "Home",
     "colResult": "Result",
     "colAway": "Away"
+  },
+  "bracket": {
+    "winnersTitle": "Winners Bracket",
+    "losersTitle": "Losers Bracket",
+    "grandFinalTitle": "Grand Final",
+    "grandFinalReset": "Grand Final Reset",
+    "wbFinal": "WB Final",
+    "lbFinal": "LB Final",
+    "wbRound": "WB R{{n}}",
+    "lbRound": "LB R{{n}}",
+    "notGenerated": "Bracket not yet generated.",
+    "pending": "Pending"
   },
   "notFound": {
     "title": "Page not found",

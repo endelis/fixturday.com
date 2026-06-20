@@ -7,6 +7,7 @@ import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
 import ClassFilter from '../../components/ClassFilter'
 import { useSEO } from '../../hooks/useSEO'
+import DoubleEliminationBracket from '../../components/DoubleEliminationBracket'
 
 export default function Standings() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -69,7 +70,7 @@ export default function Standings() {
       // Age group always loads from the URL param — not the filter override
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
-        .select('*, tournaments(id, name, slug)')
+        .select('*, tournaments(id, name, slug, sport)')
         .eq('id', ageGroupId)
         .single()
 
@@ -84,7 +85,7 @@ export default function Standings() {
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
         supabase.from('teams').select('id, name').eq('age_group_id', effectiveId).eq('status', 'confirmed'),
         supabase.from('fixtures')
-          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, kickoff_time, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), pitch:pitches(name), stages!inner(age_group_id, type)')
+          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, home_placeholder, away_placeholder, kickoff_time, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), pitch:pitches(name), stages!inner(age_group_id, type, bracket)')
           .eq('stages.age_group_id', effectiveId),
       ])
       if (sibErr || tmErr || fxErr) { setLoadError('network'); setLoading(false); return }
@@ -131,8 +132,9 @@ export default function Standings() {
   if (!data?.ag) return <Navigate to={`/t/${slug}`} replace />
 
   const { ag, siblings, teams, fixtures, results } = data
-  const standings = calculateStandings(teams, fixtures, results)
   const tournament = ag.tournaments
+  const tournamentSport = tournament.sport ?? 'football'
+  const standings = calculateStandings(teams, fixtures, results, tournamentSport)
 
   const now = new Date()
   const nextFixture = fixtures
@@ -309,7 +311,11 @@ export default function Standings() {
           </div>
         )}
 
-        {standings.length === 0 ? (
+        {ag.format === 'double_elimination' ? (
+          fixtures.filter(f => f.stages?.bracket).length === 0
+            ? <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
+            : <DoubleEliminationBracket fixtures={fixtures} results={results} tournamentSport={tournamentSport} />
+        ) : standings.length === 0 ? (
           <p style={{ color: 'var(--color-text-muted)' }}>{t('standings.noTeams')}</p>
         ) : ag.format === 'group_knockout' ? (
           <>
@@ -322,7 +328,8 @@ export default function Standings() {
               const groupStandings = calculateStandings(
                 groupTeams,
                 groupFixtures.filter(f => f.group_label === label),
-                results
+                results,
+                tournamentSport
               )
               return (
                 <div key={label} style={{ marginBottom: '2rem' }}>
@@ -333,7 +340,12 @@ export default function Standings() {
                     <table className="table">
                       <thead>
                         <tr>
-                          <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th>
+                          <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
+                          {tournamentSport === 'beach_volleyball' ? (
+                            <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointRatio')}</th></>
+                          ) : (
+                            <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
+                          )}
                         </tr>
                       </thead>
                       <tbody>
@@ -347,12 +359,24 @@ export default function Standings() {
                             </td>
                             <td>{row.played}</td>
                             <td>{row.won}</td>
-                            <td>{row.drawn}</td>
-                            <td>{row.lost}</td>
-                            <td>{row.gf}</td>
-                            <td>{row.ga}</td>
-                            <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-                            <td><strong>{row.points}</strong></td>
+                            {tournamentSport === 'beach_volleyball' ? (
+                              <>
+                                <td>{row.lost}</td>
+                                <td>{row.sets_won ?? 0}</td>
+                                <td>{(row.sets_played ?? 0) - (row.sets_won ?? 0)}</td>
+                                <td>{row.set_ratio != null ? row.set_ratio.toFixed(3) : '—'}</td>
+                                <td><strong>{row.point_ratio != null ? row.point_ratio.toFixed(3) : '—'}</strong></td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{row.drawn}</td>
+                                <td>{row.lost}</td>
+                                <td>{row.gf}</td>
+                                <td>{row.ga}</td>
+                                <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                                <td><strong>{row.points}</strong></td>
+                              </>
+                            )}
                           </tr>
                         ))}
                       </tbody>
@@ -399,7 +423,12 @@ export default function Standings() {
             <table className="table">
               <thead>
                 <tr>
-                  <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th>
+                  <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
+                  {tournamentSport === 'beach_volleyball' ? (
+                    <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointRatio')}</th></>
+                  ) : (
+                    <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
+                  )}
                 </tr>
               </thead>
               <tbody>
@@ -413,12 +442,24 @@ export default function Standings() {
                     </td>
                     <td>{row.played}</td>
                     <td>{row.won}</td>
-                    <td>{row.drawn}</td>
-                    <td>{row.lost}</td>
-                    <td>{row.gf}</td>
-                    <td>{row.ga}</td>
-                    <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-                    <td><strong>{row.points}</strong></td>
+                    {tournamentSport === 'beach_volleyball' ? (
+                      <>
+                        <td>{row.lost}</td>
+                        <td>{row.sets_won ?? 0}</td>
+                        <td>{(row.sets_played ?? 0) - (row.sets_won ?? 0)}</td>
+                        <td>{row.set_ratio != null ? row.set_ratio.toFixed(3) : '—'}</td>
+                        <td><strong>{row.point_ratio != null ? row.point_ratio.toFixed(3) : '—'}</strong></td>
+                      </>
+                    ) : (
+                      <>
+                        <td>{row.drawn}</td>
+                        <td>{row.lost}</td>
+                        <td>{row.gf}</td>
+                        <td>{row.ga}</td>
+                        <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                        <td><strong>{row.points}</strong></td>
+                      </>
+                    )}
                   </tr>
                 ))}
               </tbody>

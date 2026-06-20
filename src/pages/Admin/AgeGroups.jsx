@@ -183,6 +183,7 @@ export default function AgeGroups() {
               watchedDepth={watchedDepth}
               watchedGroups={watchedGroups}
               locked={false}
+              sport={tournament?.sport ?? 'football'}
               onSubmit={onSubmit}
               onCancel={cancelForm}
               t={t}
@@ -269,6 +270,7 @@ export default function AgeGroups() {
                       watchedGroups={watchedGroups}
                       locked={lockedGroups}
                       hasFixtures={hasFixtures}
+                      sport={tournament?.sport ?? 'football'}
                       fixturesUrl={`/admin/tournaments/${tournamentId}/age-groups/${ag.id}/fixtures`}
                       onSubmit={onSubmit}
                       onCancel={cancelForm}
@@ -287,7 +289,8 @@ export default function AgeGroups() {
 
 const PLAYOFF_SLOTS = { final: 2, sf: 4, qf: 8, r16: 16 }
 
-function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, watchedDepth, watchedGroups, locked, hasFixtures, fixturesUrl, onSubmit, onCancel, t }) {
+function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, watchedDepth, watchedGroups, locked, hasFixtures, fixturesUrl, onSubmit, onCancel, t, sport = 'football' }) {
+  const isBeachVolleyball = sport === 'beach_volleyball'
   const isGroupKnockout = watchedFormat === 'group_knockout'
   const slots = PLAYOFF_SLOTS[watchedDepth] ?? 4
   const groups = Number(watchedGroups) || 2
@@ -308,6 +311,12 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
             <option value="round_robin">{t('ageGroup.formats.round_robin')}</option>
             <option value="knockout">{t('ageGroup.formats.knockout')}</option>
             <option value="group_knockout">{t('ageGroup.formats.group_knockout')}</option>
+            {isBeachVolleyball && (
+              <>
+                <option value="double_elimination">{t('ageGroup.formats.double_elimination')}</option>
+                <option value="round_robin_playoff">{t('ageGroup.formats.round_robin_playoff')}</option>
+              </>
+            )}
           </select>
         </div>
         <div className="form-group">

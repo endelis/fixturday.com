@@ -46,7 +46,8 @@
  *   - No completed fixtures → all teams returned with zeroed stats
  *   - Missing result for a completed fixture → that fixture is skipped
  */
-export function calculateStandings(teams, fixtures, results) {
+export function calculateStandings(teams, fixtures, results, sport = 'football') {
+  if (sport === 'beach_volleyball') return calculateBeachVolleyballStandings(teams, fixtures, results);
   if (!teams || teams.length === 0) return [];
 
   // --- Build a quick lookup: fixture_id → result ----------------------------
@@ -200,4 +201,125 @@ function headToHeadPoints(teamAId, teamBId, completedFixtures, resultMap) {
 
   // Return positive if A is ahead (sort puts A before B).
   return pointsB - pointsA;
+}
+
+// ---------------------------------------------------------------------------
+// Beach volleyball
+// ---------------------------------------------------------------------------
+
+function calculateBeachVolleyballStandings(teams, fixtures, results) {
+  if (!teams || teams.length === 0) return [];
+
+  const resultMap = new Map();
+  if (results) {
+    for (const r of results) resultMap.set(r.fixture_id, r);
+  }
+
+  const statsMap = new Map();
+  for (const team of teams) {
+    statsMap.set(team.id, {
+      team,
+      played: 0,
+      won: 0,
+      drawn: 0,
+      lost: 0,
+      gf: 0,
+      ga: 0,
+      gd: 0,
+      points: 0,
+      sets_won: 0,
+      sets_lost: 0,
+      sets_played: 0,
+      points_won: 0,
+      points_played: 0,
+      set_ratio: 0,
+      point_ratio: 0,
+    });
+  }
+
+  const completedFixtures = fixtures ? fixtures.filter((f) => f.status === 'completed') : [];
+
+  for (const fixture of completedFixtures) {
+    const result = resultMap.get(fixture.id);
+    if (!result) continue;
+
+    const homeStats = statsMap.get(fixture.home_team_id);
+    const awayStats = statsMap.get(fixture.away_team_id);
+    if (!homeStats || !awayStats) continue;
+
+    const setsHome = Number(result.home_goals) || 0;
+    const setsAway = Number(result.away_goals) || 0;
+
+    let ptsHome = 0;
+    let ptsAway = 0;
+    if (result.sport_data?.sets) {
+      for (const s of result.sport_data.sets) {
+        ptsHome += Number(s.h) || 0;
+        ptsAway += Number(s.a) || 0;
+      }
+    }
+    const ptsPlayed = ptsHome + ptsAway;
+
+    homeStats.played += 1;
+    homeStats.sets_won += setsHome;
+    homeStats.sets_lost += setsAway;
+    homeStats.sets_played += setsHome + setsAway;
+    homeStats.points_won += ptsHome;
+    homeStats.points_played += ptsPlayed;
+
+    awayStats.played += 1;
+    awayStats.sets_won += setsAway;
+    awayStats.sets_lost += setsHome;
+    awayStats.sets_played += setsHome + setsAway;
+    awayStats.points_won += ptsAway;
+    awayStats.points_played += ptsPlayed;
+
+    if (setsHome > setsAway) {
+      homeStats.won += 1;
+      awayStats.lost += 1;
+    } else if (setsAway > setsHome) {
+      awayStats.won += 1;
+      homeStats.lost += 1;
+    }
+  }
+
+  for (const stats of statsMap.values()) {
+    stats.set_ratio = stats.sets_played > 0 ? stats.sets_won / stats.sets_played : 0;
+    stats.point_ratio = stats.points_played > 0 ? stats.points_won / stats.points_played : 0;
+    stats.points = stats.won;
+  }
+
+  const rows = Array.from(statsMap.values());
+
+  rows.sort((a, b) => {
+    if (b.won !== a.won) return b.won - a.won;
+    const srDiff = b.set_ratio - a.set_ratio;
+    if (Math.abs(srDiff) > 0.0001) return srDiff;
+    const prDiff = b.point_ratio - a.point_ratio;
+    if (Math.abs(prDiff) > 0.0001) return prDiff;
+    const h2h = bvbHeadToHead(a.team.id, b.team.id, completedFixtures, resultMap);
+    if (h2h !== 0) return h2h;
+    return a.team.name.localeCompare(b.team.name);
+  });
+
+  return rows;
+}
+
+function bvbHeadToHead(teamAId, teamBId, completedFixtures, resultMap) {
+  for (const fixture of completedFixtures) {
+    const isH2H =
+      (fixture.home_team_id === teamAId && fixture.away_team_id === teamBId) ||
+      (fixture.home_team_id === teamBId && fixture.away_team_id === teamAId);
+    if (!isH2H) continue;
+
+    const result = resultMap.get(fixture.id);
+    if (!result) continue;
+
+    const hg = Number(result.home_goals) || 0;
+    const ag = Number(result.away_goals) || 0;
+
+    if (hg > ag) return fixture.home_team_id === teamAId ? -1 : 1;
+    if (ag > hg) return fixture.away_team_id === teamAId ? -1 : 1;
+  }
+  return 0;
 }
