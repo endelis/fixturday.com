@@ -360,7 +360,7 @@ export default function Standings() {
                     {t('standings.group')} {label}
                   </h2>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="table" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
+                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
                       <colgroup>
                         <col style={{ width: 28 }} /><col />
                         <col style={{ width: 32 }} /><col style={{ width: 32 }} />
@@ -383,7 +383,7 @@ export default function Standings() {
                       <tbody>
                         {groupStandings.map((row, i) => (
                           <tr key={row.team.id}>
-                            <td>{i + 1}</td>
+                            <td style={{ color: i === 0 ? '#f0a500' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--color-text-muted)', fontWeight: i < 3 ? 700 : 400, fontSize: '0.82rem' }}>{i + 1}</td>
                             <td>
                               <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)' }}>
                                 {row.team.name}
@@ -459,7 +459,7 @@ export default function Standings() {
           </>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="table" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
+            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
               <colgroup>
                 <col style={{ width: 28 }} /><col />
                 <col style={{ width: 32 }} /><col style={{ width: 32 }} />
@@ -482,7 +482,7 @@ export default function Standings() {
               <tbody>
                 {standings.map((row, i) => (
                   <tr key={row.team.id}>
-                    <td>{i + 1}</td>
+                    <td style={{ color: i === 0 ? '#f0a500' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--color-text-muted)', fontWeight: i < 3 ? 700 : 400, fontSize: '0.82rem' }}>{i + 1}</td>
                     <td>
                       <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)' }}>
                         {row.team.name}

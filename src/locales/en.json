@@ -445,7 +445,12 @@
     "gameNumber": "#{{n}}",
     "pitchGame": "P{{p}}·G{{g}}",
     "groupStage": "Group Stage",
-    "playoffStage": "Playoff"
+    "playoffStage": "Playoff",
+    "filterAll": "All",
+    "filterLive": "Live",
+    "filterUpcoming": "Upcoming",
+    "filterDone": "Done",
+    "ft": "FT"
   },
   "dashboard": {
     "loadError": "Error loading tournaments",

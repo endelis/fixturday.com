@@ -80,7 +80,7 @@ body {
   line-height: 1.6;
   min-height: 100vh;
   font-weight: 400;
-  overflow-x: hidden;
+  overflow-x: clip;
 }
 
 h1, h2, h3, h4, h5, h6 {
@@ -289,7 +289,7 @@ ul, ol {
   border: 1px solid rgba(59, 130, 246, 0.35);
 }
 
-/* ── Table ─────────────────────────────────────────────────── */
+/* ── Table (admin — bordered) ───────────────────────────────── */
 .table {
   width: 100%;
   border-collapse: collapse;
@@ -328,6 +328,43 @@ ul, ol {
 .table tbody tr:hover {
   background-color: var(--color-surface-2);
   border-left-color: var(--color-accent);
+}
+
+/* ── Table clean (public — borderless) ──────────────────────── */
+.table-clean {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 0.9rem;
+  font-variant-numeric: tabular-nums;
+}
+
+.table-clean th,
+.table-clean td {
+  padding: 0.6rem 0.6rem;
+  text-align: left;
+  vertical-align: middle;
+  border: none;
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+
+.table-clean th {
+  font-family: var(--font-heading);
+  font-size: 0.72rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.07em;
+  color: var(--color-text-muted);
+  white-space: nowrap;
+  border-bottom: 1px solid rgba(255,255,255,0.1);
+  padding-bottom: 0.5rem;
+}
+
+.table-clean tbody tr {
+  transition: background-color var(--transition-fast);
+}
+
+.table-clean tbody tr:hover {
+  background-color: rgba(255,255,255,0.03);
 }
 
 /* ── Loading ───────────────────────────────────────────────── */
