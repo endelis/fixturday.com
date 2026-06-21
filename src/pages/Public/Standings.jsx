@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, useSearchParams, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { formatDate, formatTime } from '../../utils/dateFormat'
+import { formatBeachScore } from '../../utils/beachVolleyball'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
@@ -359,12 +360,12 @@ export default function Standings() {
                     {t('standings.group')} {label}
                   </h2>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="table" style={{ tableLayout: 'fixed', minWidth: 440 }}>
+                    <table className="table" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
                       <colgroup>
-                        <col style={{ width: 32 }} /><col />
-                        <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+                        <col style={{ width: 28 }} /><col />
+                        <col style={{ width: 32 }} /><col style={{ width: 32 }} />
                         {tournamentSport === 'beach_volleyball' ? (
-                          <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+                          <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
                         ) : (
                           <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
                         )}
@@ -373,7 +374,7 @@ export default function Standings() {
                         <tr>
                           <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
                           {tournamentSport === 'beach_volleyball' ? (
-                            <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointRatio')}</th></>
+                            <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointsWon')}</th><th>{t('standings.pointsAgainst')}</th><th>{t('standings.pointRatio')}</th></>
                           ) : (
                             <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
                           )}
@@ -394,9 +395,11 @@ export default function Standings() {
                               <>
                                 <td>{row.lost}</td>
                                 <td>{row.sets_won ?? 0}</td>
-                                <td>{(row.sets_played ?? 0) - (row.sets_won ?? 0)}</td>
-                                <td>{row.set_ratio != null ? row.set_ratio.toFixed(3) : '—'}</td>
-                                <td><strong>{row.point_ratio != null ? row.point_ratio.toFixed(3) : '—'}</strong></td>
+                                <td>{row.sets_lost ?? 0}</td>
+                                <td>{row.sets_lost > 0 ? (row.sets_won / row.sets_lost).toFixed(3) : (row.sets_won > 0 ? '∞' : '—')}</td>
+                                <td>{row.points_won ?? 0}</td>
+                                <td>{row.points_against ?? 0}</td>
+                                <td><strong>{row.points_against > 0 ? (row.points_won / row.points_against).toFixed(3) : (row.points_won > 0 ? '∞' : '—')}</strong></td>
                               </>
                             ) : (
                               <>
@@ -433,11 +436,16 @@ export default function Standings() {
                         const awayName = f.away_team?.name ?? f.away_placeholder ?? '?'
                         const homeWon = result && result.home_goals > result.away_goals
                         const awayWon = result && result.away_goals > result.home_goals
+                        const scoreDisplay = result
+                          ? tournamentSport === 'beach_volleyball'
+                            ? formatBeachScore(result.sport_data)
+                            : `${result.home_goals} : ${result.away_goals}`
+                          : f.home_team ? t('fixture.vs') : '—'
                         return (
                           <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}>
                             <span style={{ flex: 1, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--color-accent)' : 'inherit' }}>{homeName}</span>
-                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem', minWidth: '4rem', textAlign: 'center', flexShrink: 0 }}>
-                              {result ? `${result.home_goals} : ${result.away_goals}` : (f.home_team ? t('fixture.vs') : '—')}
+                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: tournamentSport === 'beach_volleyball' ? '0.8rem' : '1.125rem', minWidth: tournamentSport === 'beach_volleyball' ? '8rem' : '4rem', textAlign: 'center', flexShrink: 0 }}>
+                              {scoreDisplay}
                             </span>
                             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--color-accent)' : 'inherit' }}>{awayName}</span>
                           </div>
@@ -451,12 +459,12 @@ export default function Standings() {
           </>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="table" style={{ tableLayout: 'fixed', minWidth: 440 }}>
+            <table className="table" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
               <colgroup>
-                <col style={{ width: 32 }} /><col />
-                <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+                <col style={{ width: 28 }} /><col />
+                <col style={{ width: 32 }} /><col style={{ width: 32 }} />
                 {tournamentSport === 'beach_volleyball' ? (
-                  <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+                  <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
                 ) : (
                   <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
                 )}
@@ -465,7 +473,7 @@ export default function Standings() {
                 <tr>
                   <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
                   {tournamentSport === 'beach_volleyball' ? (
-                    <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointRatio')}</th></>
+                    <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointsWon')}</th><th>{t('standings.pointsAgainst')}</th><th>{t('standings.pointRatio')}</th></>
                   ) : (
                     <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
                   )}
@@ -486,9 +494,11 @@ export default function Standings() {
                       <>
                         <td>{row.lost}</td>
                         <td>{row.sets_won ?? 0}</td>
-                        <td>{(row.sets_played ?? 0) - (row.sets_won ?? 0)}</td>
-                        <td>{row.set_ratio != null ? row.set_ratio.toFixed(3) : '—'}</td>
-                        <td><strong>{row.point_ratio != null ? row.point_ratio.toFixed(3) : '—'}</strong></td>
+                        <td>{row.sets_lost ?? 0}</td>
+                        <td>{row.sets_lost > 0 ? (row.sets_won / row.sets_lost).toFixed(3) : (row.sets_won > 0 ? '∞' : '—')}</td>
+                        <td>{row.points_won ?? 0}</td>
+                        <td>{row.points_against ?? 0}</td>
+                        <td><strong>{row.points_against > 0 ? (row.points_won / row.points_against).toFixed(3) : (row.points_won > 0 ? '∞' : '—')}</strong></td>
                       </>
                     ) : (
                       <>

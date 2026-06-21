@@ -301,10 +301,12 @@
     "share": "Share",
     "shareCopied": "Copied!",
     "setsWon": "SW",
-    "setsAgainst": "SA",
+    "setsAgainst": "SL",
     "setRatio": "SR",
+    "pointsWon": "PW",
+    "pointsAgainst": "PL",
     "pointRatio": "PR",
-    "bvLegend": "P — Played · W — Wins · L — Losses · SW — Sets Won · SA — Sets Against · SR — Set Ratio (SW÷SA) · PR — Point Ratio"
+    "bvLegend": "P — Played · W — Wins · L — Losses · SW — Sets Won · SL — Sets Lost · SR — Set Ratio (SW÷SL) · PW — Points Won · PL — Points Lost · PR — Point Ratio (PW÷PL)"
   },
   "playoff": {
     "final": "Final",

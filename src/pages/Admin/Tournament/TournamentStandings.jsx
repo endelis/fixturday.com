@@ -88,12 +88,12 @@ function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
   const isBvb = sport === 'beach_volleyball'
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: 440 }}>
+      <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: isBvb ? 560 : 440 }}>
         <colgroup>
-          <col style={{ width: 32 }} /><col />
-          <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+          <col style={{ width: 28 }} /><col />
+          <col style={{ width: 32 }} /><col style={{ width: 32 }} />
           {isBvb ? (
-            <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+            <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
           ) : (
             <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
           )}
@@ -110,6 +110,8 @@ function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
                 <th style={thCStyle}>{t('standings.setsWon')}</th>
                 <th style={thCStyle}>{t('standings.setsAgainst')}</th>
                 <th style={thCStyle}>{t('standings.setRatio')}</th>
+                <th style={thCStyle}>{t('standings.pointsWon')}</th>
+                <th style={thCStyle}>{t('standings.pointsAgainst')}</th>
                 <th style={{ ...thCStyle, color: 'var(--color-accent)', fontWeight: 700 }}>{t('standings.pointRatio')}</th>
               </>
             ) : (
@@ -148,9 +150,11 @@ function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
                 <>
                   <td style={tdCStyle}>{row.lost}</td>
                   <td style={tdCStyle}>{row.sets_won ?? 0}</td>
-                  <td style={tdCStyle}>{(row.sets_played ?? 0) - (row.sets_won ?? 0)}</td>
-                  <td style={tdCStyle}>{row.set_ratio != null ? row.set_ratio.toFixed(3) : '—'}</td>
-                  <td style={{ ...tdCStyle, fontWeight: 700 }}>{row.point_ratio != null ? row.point_ratio.toFixed(3) : '—'}</td>
+                  <td style={tdCStyle}>{row.sets_lost ?? 0}</td>
+                  <td style={tdCStyle}>{row.sets_lost > 0 ? (row.sets_won / row.sets_lost).toFixed(3) : (row.sets_won > 0 ? '∞' : '—')}</td>
+                  <td style={tdCStyle}>{row.points_won ?? 0}</td>
+                  <td style={tdCStyle}>{row.points_against ?? 0}</td>
+                  <td style={{ ...tdCStyle, fontWeight: 700 }}>{row.points_against > 0 ? (row.points_won / row.points_against).toFixed(3) : (row.points_won > 0 ? '∞' : '—')}</td>
                 </>
               ) : (
                 <>

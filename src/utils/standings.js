@@ -231,6 +231,7 @@ function calculateBeachVolleyballStandings(teams, fixtures, results) {
       sets_lost: 0,
       sets_played: 0,
       points_won: 0,
+      points_against: 0,
       points_played: 0,
       set_ratio: 0,
       point_ratio: 0,
@@ -265,6 +266,7 @@ function calculateBeachVolleyballStandings(teams, fixtures, results) {
     homeStats.sets_lost += setsAway;
     homeStats.sets_played += setsHome + setsAway;
     homeStats.points_won += ptsHome;
+    homeStats.points_against += ptsAway;
     homeStats.points_played += ptsPlayed;
 
     awayStats.played += 1;
@@ -272,6 +274,7 @@ function calculateBeachVolleyballStandings(teams, fixtures, results) {
     awayStats.sets_lost += setsHome;
     awayStats.sets_played += setsHome + setsAway;
     awayStats.points_won += ptsAway;
+    awayStats.points_against += ptsHome;
     awayStats.points_played += ptsPlayed;
 
     if (setsHome > setsAway) {
@@ -284,8 +287,14 @@ function calculateBeachVolleyballStandings(teams, fixtures, results) {
   }
 
   for (const stats of statsMap.values()) {
-    stats.set_ratio = stats.sets_played > 0 ? stats.sets_won / stats.sets_played : 0;
-    stats.point_ratio = stats.points_played > 0 ? stats.points_won / stats.points_played : 0;
+    // FIVB standard: SW÷SL and PW÷PL (not ÷played)
+    stats.sets_against = stats.sets_lost; // alias for backwards compat
+    stats.set_ratio = stats.sets_lost > 0
+      ? stats.sets_won / stats.sets_lost
+      : stats.sets_won > 0 ? 99 : 0;
+    stats.point_ratio = stats.points_against > 0
+      ? stats.points_won / stats.points_against
+      : stats.points_won > 0 ? 99 : 0;
     stats.points = stats.won;
   }
 
