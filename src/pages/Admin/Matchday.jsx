@@ -443,8 +443,10 @@ export default function Matchday() {
       .filter(f => f.status !== 'postponed')
       .map(async f => {
         const hasExisting = !!f.fixture_results?.[0]
+        // Derive sport from the fixture itself — never rely on tournamentSport state alone
+        const fSport = f.stages?.age_groups?.tournaments?.sport ?? tournamentSport
 
-        if (tournamentSport === 'beach_volleyball') {
+        if (fSport === 'beach_volleyball') {
           const allSlots = sets[f.id] ?? emptySetSlots()
           const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
           if (filledSets.length === 0) return null // no data entered — skip
@@ -460,7 +462,8 @@ export default function Matchday() {
           return statusErr
         }
 
-        // Football
+        // Football — guard against unknown sports falling through
+        if (fSport !== 'football') return null
         const score = scores[f.id] ?? { home: 0, away: 0 }
         const { error: resErr } = hasExisting
           ? await supabase
