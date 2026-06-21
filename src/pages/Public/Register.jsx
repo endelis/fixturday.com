@@ -32,6 +32,8 @@ export default function Register() {
   const [tournament, setTournament] = useState(null)
   const [allAgeGroups, setAllAgeGroups] = useState([])
   const [teamCounts, setTeamCounts] = useState({})
+  const [firstKickoffs, setFirstKickoffs] = useState({})
+  const [tournamentHasResults, setTournamentHasResults] = useState(false)
   const [loading, setLoading] = useState(true)
   const [notFound, setNotFound] = useState(false)
   const [submitted, setSubmitted] = useState(false)
@@ -97,14 +99,50 @@ export default function Register() {
         }
       }
 
+      // First kickoff per age group + whether any results exist (for auto-close logic)
+      if (groups.length > 0) {
+        const agIds = groups.map(a => a.id)
+        const { data: stageRows } = await supabase
+          .from('stages')
+          .select('age_group_id, fixtures(id, kickoff_time)')
+          .in('age_group_id', agIds)
+        const kickoffMap = {}
+        const fixtureIds = []
+        if (stageRows) {
+          stageRows.forEach(s => {
+            ;(s.fixtures ?? []).forEach(f => {
+              fixtureIds.push(f.id)
+              if (f.kickoff_time) {
+                const d = new Date(f.kickoff_time)
+                if (!kickoffMap[s.age_group_id] || d < kickoffMap[s.age_group_id]) kickoffMap[s.age_group_id] = d
+              }
+            })
+          })
+        }
+        setFirstKickoffs(kickoffMap)
+        if (fixtureIds.length > 0) {
+          const { count } = await supabase
+            .from('fixture_results')
+            .select('id', { count: 'exact', head: true })
+            .in('fixture_id', fixtureIds)
+          setTournamentHasResults((count ?? 0) > 0)
+        }
+      }
+
       setLoading(false)
     }
     load()
   }, [slug])
 
-  const openAgeGroups = allAgeGroups.filter(ag =>
-    ag.registration_open && !(ag.max_teams && (teamCounts[ag.id] ?? 0) >= ag.max_teams)
-  )
+  const now = new Date()
+  const openAgeGroups = allAgeGroups.filter(ag => {
+    if (!ag.registration_open) return false
+    if (ag.max_teams && (teamCounts[ag.id] ?? 0) >= ag.max_teams) return false
+    const firstKickoff = firstKickoffs[ag.id]
+    if (firstKickoff && (firstKickoff - now) < 24 * 60 * 60 * 1000) return false
+    if (tournamentHasResults) return false
+    return true
+  })
 
   const selectedGroup = allAgeGroups.find(ag => ag.id === selectedAgeGroupId)
   const selectedGroupClosed =

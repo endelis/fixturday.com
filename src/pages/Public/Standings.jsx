@@ -137,6 +137,17 @@ export default function Standings() {
   const standings = calculateStandings(teams, fixtures, results, tournamentSport)
 
   const now = new Date()
+
+  // Registration is open only if: manual flag on, division not full, no results yet, >24h before first kickoff
+  const confirmedCount = teams.length
+  const isFull = ag.max_teams && confirmedCount >= ag.max_teams
+  const firstKickoff = fixtures
+    .filter(f => f.kickoff_time)
+    .reduce((min, f) => { const d = new Date(f.kickoff_time); return (!min || d < min) ? d : min }, null)
+  const cutoffReached = firstKickoff && (firstKickoff - now) < 24 * 60 * 60 * 1000
+  const hasResults = results.length > 0
+  const isRegOpen = ag.registration_open && !isFull && !cutoffReached && !hasResults
+
   const nextFixture = fixtures
     .filter(f => f.status !== 'completed' && f.home_team?.id && f.away_team?.id)
     .filter(f => !f.kickoff_time || new Date(f.kickoff_time) >= now)
@@ -252,7 +263,7 @@ export default function Standings() {
           </div>
         </div>
 
-        {ag.registration_open && (
+        {isRegOpen && (
           <Link
             to={`/t/${slug}/register`}
             style={{
