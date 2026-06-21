@@ -47,7 +47,7 @@ export default function TournamentStats() {
 
       const { data: results, error: resErr } = await supabase
         .from('fixture_results')
-        .select('fixture_id, home_goals, away_goals')
+        .select('fixture_id, home_goals, away_goals, sport_data')
         .in('fixture_id', (fixtures ?? []).map(f => f.id))
       if (resErr) { setLoading(false); return }
 
@@ -74,7 +74,7 @@ export default function TournamentStats() {
 
         let standings = []
         try {
-          standings = calculateStandings(agTeams, agFixtures, agResults)
+          standings = calculateStandings(agTeams, agFixtures, agResults, tournament.sport ?? 'football')
         } catch {
           standings = []
         }
@@ -124,37 +124,80 @@ export default function TournamentStats() {
             {/* Standings */}
             {ag.standings.length > 0 ? (
               <div style={{ overflowX: 'auto' }}>
-                <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                  <thead>
-                    <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-muted)' }}>
-                      <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('standings.team')}</th>
-                      <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.played')}</th>
-                      <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.won')}</th>
-                      <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.drawn')}</th>
-                      <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.lost')}</th>
-                      <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.gd')}</th>
-                      <th style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{t('standings.points')}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {ag.standings.map((row, i) => (
-                      <tr key={row.team.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
-                        <td style={{ padding: '0.5rem 0.75rem' }}>
-                          <span style={{ color: 'var(--color-text-muted)', marginRight: '0.5rem', fontSize: '0.8rem' }}>{i + 1}</span>
-                          {row.team.name}
-                        </td>
-                        <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.played}</td>
-                        <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.won}</td>
-                        <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.drawn}</td>
-                        <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center' }}>{row.lost}</td>
-                        <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center', color: row.gd > 0 ? 'var(--color-success)' : row.gd < 0 ? 'var(--color-danger)' : 'inherit' }}>
-                          {row.gd > 0 ? '+' : ''}{row.gd}
-                        </td>
-                        <td style={{ padding: '0.5rem 0.5rem', textAlign: 'center', fontWeight: 700, color: 'var(--color-accent)' }}>{row.points}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
+                {(() => {
+                  const isBvb = tournament.sport === 'beach_volleyball'
+                  const th = { padding: '0.5rem 0.5rem', textAlign: 'center' }
+                  const td = { padding: '0.5rem 0.5rem', textAlign: 'center' }
+                  return (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem', tableLayout: 'fixed', minWidth: 440 }}>
+                      <colgroup>
+                        <col style={{ width: 32 }} /><col />
+                        <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+                        {isBvb ? (
+                          <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+                        ) : (
+                          <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
+                        )}
+                      </colgroup>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid rgba(255,255,255,0.08)', color: 'var(--color-text-muted)' }}>
+                          <th style={{ ...th, width: 32 }}>#</th>
+                          <th style={{ padding: '0.5rem 0.75rem', textAlign: 'left' }}>{t('standings.team')}</th>
+                          <th style={th}>{t('standings.played')}</th>
+                          <th style={th}>{t('standings.won')}</th>
+                          {isBvb ? (
+                            <>
+                              <th style={th}>{t('standings.lost')}</th>
+                              <th style={th}>{t('standings.setsWon')}</th>
+                              <th style={th}>{t('standings.setsAgainst')}</th>
+                              <th style={th}>{t('standings.setRatio')}</th>
+                              <th style={th}>{t('standings.pointRatio')}</th>
+                            </>
+                          ) : (
+                            <>
+                              <th style={th}>{t('standings.drawn')}</th>
+                              <th style={th}>{t('standings.lost')}</th>
+                              <th style={th}>{t('standings.gf')}</th>
+                              <th style={th}>{t('standings.ga')}</th>
+                              <th style={th}>{t('standings.gd')}</th>
+                              <th style={th}>{t('standings.points')}</th>
+                            </>
+                          )}
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {ag.standings.map((row, i) => (
+                          <tr key={row.team.id} style={{ borderBottom: '1px solid rgba(255,255,255,0.05)' }}>
+                            <td style={{ ...td, color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{i + 1}</td>
+                            <td style={{ padding: '0.5rem 0.75rem' }}>{row.team.name}</td>
+                            <td style={td}>{row.played}</td>
+                            <td style={td}>{row.won}</td>
+                            {isBvb ? (
+                              <>
+                                <td style={td}>{row.lost}</td>
+                                <td style={td}>{row.sets_won ?? 0}</td>
+                                <td style={td}>{row.sets_against ?? 0}</td>
+                                <td style={td}>{row.set_ratio != null ? row.set_ratio.toFixed(2) : '—'}</td>
+                                <td style={td}>{row.point_ratio != null ? row.point_ratio.toFixed(2) : '—'}</td>
+                              </>
+                            ) : (
+                              <>
+                                <td style={td}>{row.drawn}</td>
+                                <td style={td}>{row.lost}</td>
+                                <td style={td}>{row.gf}</td>
+                                <td style={td}>{row.ga}</td>
+                                <td style={{ ...td, color: row.gd > 0 ? 'var(--color-success)' : row.gd < 0 ? 'var(--color-danger)' : 'inherit' }}>
+                                  {row.gd > 0 ? '+' : ''}{row.gd}
+                                </td>
+                                <td style={{ ...td, fontWeight: 700, color: 'var(--color-accent)' }}>{row.points}</td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  )
+                })()}
               </div>
             ) : (
               <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
