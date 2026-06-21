@@ -3,12 +3,10 @@ import { useParams, useNavigate, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { parse, isValid, format, parseISO } from 'date-fns'
-import { Upload } from 'lucide-react'
 import { useAuth } from '../../../hooks/useAuth'
 import { supabase } from '../../../lib/supabase'
 import { toast } from '../../../components/Toast'
 import TournamentLogoUpload from '../../../components/admin/TournamentLogoUpload'
-
 
 function parseDateToISO(str) {
   if (!str) return null
@@ -21,6 +19,11 @@ function isoToDisplay(str) {
   try { return format(parseISO(str), 'dd/MM/yyyy') } catch { return '' }
 }
 
+const SPORT_LABELS = {
+  football: '⚽ Football',
+  beach_volleyball: '🏐 Beach Volleyball',
+}
+
 export default function TournamentEdit() {
   const { id } = useParams()
   const navigate = useNavigate()
@@ -28,15 +31,14 @@ export default function TournamentEdit() {
   const { user, loading: authLoading } = useAuth()
   const [loading, setLoading] = useState(true)
   const [deleteConfirm, setDeleteConfirm] = useState(false)
-  const [logoPreview, setLogoPreview] = useState(null)
-  const [logoUploading, setLogoUploading] = useState(false)
   const [logoPath, setLogoPath] = useState(null)
+  const [sport, setSport] = useState('football')
   const [attachments, setAttachments] = useState([])
   const [attachUploading, setAttachUploading] = useState(false)
-  const [lunchEnabled, setLunchEnabled] = useState(false)
-  const logoInputRef = useRef(null)
   const fileInputRef = useRef(null)
-  const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
+  const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
+
+  const isActive = watch('is_active')
 
   useEffect(() => {
     if (authLoading || !user) return
@@ -44,16 +46,15 @@ export default function TournamentEdit() {
       const { data, error } = await supabase.from('tournaments').select('*').eq('id', id).single()
       if (error) { toast(t('common.error'), 'error'); setLoading(false); return }
       if (data) {
-        const { attachments: att, logo_url, logo_path, ...rest } = data
+        const { attachments: att, logo_url, logo_path, sport: sp, ...rest } = data
         reset({
           ...rest,
           start_date: isoToDisplay(data.start_date),
           end_date: isoToDisplay(data.end_date),
         })
         setAttachments(att ?? [])
-        if (logo_url) setLogoPreview(logo_url)
         setLogoPath(logo_path ?? null)
-        setLunchEnabled(!!(data.lunch_start || data.lunch_end))
+        setSport(sp ?? 'football')
       }
       setLoading(false)
     }
@@ -64,14 +65,12 @@ export default function TournamentEdit() {
   if (!user) return <Navigate to="/admin" replace />
 
   async function onSubmit(values) {
+    // sport is intentionally excluded — locked at creation time
     const submitData = {
       ...values,
-      sport: 'football',
       participant_type: 'team',
       start_date: parseDateToISO(values.start_date),
-      end_date: parseDateToISO(values.end_date),
-      lunch_start: lunchEnabled ? values.lunch_start || null : null,
-      lunch_end: lunchEnabled ? values.lunch_end || null : null,
+      end_date: parseDateToISO(values.end_date) || null,
     }
     const { error } = await supabase.from('tournaments').update(submitData).eq('id', id)
     if (error) { toast(`${t('common.error')}: ${error.message}`, 'error'); return }
@@ -84,23 +83,6 @@ export default function TournamentEdit() {
     const { error } = await supabase.from('tournaments').delete().eq('id', id)
     if (error) { toast(`${t('common.error')}: ${error.message}`, 'error'); return }
     navigate('/admin/dashboard')
-  }
-
-  async function handleLogoChange(e) {
-    const file = e.target.files[0]
-    if (!file) return
-    if (file.size > 2 * 1024 * 1024) { toast(t('tournament.logoTooLarge'), 'error'); return }
-    setLogoUploading(true)
-    const ext = file.name.split('.').pop()
-    const path = `${id}/${Date.now()}.${ext}`
-    const { error: upErr } = await supabase.storage.from('tournament-logos').upload(path, file)
-    if (upErr) { toast(t('tournament.logoUploadError'), 'error'); setLogoUploading(false); return }
-    const { data: { publicUrl } } = supabase.storage.from('tournament-logos').getPublicUrl(path)
-    const { error: updateErr } = await supabase.from('tournaments').update({ logo_url: publicUrl }).eq('id', id)
-    if (updateErr) { toast(t('common.error'), 'error'); setLogoUploading(false); return }
-    setLogoPreview(publicUrl)
-    setLogoUploading(false)
-    toast(t('tournament.logoSaved'))
   }
 
   async function handleAttachmentUpload(e) {
@@ -136,10 +118,14 @@ export default function TournamentEdit() {
     return '📎'
   }
 
+  const inputStyle = {}
+
   return (
     <div>
       <div className="container" style={{ paddingTop: '2rem', maxWidth: '700px' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.5rem' }}>
+
+        {/* Header */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('tournament.editTitle')}</h1>
           <button
             className={deleteConfirm ? 'btn-danger btn-sm' : 'btn-secondary btn-sm'}
@@ -149,7 +135,46 @@ export default function TournamentEdit() {
           </button>
         </div>
 
+        {/* Meta row: sport chip + active toggle */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '1.75rem', flexWrap: 'wrap' }}>
+          <span style={{
+            display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
+            background: 'var(--color-surface)', border: '1px solid var(--color-border)',
+            borderRadius: '999px', padding: '0.28rem 0.9rem',
+            fontSize: '0.82rem', color: 'var(--color-text-muted)', fontWeight: 500,
+            userSelect: 'none',
+          }}>
+            {SPORT_LABELS[sport] ?? sport}
+          </span>
+
+          <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', cursor: 'pointer', marginLeft: 'auto' }}>
+            <input
+              type="checkbox"
+              {...register('is_active')}
+              style={{ position: 'absolute', opacity: 0, width: 0, height: 0 }}
+            />
+            <span style={{ fontSize: '0.82rem', color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)', fontWeight: 500 }}>
+              {isActive ? t('tournament.activeLabel') : t('tournament.inactiveLabel')}
+            </span>
+            <div style={{
+              position: 'relative', width: '40px', height: '22px', flexShrink: 0,
+              background: isActive ? 'var(--color-accent)' : 'rgba(255,255,255,0.15)',
+              borderRadius: '11px', transition: 'background 0.2s',
+            }}>
+              <div style={{
+                position: 'absolute', top: '3px',
+                left: isActive ? '21px' : '3px',
+                width: '16px', height: '16px',
+                background: isActive ? '#000' : 'rgba(255,255,255,0.45)',
+                borderRadius: '50%', transition: 'left 0.2s',
+                pointerEvents: 'none',
+              }} />
+            </div>
+          </label>
+        </div>
+
         <form onSubmit={handleSubmit(onSubmit)} style={{ display: 'grid', gap: '1rem' }}>
+
           {/* Name */}
           <div className="form-group">
             <label>{t('tournament.name')} *</label>
@@ -157,24 +182,12 @@ export default function TournamentEdit() {
             {errors.name && <span className="error-message">{errors.name.message}</span>}
           </div>
 
-          {/* Slug */}
-          <div className="form-group">
-            <label>{t('tournament.slug')}</label>
-            <input {...register('slug')} />
-          </div>
-
-          {/* Country */}
-          <div className="form-group">
-            <label>{t('tournament.country')}</label>
-            <input {...register('country')} />
-          </div>
-
-          {/* Dates — dd/MM/yyyy text inputs */}
+          {/* Dates */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
               <label>{t('tournament.startDate')}</label>
               <input
-                placeholder="dd/mm/gggg"
+                placeholder="dd/mm/yyyy"
                 {...register('start_date', {
                   validate: v => !v || isValid(parse(v, 'dd/MM/yyyy', new Date())) || t('tournament.invalidDate'),
                 })}
@@ -182,9 +195,9 @@ export default function TournamentEdit() {
               {errors.start_date && <span className="error-message">{errors.start_date.message}</span>}
             </div>
             <div className="form-group">
-              <label>{t('tournament.endDate')}</label>
+              <label style={{ color: 'var(--color-text-muted)' }}>{t('tournament.endDate')}</label>
               <input
-                placeholder="dd/mm/gggg"
+                placeholder="dd/mm/yyyy"
                 {...register('end_date', {
                   validate: v => !v || isValid(parse(v, 'dd/MM/yyyy', new Date())) || t('tournament.invalidDate'),
                 })}
@@ -193,10 +206,19 @@ export default function TournamentEdit() {
             </div>
           </div>
 
+          {/* Location */}
+          <div className="form-group">
+            <label>{t('tournament.location')}</label>
+            <input
+              {...register('location')}
+              placeholder={t('tournament.locationPlaceholder')}
+            />
+          </div>
+
           {/* Description */}
           <div className="form-group">
             <label>{t('tournament.description')}</label>
-            <textarea {...register('description')} rows={4} />
+            <textarea {...register('description')} rows={3} />
           </div>
 
           {/* Organizer contact */}
@@ -214,120 +236,23 @@ export default function TournamentEdit() {
           {/* Rules */}
           <div className="form-group">
             <label>{t('tournament.rules')}</label>
-            <textarea {...register('rules')} rows={8} />
+            <textarea {...register('rules')} rows={4} />
           </div>
 
-          {/* Scheduling defaults */}
-          <div>
-            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
-              {t('tournament.schedulingDefaults')}
-            </h3>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-              <div className="form-group">
-                <label>{t('tournament.firstGameTime')}</label>
-                <input
-                  type="text"
-                  placeholder="HH:mm"
-                  {...register('first_game_time', {
-                    validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
-                  })}
-                />
-                {errors.first_game_time && <span className="error-message">{errors.first_game_time.message}</span>}
-              </div>
-              <div className="form-group">
-                <label>{t('tournament.lastGameTime')}</label>
-                <input
-                  type="text"
-                  placeholder="HH:mm"
-                  {...register('last_game_time', {
-                    validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
-                  })}
-                />
-                {errors.last_game_time && <span className="error-message">{errors.last_game_time.message}</span>}
-              </div>
-            </div>
-
-            {/* Lunch break toggle */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginTop: '0.75rem' }}>
-              <input
-                type="checkbox"
-                id="lunchEnabled"
-                checked={lunchEnabled}
-                onChange={e => setLunchEnabled(e.target.checked)}
-              />
-              <label htmlFor="lunchEnabled" style={{ cursor: 'pointer' }}>
-                {t('tournament.lunchBreakToggle')}
-              </label>
-            </div>
-            {lunchEnabled && (
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginTop: '0.75rem' }}>
-                <div className="form-group">
-                  <label>{t('tournament.lunchStart')}</label>
-                  <input
-                    type="text"
-                    placeholder="HH:mm"
-                    {...register('lunch_start', {
-                      validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
-                    })}
-                  />
-                  {errors.lunch_start && <span className="error-message">{errors.lunch_start.message}</span>}
-                </div>
-                <div className="form-group">
-                  <label>{t('tournament.lunchEnd')}</label>
-                  <input
-                    type="text"
-                    placeholder="HH:mm"
-                    {...register('lunch_end', {
-                      validate: v => !v || /^([01]\d|2[0-3]):([0-5]\d)$/.test(v) || t('tournament.invalidTime'),
-                    })}
-                  />
-                  {errors.lunch_end && <span className="error-message">{errors.lunch_end.message}</span>}
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Logo upload */}
-          <div className="form-group">
-            <label>{t('tournament.logoUpload')}</label>
-            {logoPreview && (
-              <img src={logoPreview} alt="Logo" style={{ display: 'block', maxHeight: '80px', marginBottom: '0.5rem', borderRadius: '4px' }} />
-            )}
-            <input
-              ref={logoInputRef}
-              type="file"
-              accept=".jpg,.jpeg,.png,.svg"
-              onChange={handleLogoChange}
-              disabled={logoUploading}
-              style={{ display: 'none' }}
-            />
-            <button
-              type="button"
-              onClick={() => logoInputRef.current?.click()}
-              disabled={logoUploading}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                border: '1px solid var(--color-accent)', color: 'var(--color-accent)',
-                background: 'none', borderRadius: '6px', padding: '0.5rem 1rem',
-                cursor: logoUploading ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem', fontWeight: 500, opacity: logoUploading ? 0.6 : 1,
-              }}
-            >
-              <Upload size={16} /> {logoUploading ? t('tournament.logoUploading') : t('tournament.uploadLogo')}
-            </button>
-          </div>
-
-          {/* Storage-backed logo (logo_path) */}
+          {/* Logo — single storage-backed upload */}
           <TournamentLogoUpload
             tournamentId={id}
             currentLogoPath={logoPath}
             onChange={setLogoPath}
           />
 
-          {/* Active checkbox */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
-            <input type="checkbox" id="is_active" {...register('is_active')} />
-            <label htmlFor="is_active">{t('tournament.activeLabel')}</label>
+          {/* Slug */}
+          <div className="form-group">
+            <label>{t('tournament.slug')}</label>
+            <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', margin: '0 0 0.3rem' }}>
+              fixturday.com/t/…
+            </p>
+            <input {...register('slug')} />
           </div>
 
           <div style={{ display: 'flex', gap: '0.75rem', marginTop: '0.5rem' }}>
@@ -338,7 +263,7 @@ export default function TournamentEdit() {
           </div>
         </form>
 
-        {/* Attachments — saved immediately to DB, outside the main form */}
+        {/* Attachments — saved immediately, outside main form */}
         <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
           <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', marginBottom: '1rem' }}>
             {t('tournament.attachments')}
@@ -353,10 +278,10 @@ export default function TournamentEdit() {
                   style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}
                 >
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', minWidth: 0 }}>
-                    <span style={{ fontSize: '1.2rem', color: 'var(--color-accent)', flexShrink: 0 }}>
+                    <span style={{ fontSize: '1.1rem', color: 'var(--color-accent)', flexShrink: 0 }}>
                       {attachmentIcon(att.type)}
                     </span>
-                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.9rem' }}>
+                    <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontSize: '0.875rem' }}>
                       {att.name}
                     </span>
                   </div>
@@ -367,7 +292,7 @@ export default function TournamentEdit() {
                       rel="noopener noreferrer"
                       style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}
                     >
-                      ↓ {t('common.download', 'Lejupielādēt')}
+                      ↓ {t('common.download')}
                     </a>
                     <button
                       onClick={() => handleAttachmentDelete(i)}
@@ -408,6 +333,7 @@ export default function TournamentEdit() {
             📎 {attachUploading ? t('tournament.attachmentUploading') : t('tournament.attachmentAdd')}
           </button>
         </div>
+
       </div>
     </div>
   )
