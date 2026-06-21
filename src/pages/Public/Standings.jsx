@@ -316,6 +316,12 @@ export default function Standings() {
           </div>
         )}
 
+        {tournamentSport === 'beach_volleyball' && ag.format !== 'double_elimination' && (
+          <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem', lineHeight: 1.6 }}>
+            {t('standings.bvLegend')}
+          </p>
+        )}
+
         {ag.format === 'double_elimination' ? (
           fixtures.filter(f => f.stages?.bracket).length === 0
             ? <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
@@ -342,7 +348,16 @@ export default function Standings() {
                     {t('standings.group')} {label}
                   </h2>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="table">
+                    <table className="table" style={{ tableLayout: 'fixed', minWidth: 440 }}>
+                      <colgroup>
+                        <col style={{ width: 32 }} /><col />
+                        <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+                        {tournamentSport === 'beach_volleyball' ? (
+                          <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+                        ) : (
+                          <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
+                        )}
+                      </colgroup>
                       <thead>
                         <tr>
                           <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
@@ -425,7 +440,16 @@ export default function Standings() {
           </>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="table">
+            <table className="table" style={{ tableLayout: 'fixed', minWidth: 440 }}>
+              <colgroup>
+                <col style={{ width: 32 }} /><col />
+                <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+                {tournamentSport === 'beach_volleyball' ? (
+                  <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+                ) : (
+                  <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
+                )}
+              </colgroup>
               <thead>
                 <tr>
                   <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>

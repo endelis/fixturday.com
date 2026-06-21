@@ -41,7 +41,7 @@ const setInputSx = {
 
 /**
  * Set-by-set score entry for beach volleyball.
- * Set 2 unlocks when Set 1 is complete.
+ * Set 1 and Set 2 are always visible.
  * Set 3 unlocks only when it's 1-1 after Set 2.
  */
 function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, isPostponed, t }) {
@@ -52,8 +52,20 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
 
   const w1 = setWinner(sets[0].home, sets[0].away, false)
   const w2 = setWinner(sets[1].home, sets[1].away, false)
-  const show2 = w1 !== null
   const show3 = w1 !== null && w2 !== null && w1 !== w2
+
+  function validScore(h, a, isDecider) {
+    if (h === '' || a === '') return true
+    const hv = Number(h), av = Number(a)
+    if (!Number.isFinite(hv) || !Number.isFinite(av)) return true
+    const target = isDecider ? 15 : 21
+    if (Math.max(hv, av) > target) return Math.abs(hv - av) === 2
+    return true
+  }
+  const v1 = validScore(sets[0].home, sets[0].away, false)
+  const v2 = validScore(sets[1].home, sets[1].away, false)
+  const v3 = validScore(sets[2].home, sets[2].away, true)
+  const hasInvalidScore = !v1 || !v2 || (show3 && !v3)
 
   const SET_LABELS = ['Set 1', 'Set 2', 'Set 3 (to 15)']
 
@@ -66,9 +78,12 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
 
         <div style={{ display: 'flex', gap: '0.75rem', flexShrink: 0 }}>
           {[0, 1, 2].map(idx => {
-            if (idx === 1 && !show2) return null
             if (idx === 2 && !show3) return null
+            const isDecider = idx === 2
             const isWon = idx === 0 ? w1 : idx === 1 ? w2 : setWinner(sets[2].home, sets[2].away, true)
+            const setValid = idx === 0 ? v1 : idx === 1 ? v2 : v3
+            const borderHome = !setValid ? 'var(--color-danger)' : isWon === 'home' ? 'var(--color-success)' : isWon === 'away' ? 'var(--color-danger)' : 'var(--color-accent)'
+            const borderAway = !setValid ? 'var(--color-danger)' : isWon === 'away' ? 'var(--color-success)' : isWon === 'home' ? 'var(--color-danger)' : 'var(--color-accent)'
             return (
               <div key={idx} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.25rem' }}>
                 <span style={{ fontSize: '0.65rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
@@ -80,10 +95,7 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
                     value={sets[idx].home}
                     disabled={isPostponed}
                     onChange={e => updateSet(idx, 'home', e.target.value)}
-                    style={{
-                      ...setInputSx,
-                      borderColor: isWon === 'home' ? 'var(--color-success)' : isWon === 'away' ? 'var(--color-danger)' : 'var(--color-accent)',
-                    }}
+                    style={{ ...setInputSx, borderColor: borderHome }}
                   />
                   <span style={{ color: 'var(--color-text-muted)', fontSize: '1rem' }}>:</span>
                   <input
@@ -91,12 +103,14 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
                     value={sets[idx].away}
                     disabled={isPostponed}
                     onChange={e => updateSet(idx, 'away', e.target.value)}
-                    style={{
-                      ...setInputSx,
-                      borderColor: isWon === 'away' ? 'var(--color-success)' : isWon === 'home' ? 'var(--color-danger)' : 'var(--color-accent)',
-                    }}
+                    style={{ ...setInputSx, borderColor: borderAway }}
                   />
                 </div>
+                {!setValid && (
+                  <span style={{ fontSize: '0.6rem', color: 'var(--color-danger)', marginTop: '0.15rem' }}>
+                    {t('matchday.setScoreInvalid', { target: isDecider ? 15 : 21 })}
+                  </span>
+                )}
               </div>
             )
           })}
@@ -107,7 +121,7 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
         </span>
 
         {!isPostponed && (
-          <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem', alignSelf: 'flex-end' }} onClick={onSave} disabled={saving}>
+          <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem', alignSelf: 'flex-end' }} onClick={onSave} disabled={saving || hasInvalidScore}>
             {saving ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
           </button>
         )}
@@ -428,8 +442,26 @@ export default function Matchday() {
     const updates = filtered
       .filter(f => f.status !== 'postponed')
       .map(async f => {
-        const score = scores[f.id] ?? { home: 0, away: 0 }
         const hasExisting = !!f.fixture_results?.[0]
+
+        if (tournamentSport === 'beach_volleyball') {
+          const allSlots = sets[f.id] ?? emptySetSlots()
+          const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
+          if (filledSets.length === 0) return null // no data entered — skip
+          const validation = validateBeachVolleyballMatch(filledSets)
+          if (!validation.valid) return null // invalid — skip silently
+          const sportData = computeSportData(filledSets)
+          const payload = { home_goals: sportData.sets_home, away_goals: sportData.sets_away, sport_data: sportData }
+          const { error: resErr } = hasExisting
+            ? await supabase.from('fixture_results').update(payload).eq('fixture_id', f.id)
+            : await supabase.from('fixture_results').insert({ fixture_id: f.id, ...payload })
+          if (resErr) return resErr
+          const { error: statusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+          return statusErr
+        }
+
+        // Football
+        const score = scores[f.id] ?? { home: 0, away: 0 }
         const { error: resErr } = hasExisting
           ? await supabase
               .from('fixture_results')

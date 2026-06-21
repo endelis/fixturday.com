@@ -88,7 +88,16 @@ function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
   const isBvb = sport === 'beach_volleyball'
   return (
     <div style={{ overflowX: 'auto' }}>
-      <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+      <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: 440 }}>
+        <colgroup>
+          <col style={{ width: 32 }} /><col />
+          <col style={{ width: 40 }} /><col style={{ width: 40 }} />
+          {isBvb ? (
+            <><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /><col style={{ width: 60 }} /><col style={{ width: 60 }} /></>
+          ) : (
+            <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
+          )}
+        </colgroup>
         <thead>
           <tr style={{ borderBottom: '2px solid rgba(255,255,255,0.12)' }}>
             <th style={thStyle}>#</th>

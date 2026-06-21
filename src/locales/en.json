@@ -303,7 +303,8 @@
     "setsWon": "SW",
     "setsAgainst": "SA",
     "setRatio": "SR",
-    "pointRatio": "PR"
+    "pointRatio": "PR",
+    "bvLegend": "P — Played · W — Wins · L — Losses · SW — Sets Won · SA — Sets Against · SR — Set Ratio (SW÷SA) · PR — Point Ratio"
   },
   "playoff": {
     "final": "Final",
@@ -406,8 +407,9 @@
     "pending": "Remaining"
   },
   "matchday": {
-    "noFixtures": "No fixtures scheduled for this day.",
-    "noFixturesHint": "Select a different date or check that fixtures have kick-off times set.",
+    "noFixtures": "No games visible?",
+    "noFixturesHint": "Check that the correct date is set in the header above — this page only shows fixtures scheduled for that day. Also make sure fixtures have kick-off times assigned.",
+    "setScoreInvalid": "Impossible — past {{target}}, lead must be exactly 2",
     "confirmPostpone": "Are you sure you want to postpone this fixture?",
     "filterAll": "All",
     "filterPending": "Upcoming",
