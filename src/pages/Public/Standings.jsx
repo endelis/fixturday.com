@@ -70,7 +70,7 @@ export default function Standings() {
       // Age group always loads from the URL param — not the filter override
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
-        .select('*, tournaments(id, name, slug, sport)')
+        .select('*, tournaments(id, name, slug, sport, location)')
         .eq('id', ageGroupId)
         .single()
 
@@ -213,6 +213,11 @@ export default function Standings() {
     <div>
       <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
+        {tournament.location && (
+          <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+            📍 {tournament.location}
+          </p>
+        )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: 0 }}>{ag.name} — {t('standings.title')}</h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
