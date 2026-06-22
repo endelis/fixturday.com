@@ -5,7 +5,6 @@ import { supabase } from '../../lib/supabase'
 import { format } from 'date-fns'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
-import TeamLogo from '../../components/TeamLogo'
 import { useSEO } from '../../hooks/useSEO'
 
 export default function Schedule() {
@@ -54,7 +53,6 @@ export default function Schedule() {
         .select('*, tournaments(id, name, slug, sport)')
         .eq('id', ageGroupId)
         .single()
-
       if (agErr) { setLoading(false); return }
       setAg(agData)
 
@@ -69,25 +67,23 @@ export default function Schedule() {
         .from('fixtures')
         .select(`
           *, home_placeholder_label, away_placeholder_label,
-          home_team:teams!home_team_id(id, name, logo_path),
-          away_team:teams!away_team_id(id, name, logo_path),
-          pitch:pitches(name, venues(name)),
+          home_team:teams!home_team_id(id, name),
+          away_team:teams!away_team_id(id, name),
+          pitch:pitches(name),
           stages!inner(age_group_id)
         `)
         .eq('stages.age_group_id', ageGroupId)
         .order('kickoff_time', { ascending: true })
-
       if (fxErr) { setLoading(false); return }
 
       const fixtureList = fx ?? []
       let fixtureData = fixtureList.map(f => ({ ...f, fixture_results: [] }))
 
       if (fixtureList.length > 0) {
-        const fixtureIds = fixtureList.map(f => f.id)
         const { data: results } = await supabase
           .from('fixture_results')
           .select('fixture_id, home_goals, away_goals, sport_data')
-          .in('fixture_id', fixtureIds)
+          .in('fixture_id', fixtureList.map(f => f.id))
         if (results?.length) {
           const resultMap = Object.fromEntries(results.map(r => [r.fixture_id, r]))
           fixtureData = fixtureList.map(f => ({
@@ -108,35 +104,26 @@ export default function Schedule() {
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, () => load())
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixtures' }, () => load())
       .subscribe()
-
     const poll = setInterval(load, 30000)
-
-    return () => {
-      supabase.removeChannel(channel)
-      clearInterval(poll)
-    }
+    return () => { supabase.removeChannel(channel); clearInterval(poll) }
   }, [ageGroupId])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (!ag) return <div className="loading">{t('common.error')}</div>
 
-  const tournamentSport = ag.tournaments?.sport ?? 'football'
-  const isBvb = tournamentSport === 'beach_volleyball'
+  const isBvb = (ag.tournaments?.sport ?? 'football') === 'beach_volleyball'
 
-  // Sequential game numbers from all fixtures (preserved across filters)
-  const gameNumbers = Object.fromEntries(
-    fixtures.filter(f => f.kickoff_time).map((f, i) => [f.id, i + 1])
-  )
-
-  // Filter counts
-  const liveCount = fixtures.filter(f => f.status === 'live').length
+  const liveCount     = fixtures.filter(f => f.status === 'live').length
   const upcomingCount = fixtures.filter(f => f.status !== 'completed' && f.status !== 'live').length
-  const doneCount = fixtures.filter(f => f.status === 'completed').length
+  const doneCount     = fixtures.filter(f => f.status === 'completed').length
 
-  const filteredFixtures = filter === 'live' ? fixtures.filter(f => f.status === 'live')
-    : filter === 'upcoming' ? fixtures.filter(f => f.status !== 'completed' && f.status !== 'live')
-    : filter === 'done' ? fixtures.filter(f => f.status === 'completed')
-    : fixtures
+  const filteredFixtures = filter === 'live'
+    ? fixtures.filter(f => f.status === 'live')
+    : filter === 'upcoming'
+      ? fixtures.filter(f => f.status !== 'completed' && f.status !== 'live')
+      : filter === 'done'
+        ? fixtures.filter(f => f.status === 'completed')
+        : fixtures
 
   const filteredIds = new Set(filteredFixtures.map(f => f.id))
 
@@ -147,11 +134,181 @@ export default function Schedule() {
     { key: 'done',     label: t('schedule.filterDone'),     count: doneCount },
   ].filter(tab => tab.key === 'all' || tab.count > 0)
 
-  // Group/knockout structure uses ALL fixtures for round names, filtered for rendering
+  // ── Match row ────────────────────────────────────────────────
+  function MatchRow({ f }) {
+    const result = f.fixture_results?.[0]
+    const isCompleted = f.status === 'completed'
+    const isLive = f.status === 'live'
+    const homeWon = result && result.home_goals > result.away_goals
+    const awayWon = result && result.away_goals > result.home_goals
+
+    const homeName = f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder_label ?? '?')
+    const awayName = f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder_label ?? '?')
+    const courtName = f.pitch?.name ?? null
+    const time = f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : null
+
+    const scoreDisplay = result
+      ? isBvb
+        ? `${result.home_goals} : ${result.away_goals}`
+        : `${result.home_goals} – ${result.away_goals}`
+      : null
+
+    const setDetail = isBvb && result?.sport_data?.sets?.length
+      ? result.sport_data.sets.map(s => `${s.h}–${s.a}`).join(' · ')
+      : null
+
+    return (
+      <div style={{
+        borderBottom: '1px solid rgba(255,255,255,0.05)',
+        borderLeft: `3px solid ${isLive ? 'var(--color-live)' : 'transparent'}`,
+      }}>
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.625rem',
+          padding: '0.5rem 0.75rem',
+        }}>
+          {/* Time + court stacked */}
+          <div style={{ width: 56, flexShrink: 0 }}>
+            <div style={{
+              fontSize: '0.82rem',
+              fontVariantNumeric: 'tabular-nums',
+              color: isLive ? 'var(--color-live)' : 'var(--color-text-muted)',
+              fontWeight: isLive ? 700 : 400,
+            }}>
+              {time ?? '—'}
+            </div>
+            {courtName && (
+              <div style={{
+                fontSize: '0.58rem',
+                color: 'rgba(148,163,184,0.4)',
+                marginTop: 2,
+                overflow: 'hidden',
+                textOverflow: 'ellipsis',
+                whiteSpace: 'nowrap',
+              }}>
+                {courtName}
+              </div>
+            )}
+          </div>
+
+          {/* Home team */}
+          <div style={{
+            flex: 1,
+            textAlign: 'right',
+            fontSize: '0.9rem',
+            fontWeight: homeWon ? 700 : 400,
+            color: isCompleted && !homeWon ? 'var(--color-text-muted)' : 'var(--color-text)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontStyle: !f.home_team_id ? 'italic' : 'normal',
+          }}>
+            {homeName}
+          </div>
+
+          {/* Score */}
+          <div style={{
+            width: 60,
+            flexShrink: 0,
+            textAlign: 'center',
+            fontFamily: 'var(--font-heading)',
+            fontSize: '1.125rem',
+            fontVariantNumeric: 'tabular-nums',
+            letterSpacing: '0.02em',
+            color: isLive
+              ? 'var(--color-live)'
+              : scoreDisplay
+                ? 'var(--color-accent)'
+                : 'rgba(148,163,184,0.25)',
+          }}>
+            {scoreDisplay ?? 'vs'}
+          </div>
+
+          {/* Away team */}
+          <div style={{
+            flex: 1,
+            fontSize: '0.9rem',
+            fontWeight: awayWon ? 700 : 400,
+            color: isCompleted && !awayWon ? 'var(--color-text-muted)' : 'var(--color-text)',
+            overflow: 'hidden',
+            textOverflow: 'ellipsis',
+            whiteSpace: 'nowrap',
+            fontStyle: !f.away_team_id ? 'italic' : 'normal',
+          }}>
+            {awayName}
+          </div>
+
+          {/* Status */}
+          <div style={{
+            width: 32,
+            flexShrink: 0,
+            textAlign: 'right',
+            fontSize: '0.62rem',
+            fontWeight: 700,
+            letterSpacing: '0.06em',
+            color: isLive
+              ? 'var(--color-live)'
+              : isCompleted
+                ? 'var(--color-success)'
+                : 'transparent',
+          }}>
+            {isLive ? 'LIVE' : isCompleted ? 'FT' : ''}
+          </div>
+        </div>
+
+        {/* BV set detail sub-line */}
+        {setDetail && (
+          <div style={{
+            padding: '0 0.75rem 0.35rem',
+            paddingLeft: 'calc(0.75rem + 56px + 0.625rem)',
+            fontSize: '0.67rem',
+            color: 'rgba(148,163,184,0.38)',
+            letterSpacing: '0.04em',
+            fontVariantNumeric: 'tabular-nums',
+          }}>
+            {setDetail}
+          </div>
+        )}
+      </div>
+    )
+  }
+
+  // ── Section card ─────────────────────────────────────────────
+  function Section({ label, labelAccent, children }) {
+    return (
+      <div style={{
+        background: 'var(--color-surface)',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius)',
+        overflow: 'hidden',
+        marginBottom: '0.75rem',
+      }}>
+        {label && (
+          <div style={{
+            padding: '0.4rem 0.75rem',
+            background: 'rgba(0,0,0,0.25)',
+            borderBottom: '1px solid rgba(255,255,255,0.06)',
+            fontFamily: 'var(--font-heading)',
+            fontSize: '0.72rem',
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.09em',
+            color: labelAccent ? 'var(--color-accent)' : 'var(--color-text-muted)',
+          }}>
+            {label}
+          </div>
+        )}
+        {children}
+      </div>
+    )
+  }
+
+  // ── Group knockout data shaping ──────────────────────────────
   const isGroupKnockout = ag?.format === 'group_knockout'
-  const allGroupFixtures = fixtures.filter(f => f.group_label)
-  const allKnockoutFixtures = fixtures.filter(f => !f.group_label)
-  const groupLabels = [...new Set(allGroupFixtures.map(f => f.group_label))].sort()
+  const groupFixtures    = fixtures.filter(f => f.group_label)
+  const knockoutFixtures = fixtures.filter(f => !f.group_label)
+  const groupLabels      = [...new Set(groupFixtures.map(f => f.group_label))].sort()
 
   function resolveRoundName(matches) {
     const rn = matches[0]?.round_name
@@ -163,269 +320,50 @@ export default function Schedule() {
       : t('standings.knockoutPhase')
   }
 
+  const is3rd = f => f.home_placeholder?.includes('zaudētājs') || f.away_placeholder?.includes('zaudētājs')
+
   const knockoutRoundList = Object.entries(
-    allKnockoutFixtures.reduce((acc, f) => {
+    knockoutFixtures.reduce((acc, f) => {
       const key = f.round ?? 999
-      if (!acc[key]) acc[key] = []
-      acc[key].push(f)
+      ;(acc[key] = acc[key] ?? []).push(f)
       return acc
     }, {})
   ).sort(([a], [b]) => Number(a) - Number(b))
     .flatMap(([, matches]) => {
-      const named = matches.filter(f => f.round_name)
+      const named   = matches.filter(f => f.round_name)
       const unnamed = matches.filter(f => !f.round_name)
       if (named.length > 0 && unnamed.length > 0) {
         return [
-          { roundName: resolveRoundName(named), matches: named.filter(f => filteredIds.has(f.id)) },
-          { roundName: resolveRoundName(unnamed), matches: unnamed.filter(f => filteredIds.has(f.id)) },
+          { roundName: resolveRoundName(named),   matches: named },
+          { roundName: resolveRoundName(unnamed), matches: unnamed },
         ]
       }
-      const is3rd = f => f.home_placeholder?.includes('zaudētājs') || f.away_placeholder?.includes('zaudētājs')
-      const thirdPlace = matches.filter(is3rd)
+      const thirds = matches.filter(is3rd)
       const finals = matches.filter(f => !is3rd(f))
-      if (thirdPlace.length > 0 && finals.length > 0) {
+      if (thirds.length > 0 && finals.length > 0) {
         return [
-          { roundName: t('playoff.thirdPlace'), matches: thirdPlace.filter(f => filteredIds.has(f.id)) },
-          { roundName: t('playoff.final'), matches: finals.filter(f => filteredIds.has(f.id)) },
+          { roundName: t('playoff.thirdPlace'), matches: thirds },
+          { roundName: t('playoff.final'),      matches: finals },
         ]
       }
-      return [{ roundName: resolveRoundName(matches), matches: matches.filter(f => filteredIds.has(f.id)) }]
+      return [{ roundName: resolveRoundName(matches), matches }]
     })
-    .filter(round => round.matches.length > 0)
 
   // Flat date grouping for non-group_knockout formats
   const flatFixtures = !isGroupKnockout ? filteredFixtures : []
-  const grouped = flatFixtures.reduce((acc, f) => {
+  const dateGroups = flatFixtures.reduce((acc, f) => {
     const day = f.kickoff_time ? format(new Date(f.kickoff_time), 'yyyy-MM-dd') : '__NO_DATE__'
     ;(acc[day] = acc[day] ?? []).push(f)
     return acc
   }, {})
 
-  function groupByTime(list) {
-    const acc = {}
-    list.forEach(f => {
-      const key = f.kickoff_time ? format(new Date(f.kickoff_time), 'HH:mm') : '__NO_TIME__'
-      ;(acc[key] = acc[key] ?? []).push(f)
-    })
-    return Object.entries(acc).sort(([a], [b]) => a < b ? -1 : a > b ? 1 : 0)
-  }
-
-  // ── Match card component ────────────────────────────────────────
-  function MatchCard({ f }) {
-    const result = f.fixture_results?.[0]
-    const isCompleted = f.status === 'completed'
-    const isLive = f.status === 'live'
-    const homeWon = result && result.home_goals > result.away_goals
-    const awayWon = result && result.away_goals > result.home_goals
-
-    const setDetail = isBvb && result?.sport_data?.sets?.length
-      ? result.sport_data.sets.map(s => `${s.h}–${s.a}`).join('  ')
-      : null
-
-    const courtLabel = f.pitch
-      ? (f.pitch.venues?.name ? `${f.pitch.venues.name} · ${f.pitch.name}` : f.pitch.name)
-      : null
-    const gameNum = gameNumbers[f.id]
-
-    const sides = [
-      {
-        name: f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder_label ?? '?'),
-        logo: f.home_team?.logo_path,
-        score: result?.home_goals,
-        won: homeWon,
-        placeholder: !f.home_team_id,
-      },
-      {
-        name: f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder_label ?? '?'),
-        logo: f.away_team?.logo_path,
-        score: result?.away_goals,
-        won: awayWon,
-        placeholder: !f.away_team_id,
-      },
-    ]
-
-    return (
-      <div style={{
-        background: 'var(--color-surface)',
-        border: `1px solid ${isLive ? 'rgba(0,230,118,0.4)' : 'var(--color-border)'}`,
-        borderRadius: 'var(--radius)',
-        overflow: 'hidden',
-        boxShadow: isLive ? '0 0 20px rgba(0,230,118,0.1)' : 'none',
-        transition: 'box-shadow var(--transition-base)',
-      }}>
-        {/* Meta strip */}
-        <div style={{
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'space-between',
-          padding: '0.3rem 0.75rem',
-          background: 'rgba(0,0,0,0.25)',
-          borderBottom: '1px solid rgba(255,255,255,0.05)',
-          fontSize: '0.7rem',
-          color: 'var(--color-text-muted)',
-          gap: '0.5rem',
-          minHeight: '28px',
-        }}>
-          <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
-            {gameNum != null && (
-              <span style={{ fontFamily: 'var(--font-heading)', letterSpacing: '0.04em', opacity: 0.7 }}>
-                #{gameNum}
-              </span>
-            )}
-            {f.kickoff_time && (
-              <span style={{ fontWeight: 600 }}>{formatTime(new Date(f.kickoff_time))}</span>
-            )}
-          </div>
-          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
-            {courtLabel && (
-              <span style={{
-                background: 'rgba(255,255,255,0.07)',
-                padding: '0.1rem 0.45rem',
-                borderRadius: '999px',
-                fontSize: '0.65rem',
-                letterSpacing: '0.02em',
-              }}>
-                {courtLabel}
-              </span>
-            )}
-            {isLive && (
-              <span style={{
-                color: 'var(--color-live)',
-                fontWeight: 700,
-                fontSize: '0.65rem',
-                letterSpacing: '0.07em',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.25rem',
-              }}>
-                <span style={{
-                  width: 6, height: 6, borderRadius: '50%',
-                  background: 'var(--color-live)',
-                  animation: 'live-dot-pulse 2s ease-in-out infinite',
-                  flexShrink: 0,
-                }} />
-                LIVE
-              </span>
-            )}
-            {isCompleted && !isLive && (
-              <span style={{ color: 'var(--color-success)', fontSize: '0.65rem', fontWeight: 600, letterSpacing: '0.05em' }}>
-                {t('schedule.ft')}
-              </span>
-            )}
-          </div>
-        </div>
-
-        {/* Teams */}
-        <div style={{ padding: '0.5rem 0.75rem 0.625rem' }}>
-          {sides.map((side, i) => (
-            <div key={i} style={{
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.5rem',
-              paddingBlock: '0.3rem',
-              borderBottom: i === 0 ? '1px solid rgba(255,255,255,0.05)' : 'none',
-            }}>
-              {side.logo && (
-                <TeamLogo size="sm" logoPath={side.logo} alt={side.name} />
-              )}
-              <span style={{
-                flex: 1,
-                fontSize: '0.9375rem',
-                fontWeight: side.won ? 700 : 400,
-                color: side.placeholder
-                  ? 'var(--color-text-muted)'
-                  : side.won
-                    ? 'var(--color-text)'
-                    : isCompleted ? 'var(--color-text-muted)' : 'var(--color-text)',
-                fontStyle: side.placeholder ? 'italic' : 'normal',
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
-                whiteSpace: 'nowrap',
-              }}>
-                {side.name}
-              </span>
-              {result != null && (
-                <span style={{
-                  fontFamily: 'var(--font-heading)',
-                  fontSize: '1.375rem',
-                  lineHeight: 1,
-                  fontWeight: side.won ? 700 : 400,
-                  color: side.won ? 'var(--color-accent)' : 'rgba(148,163,184,0.5)',
-                  minWidth: '1.25rem',
-                  textAlign: 'right',
-                }}>
-                  {side.score}
-                </span>
-              )}
-              {result == null && !f.home_team_id && !f.away_team_id && i === 0 && (
-                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>—</span>
-              )}
-            </div>
-          ))}
-
-          {/* BV set detail */}
-          {setDetail && (
-            <div style={{
-              marginTop: '0.35rem',
-              paddingTop: '0.3rem',
-              borderTop: '1px solid rgba(255,255,255,0.04)',
-              fontSize: '0.7rem',
-              color: 'var(--color-text-muted)',
-              letterSpacing: '0.03em',
-              fontVariantNumeric: 'tabular-nums',
-            }}>
-              {setDetail}
-            </div>
-          )}
-        </div>
-      </div>
-    )
-  }
-
-  // ── Time slot section ───────────────────────────────────────────
-  function TimeSlot({ timeStr, games }) {
-    return (
-      <div style={{ marginBottom: '1rem' }}>
-        {timeStr !== '__NO_TIME__' && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', marginBottom: '0.5rem' }}>
-            <span style={{
-              fontFamily: 'var(--font-heading)',
-              fontSize: '0.875rem',
-              color: 'var(--color-accent)',
-              flexShrink: 0,
-              letterSpacing: '0.02em',
-            }}>
-              {timeStr}
-            </span>
-            <div style={{ flex: 1, height: '1px', background: 'rgba(255,255,255,0.07)' }} />
-          </div>
-        )}
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-          gap: '0.5rem',
-        }}>
-          {games.map(f => <MatchCard key={f.id} f={f} />)}
-        </div>
-      </div>
-    )
-  }
-
-  const sectionH2 = {
+  const sectionHeading = {
     fontFamily: 'var(--font-heading)',
-    fontSize: '1.375rem',
+    fontSize: '0.875rem',
     color: 'var(--color-accent)',
-    marginBottom: '1rem',
-    letterSpacing: '0.01em',
-  }
-
-  const sectionH3 = {
-    fontFamily: 'var(--font-heading)',
-    fontSize: '1rem',
-    color: 'var(--color-text-muted)',
-    marginBottom: '0.625rem',
+    margin: '1.25rem 0 0.5rem',
     textTransform: 'uppercase',
-    letterSpacing: '0.06em',
+    letterSpacing: '0.07em',
   }
 
   return (
@@ -440,7 +378,7 @@ export default function Schedule() {
               {ag?.name} — {t('schedule.title')}
             </h1>
             {lastUpdated && (
-              <p style={{ margin: '0.25rem 0 0', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+              <p style={{ margin: '0.2rem 0 0', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
                 {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
               </p>
             )}
@@ -450,15 +388,14 @@ export default function Schedule() {
           </Link>
         </div>
 
-        {/* Reg open banner */}
+        {/* Registration banner */}
         {ag.registration_open && (
           <Link
             to={`/t/${slug}/register`}
             style={{
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
               gap: '1rem', flexWrap: 'wrap', textDecoration: 'none',
-              background: 'rgba(240,165,0,0.08)',
-              border: '1px solid rgba(240,165,0,0.3)',
+              background: 'rgba(240,165,0,0.08)', border: '1px solid rgba(240,165,0,0.3)',
               borderLeft: '3px solid var(--color-accent)',
               borderRadius: '8px', padding: '0.875rem 1.25rem', marginBottom: '1rem',
             }}
@@ -471,12 +408,7 @@ export default function Schedule() {
                 {t('public.regBannerText')}
               </div>
             </div>
-            <span style={{
-              background: 'var(--color-accent)', color: '#0a1628',
-              fontFamily: 'var(--font-heading)', fontWeight: 700,
-              fontSize: '0.8125rem', letterSpacing: '0.05em', textTransform: 'uppercase',
-              padding: '0.5rem 1.1rem', borderRadius: '6px', whiteSpace: 'nowrap', flexShrink: 0,
-            }}>
+            <span style={{ background: 'var(--color-accent)', color: '#0a1628', fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.8125rem', letterSpacing: '0.05em', textTransform: 'uppercase', padding: '0.5rem 1.1rem', borderRadius: '6px', whiteSpace: 'nowrap', flexShrink: 0 }}>
               {t('public.regBannerCta')} →
             </span>
           </Link>
@@ -484,13 +416,7 @@ export default function Schedule() {
 
         {/* Filter tabs */}
         {filterTabs.length > 1 && (
-          <div style={{
-            display: 'flex',
-            gap: '0.25rem',
-            marginBottom: '1.25rem',
-            borderBottom: '1px solid var(--color-border)',
-            paddingBottom: '0',
-          }}>
+          <div style={{ display: 'flex', gap: '0.25rem', marginBottom: '1.25rem', borderBottom: '1px solid var(--color-border)' }}>
             {filterTabs.map(tab => {
               const isActive = filter === tab.key
               const isLiveTab = tab.key === 'live'
@@ -499,42 +425,22 @@ export default function Schedule() {
                   key={tab.key}
                   onClick={() => setFilter(tab.key)}
                   style={{
-                    background: 'none',
-                    border: 'none',
+                    background: 'none', border: 'none',
                     borderBottom: `2px solid ${isActive ? 'var(--color-accent)' : 'transparent'}`,
                     color: isActive ? 'var(--color-accent)' : isLiveTab ? 'var(--color-live)' : 'var(--color-text-muted)',
-                    fontFamily: 'var(--font-heading)',
-                    fontSize: '0.875rem',
-                    fontWeight: isActive ? 700 : 500,
-                    letterSpacing: '0.04em',
+                    fontFamily: 'var(--font-heading)', fontSize: '0.875rem',
+                    fontWeight: isActive ? 700 : 500, letterSpacing: '0.04em',
                     padding: '0.5rem 0.875rem 0.625rem',
-                    cursor: 'pointer',
-                    marginBottom: '-1px',
+                    cursor: 'pointer', marginBottom: '-1px',
                     transition: 'color var(--transition-fast), border-color var(--transition-fast)',
-                    display: 'flex',
-                    alignItems: 'center',
-                    gap: '0.375rem',
-                    whiteSpace: 'nowrap',
+                    display: 'flex', alignItems: 'center', gap: '0.375rem', whiteSpace: 'nowrap',
                   }}
                 >
                   {isLiveTab && (
-                    <span style={{
-                      width: 6, height: 6, borderRadius: '50%',
-                      background: 'var(--color-live)',
-                      flexShrink: 0,
-                      animation: liveCount > 0 ? 'live-dot-pulse 2s ease-in-out infinite' : 'none',
-                    }} />
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: 'var(--color-live)', flexShrink: 0, animation: liveCount > 0 ? 'live-dot-pulse 2s ease-in-out infinite' : 'none' }} />
                   )}
                   {tab.label}
-                  <span style={{
-                    fontSize: '0.7rem',
-                    background: isActive ? 'rgba(240,165,0,0.15)' : 'rgba(255,255,255,0.07)',
-                    color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)',
-                    padding: '0.05rem 0.4rem',
-                    borderRadius: '999px',
-                    fontFamily: 'var(--font-body)',
-                    fontWeight: 600,
-                  }}>
+                  <span style={{ fontSize: '0.7rem', background: isActive ? 'rgba(240,165,0,0.15)' : 'rgba(255,255,255,0.07)', color: isActive ? 'var(--color-accent)' : 'var(--color-text-muted)', padding: '0.05rem 0.4rem', borderRadius: '999px', fontFamily: 'var(--font-body)', fontWeight: 600 }}>
                     {tab.count}
                   </span>
                 </button>
@@ -547,69 +453,56 @@ export default function Schedule() {
         {fixtures.length === 0 && (
           <p style={{ color: 'var(--color-text-muted)' }}>{t('fixture.noFixtures')}</p>
         )}
-        {fixtures.length > 0 && !fixtures.some(f => f.kickoff_time) && (
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', marginBottom: '1rem' }}>
-            {t('schedule.noScheduleYet')}
-          </p>
-        )}
-        {filteredFixtures.length === 0 && fixtures.length > 0 && (
-          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-            {t('common.noData')}
-          </p>
+        {fixtures.length > 0 && filteredFixtures.length === 0 && (
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('common.noData')}</p>
         )}
 
-        {/* Group knockout layout */}
+        {/* ── Group-knockout layout ── */}
         {isGroupKnockout && (
           <>
             {groupLabels.some(label =>
-              allGroupFixtures.filter(f => f.group_label === label && filteredIds.has(f.id)).length > 0
+              groupFixtures.filter(f => f.group_label === label && filteredIds.has(f.id)).length > 0
             ) && (
-              <div style={{ marginBottom: '2rem' }}>
-                <h2 style={sectionH2}>{t('schedule.groupStage')}</h2>
+              <>
+                <h2 style={sectionHeading}>{t('schedule.groupStage')}</h2>
                 {groupLabels.map(label => {
-                  const visibleInGroup = allGroupFixtures.filter(f => f.group_label === label && filteredIds.has(f.id))
-                  if (visibleInGroup.length === 0) return null
+                  const visible = groupFixtures.filter(f => f.group_label === label && filteredIds.has(f.id))
+                  if (!visible.length) return null
                   return (
-                    <div key={label} style={{ marginBottom: '1.5rem' }}>
-                      <h3 style={sectionH3}>{t('standings.group')} {label}</h3>
-                      {groupByTime(visibleInGroup).map(([timeStr, games]) => (
-                        <TimeSlot key={timeStr} timeStr={timeStr} games={games} />
-                      ))}
-                    </div>
+                    <Section key={label} label={`${t('standings.group')} ${label}`}>
+                      {visible.map(f => <MatchRow key={f.id} f={f} />)}
+                    </Section>
                   )
                 })}
-              </div>
+              </>
             )}
 
-            {knockoutRoundList.length > 0 && (
-              <div>
-                <h2 style={sectionH2}>{t('schedule.playoffStage')}</h2>
-                {knockoutRoundList.map(({ roundName, matches }, idx) => (
-                  <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={sectionH3}>{roundName}</h3>
-                    <div style={{
-                      display: 'grid',
-                      gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))',
-                      gap: '0.5rem',
-                    }}>
-                      {matches.map(f => <MatchCard key={f.id} f={f} />)}
-                    </div>
-                  </div>
-                ))}
-              </div>
+            {knockoutRoundList.some(r => r.matches.some(f => filteredIds.has(f.id))) && (
+              <>
+                <h2 style={{ ...sectionHeading, marginTop: '1.75rem' }}>{t('schedule.playoffStage')}</h2>
+                {knockoutRoundList.map(({ roundName, matches }, idx) => {
+                  const visible = matches.filter(f => filteredIds.has(f.id))
+                  if (!visible.length) return null
+                  return (
+                    <Section key={idx} label={roundName}>
+                      {visible.map(f => <MatchRow key={f.id} f={f} />)}
+                    </Section>
+                  )
+                })}
+              </>
             )}
           </>
         )}
 
-        {/* Flat date layout (round_robin / knockout) */}
-        {!isGroupKnockout && Object.keys(grouped).sort().map(day => (
-          <div key={day} style={{ marginBottom: '2rem' }}>
-            <h2 style={{ ...sectionH2, fontSize: '1.125rem' }}>
+        {/* ── Flat layout (round-robin / knockout) ── */}
+        {!isGroupKnockout && Object.keys(dateGroups).sort().map(day => (
+          <div key={day}>
+            <h2 style={sectionHeading}>
               {day === '__NO_DATE__' ? t('schedule.noDate') : formatDate(day)}
             </h2>
-            {groupByTime(grouped[day]).map(([timeStr, games]) => (
-              <TimeSlot key={timeStr} timeStr={timeStr} games={games} />
-            ))}
+            <Section label={null}>
+              {dateGroups[day].map(f => <MatchRow key={f.id} f={f} />)}
+            </Section>
           </div>
         ))}
       </div>
