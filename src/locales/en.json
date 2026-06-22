@@ -306,7 +306,7 @@
     "pointsWon": "PW",
     "pointsAgainst": "PL",
     "pointRatio": "PR",
-    "bvLegend": "P — Played · W — Wins · L — Losses · SW — Sets Won · SL — Sets Lost · SR — Set Ratio (SW÷SL) · PW — Points Won · PL — Points Lost · PR — Point Ratio (PW÷PL)"
+    "bvLegend": "SW — Sets Won · SL — Sets Lost · SR — Set Ratio · PW — Pts Won · PL — Pts Lost · PR — Pt Ratio"
   },
   "playoff": {
     "final": "Final",

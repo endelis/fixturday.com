@@ -329,7 +329,7 @@ export default function Standings() {
         )}
 
         {tournamentSport === 'beach_volleyball' && ag.format !== 'double_elimination' && (
-          <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', marginBottom: '0.75rem', lineHeight: 1.6 }}>
+          <p style={{ fontSize: '0.7rem', color: 'rgba(148,163,184,0.55)', marginBottom: '0.75rem', letterSpacing: '0.02em' }}>
             {t('standings.bvLegend')}
           </p>
         )}
@@ -360,9 +360,9 @@ export default function Standings() {
                     {t('standings.group')} {label}
                   </h2>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
+                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 540 : 420 }}>
                       <colgroup>
-                        <col style={{ width: 28 }} /><col />
+                        <col style={{ width: 28 }} /><col style={{ width: 170 }} />
                         <col style={{ width: 32 }} /><col style={{ width: 32 }} />
                         {tournamentSport === 'beach_volleyball' ? (
                           <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
@@ -372,9 +372,9 @@ export default function Standings() {
                       </colgroup>
                       <thead>
                         <tr>
-                          <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
+                          <th>#</th><th>{t('standings.team')}</th><th title="Played">{t('standings.played')}</th><th title="Won">{t('standings.won')}</th>
                           {tournamentSport === 'beach_volleyball' ? (
-                            <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointsWon')}</th><th>{t('standings.pointsAgainst')}</th><th>{t('standings.pointRatio')}</th></>
+                            <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th></>
                           ) : (
                             <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
                           )}
@@ -459,9 +459,9 @@ export default function Standings() {
           </>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 560 : 440 }}>
+            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 540 : 420 }}>
               <colgroup>
-                <col style={{ width: 28 }} /><col />
+                <col style={{ width: 28 }} /><col style={{ width: 170 }} />
                 <col style={{ width: 32 }} /><col style={{ width: 32 }} />
                 {tournamentSport === 'beach_volleyball' ? (
                   <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
@@ -471,9 +471,9 @@ export default function Standings() {
               </colgroup>
               <thead>
                 <tr>
-                  <th>#</th><th>{t('standings.team')}</th><th>{t('standings.played')}</th><th>{t('standings.won')}</th>
+                  <th>#</th><th>{t('standings.team')}</th><th title="Played">{t('standings.played')}</th><th title="Won">{t('standings.won')}</th>
                   {tournamentSport === 'beach_volleyball' ? (
-                    <><th>{t('standings.lost')}</th><th>{t('standings.setsWon')}</th><th>{t('standings.setsAgainst')}</th><th>{t('standings.setRatio')}</th><th>{t('standings.pointsWon')}</th><th>{t('standings.pointsAgainst')}</th><th>{t('standings.pointRatio')}</th></>
+                    <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th></>
                   ) : (
                     <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
                   )}
