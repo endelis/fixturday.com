@@ -221,6 +221,27 @@ export default function Standings() {
       return [{ roundName: resolveRoundName(matches), matches }]
     })
 
+  // Derive how many teams advance from each group from knockout placeholder labels
+  // e.g. "Group A-1", "Group B-2" → Group A: 1 advancing, Group B: 2 advancing
+  const advancingCountMap = {}
+  knockoutFixtures.forEach(f => {
+    [f.home_placeholder, f.away_placeholder].forEach(p => {
+      if (!p) return
+      const m = p.match(/Group\s+([A-Z])-(\d+)/i)
+      if (m) {
+        const grp = m[1].toUpperCase()
+        const rank = parseInt(m[2])
+        if (!advancingCountMap[grp] || rank > advancingCountMap[grp]) {
+          advancingCountMap[grp] = rank
+        }
+      }
+    })
+  })
+  const allAdvVals = Object.values(advancingCountMap)
+  const defaultAdvancing = allAdvVals.length > 0 && allAdvVals.every(v => v === allAdvVals[0])
+    ? allAdvVals[0]
+    : null
+
   return (
     <div>
       <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
@@ -381,38 +402,58 @@ export default function Standings() {
                         </tr>
                       </thead>
                       <tbody>
-                        {groupStandings.map((row, i) => (
-                          <tr key={row.team.id}>
-                            <td style={{ color: i === 0 ? '#f0a500' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--color-text-muted)', fontWeight: i < 3 ? 700 : 400, fontSize: '0.82rem' }}>{i + 1}</td>
-                            <td>
-                              <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)' }}>
-                                {row.team.name}
-                              </Link>
-                            </td>
-                            <td>{row.played}</td>
-                            <td>{row.won}</td>
-                            {tournamentSport === 'beach_volleyball' ? (
-                              <>
-                                <td>{row.lost}</td>
-                                <td>{row.sets_won ?? 0}</td>
-                                <td>{row.sets_lost ?? 0}</td>
-                                <td>{row.sets_lost > 0 ? (row.sets_won / row.sets_lost).toFixed(3) : (row.sets_won > 0 ? '∞' : '—')}</td>
-                                <td>{row.points_won ?? 0}</td>
-                                <td>{row.points_against ?? 0}</td>
-                                <td><strong>{row.points_against > 0 ? (row.points_won / row.points_against).toFixed(3) : (row.points_won > 0 ? '∞' : '—')}</strong></td>
-                              </>
-                            ) : (
-                              <>
-                                <td>{row.drawn}</td>
-                                <td>{row.lost}</td>
-                                <td>{row.gf}</td>
-                                <td>{row.ga}</td>
-                                <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
-                                <td><strong>{row.points}</strong></td>
-                              </>
-                            )}
-                          </tr>
-                        ))}
+                        {groupStandings.flatMap((row, i) => {
+                          const advCount = advancingCountMap[label] ?? defaultAdvancing
+                          const isAdvancing = advCount != null && i < advCount
+                          const isLastAdvancing = advCount != null && i === advCount - 1 && i < groupStandings.length - 1
+                          const rankColor = i === 0 ? '#f0a500' : i === 1 ? '#94a3b8' : i === 2 ? '#cd7f32' : 'var(--color-text-muted)'
+                          const rows = [
+                            <tr key={row.team.id}>
+                              <td style={{ color: rankColor, fontWeight: i < 3 ? 700 : 400, fontSize: '0.82rem', whiteSpace: 'nowrap' }}>
+                                {i + 1}
+                                {isAdvancing && (
+                                  <span title="Advances to knockout" style={{ marginLeft: 3, color: 'var(--color-success)', fontSize: '0.6rem', verticalAlign: 'super', lineHeight: 1 }}>▲</span>
+                                )}
+                              </td>
+                              <td>
+                                <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)' }}>
+                                  {row.team.name}
+                                </Link>
+                              </td>
+                              <td>{row.played}</td>
+                              <td>{row.won}</td>
+                              {tournamentSport === 'beach_volleyball' ? (
+                                <>
+                                  <td>{row.lost}</td>
+                                  <td>{row.sets_won ?? 0}</td>
+                                  <td>{row.sets_lost ?? 0}</td>
+                                  <td>{row.sets_lost > 0 ? (row.sets_won / row.sets_lost).toFixed(3) : (row.sets_won > 0 ? '∞' : '—')}</td>
+                                  <td>{row.points_won ?? 0}</td>
+                                  <td>{row.points_against ?? 0}</td>
+                                  <td><strong>{row.points_against > 0 ? (row.points_won / row.points_against).toFixed(3) : (row.points_won > 0 ? '∞' : '—')}</strong></td>
+                                </>
+                              ) : (
+                                <>
+                                  <td>{row.drawn}</td>
+                                  <td>{row.lost}</td>
+                                  <td>{row.gf}</td>
+                                  <td>{row.ga}</td>
+                                  <td>{row.gd > 0 ? `+${row.gd}` : row.gd}</td>
+                                  <td><strong>{row.points}</strong></td>
+                                </>
+                              )}
+                            </tr>
+                          ]
+                          if (isLastAdvancing) {
+                            rows.push(
+                              <tr key={`adv-sep-${label}`}>
+                                <td colSpan={tournamentSport === 'beach_volleyball' ? 11 : 10}
+                                  style={{ padding: 0, height: 2, background: 'rgba(34,197,94,0.28)', border: 'none', borderBottom: 'none' }} />
+                              </tr>
+                            )
+                          }
+                          return rows
+                        })}
                       </tbody>
                     </table>
                   </div>
