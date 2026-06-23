@@ -113,6 +113,14 @@ export default function Schedule() {
 
   const isBvb = (ag.tournaments?.sport ?? 'football') === 'beach_volleyball'
 
+  const now = new Date()
+  const hasResults = fixtures.some(f => f.fixture_results?.length > 0)
+  const firstKickoff = fixtures
+    .filter(f => f.kickoff_time)
+    .reduce((min, f) => { const d = new Date(f.kickoff_time); return (!min || d < min) ? d : min }, null)
+  const cutoffReached = firstKickoff && (firstKickoff - now) < 24 * 60 * 60 * 1000
+  const isRegOpen = ag.registration_open && !cutoffReached && !hasResults
+
   const liveCount     = fixtures.filter(f => f.status === 'live').length
   const upcomingCount = fixtures.filter(f => f.status !== 'completed' && f.status !== 'live').length
   const doneCount     = fixtures.filter(f => f.status === 'completed').length
@@ -389,7 +397,7 @@ export default function Schedule() {
         </div>
 
         {/* Registration banner */}
-        {ag.registration_open && (
+        {isRegOpen && (
           <Link
             to={`/t/${slug}/register`}
             style={{
