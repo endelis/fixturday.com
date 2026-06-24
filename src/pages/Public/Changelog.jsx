@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
 import { useSEO } from '../../hooks/useSEO'
@@ -161,19 +162,57 @@ const typeConfig = {
   fix:      { label: 'Fix',      color: '#f0a500', bg: 'rgba(240,165,0,0.1)',  border: 'rgba(240,165,0,0.25)' },
 }
 
+const allItems = entries.flatMap(e => e.items)
+const counts = {
+  all: allItems.length,
+  new: allItems.filter(i => i.type === 'new').length,
+  improved: allItems.filter(i => i.type === 'improved').length,
+  fix: allItems.filter(i => i.type === 'fix').length,
+}
+
+const FILTERS = [
+  { id: 'all',      label: `All (${counts.all})` },
+  { id: 'new',      label: `New (${counts.new})` },
+  { id: 'improved', label: `Improved (${counts.improved})` },
+  { id: 'fix',      label: `Fix (${counts.fix})` },
+]
+
 export default function Changelog() {
+  const [activeType, setActiveType] = useState('all')
+
   useSEO({
     title: 'Changelog — Fixturday',
     description: 'See what\'s new in Fixturday — product updates, improvements, and fixes to the tournament management platform.',
     path: '/changelog',
   })
 
+  const visibleEntries = entries
+    .map(entry => ({
+      ...entry,
+      items: activeType === 'all' ? entry.items : entry.items.filter(i => i.type === activeType),
+    }))
+    .filter(entry => entry.items.length > 0)
+
+  const totalVisible = visibleEntries.reduce((sum, e) => sum + e.items.length, 0)
+
+  const pillBase = {
+    border: 'none',
+    borderRadius: '999px',
+    padding: '0.35rem 0.9rem',
+    fontSize: '0.8125rem',
+    fontFamily: 'var(--font-heading)',
+    fontWeight: 600,
+    cursor: 'pointer',
+    whiteSpace: 'nowrap',
+    transition: 'background var(--transition-fast), color var(--transition-fast)',
+  }
+
   return (
     <div style={{ background: 'var(--color-bg)', color: 'var(--color-text)', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
       <PublicNav />
 
       <main style={{ maxWidth: 740, margin: '0 auto', padding: '3.5rem 1.25rem 5rem', flex: 1 }}>
-        <header style={{ marginBottom: '3.5rem' }}>
+        <header style={{ marginBottom: '2.5rem' }}>
           <p style={{ color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '0.12em', textTransform: 'uppercase', marginBottom: '0.5rem' }}>
             Changelog
           </p>
@@ -185,10 +224,46 @@ export default function Changelog() {
           </p>
         </header>
 
+        {/* Type filter */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', marginBottom: '1.25rem' }}>
+          {FILTERS.map(f => {
+            const active = f.id === activeType
+            return (
+              <button
+                key={f.id}
+                onClick={() => setActiveType(f.id)}
+                style={{
+                  ...pillBase,
+                  background: active ? 'var(--color-accent)' : 'var(--color-surface)',
+                  color: active ? '#000' : 'var(--color-text-muted)',
+                  border: active ? 'none' : '1px solid var(--color-border)',
+                }}
+              >
+                {f.label}
+              </button>
+            )
+          })}
+        </div>
+
+        {/* Result count */}
+        <p style={{ fontSize: '0.8125rem', color: 'var(--color-text-muted)', marginBottom: '2.5rem' }}>
+          {totalVisible === 0
+            ? 'No entries matching this filter.'
+            : `${totalVisible} entr${totalVisible !== 1 ? 'ies' : 'y'}`
+          }
+          {activeType !== 'all' && totalVisible > 0 && (
+            <button
+              onClick={() => setActiveType('all')}
+              style={{ marginLeft: '0.75rem', background: 'none', border: 'none', color: 'var(--color-accent)', fontSize: '0.8125rem', cursor: 'pointer', padding: 0, fontFamily: 'var(--font-body)' }}
+            >
+              Clear filter
+            </button>
+          )}
+        </p>
+
         <div style={{ display: 'flex', flexDirection: 'column', gap: '3.5rem' }}>
-          {entries.map(entry => (
+          {visibleEntries.map(entry => (
             <section key={entry.date}>
-              {/* Date header */}
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', marginBottom: '1.5rem' }}>
                 <time style={{
                   fontFamily: 'var(--font-heading)',
@@ -202,7 +277,6 @@ export default function Changelog() {
                 <div style={{ flex: 1, height: '1px', background: 'var(--color-border)' }} />
               </div>
 
-              {/* Items */}
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 {entry.items.map((item, i) => {
                   const cfg = typeConfig[item.type]
