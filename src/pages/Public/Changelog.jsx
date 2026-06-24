@@ -4,6 +4,111 @@ import { useSEO } from '../../hooks/useSEO'
 
 const entries = [
   {
+    date: 'June 24, 2026',
+    items: [
+      {
+        type: 'new',
+        title: 'Tournament info page',
+        body: 'A dedicated public page at /[slug]/info where you can publish your rules as text and upload a PDF. Participants get venue, format, and rules in one place before arriving. The Register button hides automatically once the tournament has results.',
+      },
+      {
+        type: 'new',
+        title: 'QR code on tournament overview',
+        body: 'The admin overview now shows a QR code linking to your public tournament page. Print it, stick it on the venue board, and participants scan for live standings and the schedule — no typing, no WhatsApp messages required.',
+      },
+      {
+        type: 'new',
+        title: 'Beach volleyball legend replaced with abbreviation chips',
+        body: 'PW, PL, S+, S−, PR column headers now have scannable chips below the standings table explaining each abbreviation in plain English. Cleaner than a paragraph of text, easier to reference quickly on a phone.',
+      },
+      {
+        type: 'fix',
+        title: 'Cookie banner no longer covers mobile content',
+        body: 'The consent banner now pushes page content upward so buttons and CTAs at the bottom of the screen stay reachable. Works correctly even when the banner text wraps to a second line on small phones.',
+      },
+      {
+        type: 'fix',
+        title: 'Admin matchday controls have larger tap targets',
+        body: 'Filter dropdowns and the Postpone button on the matchday score entry page now meet the 44 px minimum touch target size — easier to hit accurately on a phone while standing at the venue.',
+      },
+    ],
+  },
+  {
+    date: 'June 22–23, 2026',
+    items: [
+      {
+        type: 'improved',
+        title: 'Schedule rewritten as compact rows',
+        body: 'The public fixture list now uses a condensed one-line row per match — time, home team, score, away team, pitch — so you can scan the full day at a glance without scrolling through large cards.',
+      },
+      {
+        type: 'new',
+        title: 'Group stage advancement indicators',
+        body: 'The standings table now marks which positions advance to the playoffs with a green "ADV" indicator. The number of advancing spots is calculated automatically from your playoff depth setting, so there\'s no ambiguity about who goes through.',
+      },
+      {
+        type: 'fix',
+        title: 'Registration banner hides at the right time',
+        body: 'The "Register your team" banner on the schedule page was showing after kickoff times had already passed and after results had been entered. It now disappears correctly in both situations.',
+      },
+    ],
+  },
+  {
+    date: 'June 21, 2026',
+    items: [
+      {
+        type: 'new',
+        title: 'FIVB-standard beach volleyball standings',
+        body: 'BV standings now show Played, Won, Lost, Points Won (PW), Points Lost (PL), Set Ratio, and Point Ratio — the format used in official beach volleyball competitions. Set scores appear inline in match results.',
+      },
+      {
+        type: 'new',
+        title: 'Public tournament page redesign',
+        body: 'The public page now uses navigation tabs (Info / Schedule / Standings / Teams) so participants can jump directly to what they need. Match cards use a vertical layout and the standings table fits on mobile without horizontal scrolling.',
+      },
+      {
+        type: 'new',
+        title: 'Tournament settings page redesign',
+        body: 'Cleaner layout with clearly grouped sections for sport, venue, dates, and registration. All settings are easier to find and the save button stays in a consistent position.',
+      },
+      {
+        type: 'new',
+        title: 'Auto-close registration',
+        body: 'Registration now closes automatically in three situations: the division hits its team cap, match results start coming in, or a kickoff time is within 24 hours. The Register button disappears and participants see a clear closed state. No manual action required from the organiser.',
+      },
+      {
+        type: 'new',
+        title: 'Venue shown on public standings page',
+        body: 'The tournament venue name appears at the top of the public standings page, letting participants confirm at a glance they\'re looking at the right event.',
+      },
+    ],
+  },
+  {
+    date: 'June 20, 2026',
+    items: [
+      {
+        type: 'new',
+        title: 'Beach volleyball tournament support',
+        body: 'You can now create beach volleyball tournaments. The full workflow is sport-aware throughout: double elimination and pool play bracket generation, FIVB set-by-set score entry (sets to 21, deciding set to 15, win by 2), and standings calculated by sets won/lost and point ratio.',
+      },
+      {
+        type: 'new',
+        title: 'Pair registration for beach volleyball',
+        body: 'When adding teams to a beach volleyball tournament, the roster captures exactly two players per pair. The standard football squad form is replaced with a simplified pair entry.',
+      },
+      {
+        type: 'new',
+        title: 'Sport-aware division format options',
+        body: 'The format picker when creating a division now shows only the formats that make sense for the sport — pool play and elimination formats for beach volleyball; round-robin, knockout, and group stage for football.',
+      },
+      {
+        type: 'improved',
+        title: '"Age groups" renamed to "divisions"',
+        body: 'The term "age group" has been replaced with "division" everywhere in the interface and on public pages. The change reflects how the feature is actually used — grouping teams by age, skill level, or category depending on the sport.',
+      },
+    ],
+  },
+  {
     date: 'June 17, 2026',
     items: [
       {
