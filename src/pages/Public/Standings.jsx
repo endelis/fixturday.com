@@ -350,9 +350,28 @@ export default function Standings() {
         )}
 
         {tournamentSport === 'beach_volleyball' && ag.format !== 'double_elimination' && (
-          <p style={{ fontSize: '0.7rem', color: 'rgba(148,163,184,0.55)', marginBottom: '0.75rem', letterSpacing: '0.02em' }}>
-            {t('standings.bvLegend')}
-          </p>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.875rem' }}>
+            {[
+              [t('standings.setsWon'),       t('standings.setsWonFull')],
+              [t('standings.setsAgainst'),    t('standings.setsAgainstFull')],
+              [t('standings.setRatio'),       t('standings.setRatioFull')],
+              [t('standings.pointsWon'),      t('standings.pointsWonFull')],
+              [t('standings.pointsAgainst'),  t('standings.pointsAgainstFull')],
+              [t('standings.pointRatio'),     t('standings.pointRatioFull')],
+            ].map(([abbr, full]) => (
+              <span key={abbr} style={{
+                display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                background: 'rgba(148,163,184,0.06)',
+                border: '1px solid rgba(148,163,184,0.12)',
+                borderRadius: '4px',
+                padding: '0.18rem 0.5rem',
+                fontSize: '0.7rem',
+              }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, color: 'var(--color-text-muted)', letterSpacing: '0.04em' }}>{abbr}</span>
+                <span style={{ color: 'rgba(148,163,184,0.45)' }}>{full}</span>
+              </span>
+            ))}
+          </div>
         )}
 
         {ag.format === 'double_elimination' ? (
