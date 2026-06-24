@@ -11,7 +11,7 @@ import { X, Menu } from 'lucide-react'
  *   ageGroups         – sibling age groups (kept for Schedule/Standings compat)
  *   activeAgeGroupId  – active age group id (kept for Schedule/Standings compat)
  */
-export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId }) {
+export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId, showRegister = true }) {
   const { t } = useTranslation()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
@@ -45,7 +45,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         >
           {/* Logo */}
           <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
-            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '30px', display: 'block' }} />
+            <img src="/logo-horizontal.svg" alt="Fixturday" width="175" height="30" style={{ height: '30px', width: '175px', display: 'block' }} />
           </Link>
 
           {tournament ? (
@@ -194,9 +194,11 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   <NavLink to={`/${tournament.slug}/info`} end style={tourNavLink}>
                     {t('nav.info')}
                   </NavLink>
-                  <NavLink to={`/t/${tournament.slug}/register`} end style={registerNavLink}>
-                    {t('nav.register')}
-                  </NavLink>
+                  {showRegister && (
+                    <NavLink to={`/t/${tournament.slug}/register`} end style={registerNavLink}>
+                      {t('nav.register')}
+                    </NavLink>
+                  )}
                 </>
               )
             })()}
@@ -236,7 +238,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         boxShadow: '-8px 0 32px rgba(0,0,0,0.6)',
       }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
-          <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '26px' }} />
+          <img src="/logo-horizontal.svg" alt="Fixturday" width="152" height="26" style={{ height: '26px', width: '152px' }} />
           <button
             onClick={closeDrawer}
             style={{

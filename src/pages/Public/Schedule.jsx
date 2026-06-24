@@ -376,7 +376,7 @@ export default function Schedule() {
 
   return (
     <div>
-      <PublicNav tournament={ag?.tournaments} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
+      <PublicNav tournament={ag?.tournaments} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
       <div className="container" style={{ paddingTop: '1.75rem', paddingBottom: '3rem' }}>
 
         {/* Page header */}

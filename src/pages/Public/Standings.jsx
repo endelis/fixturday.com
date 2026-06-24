@@ -244,7 +244,7 @@ export default function Standings() {
 
   return (
     <div>
-      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
         {tournament.location && (
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>

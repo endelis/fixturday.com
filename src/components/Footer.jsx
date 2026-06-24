@@ -26,7 +26,7 @@ export default function Footer() {
           borderBottom: '1px solid var(--color-border)',
         }}>
           <Link to="/" style={{ display: 'flex', alignItems: 'center', textDecoration: 'none', flexShrink: 0 }}>
-            <img src="/logo-horizontal.svg" alt="Fixturday" style={{ height: '26px', opacity: 0.85 }} />
+            <img src="/logo-horizontal.svg" alt="Fixturday" width="152" height="26" style={{ height: '26px', width: '152px', opacity: 0.85 }} />
           </Link>
 
           <div style={{ display: 'flex', gap: '0.25rem', flexWrap: 'wrap', alignItems: 'center' }}>
