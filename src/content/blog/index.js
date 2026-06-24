@@ -4,8 +4,12 @@
  * Order: newest first.
  */
 
+import RegAutoClose,        { meta as metaRegAutoClose }  from './posts/tournament-registration-auto-close'
+import MultiPitch,          { meta as metaMultiPitch }    from './posts/multi-pitch-tournament-scheduling'
+import BracketDesign,       { meta as metaBracketDesign } from './posts/tournament-bracket-design'
+import PublicSchedulePage,  { meta as metaPublicSchedule }from './posts/tournament-public-schedule-page'
 import TournamentInfoPage,  { meta as metaInfoPage }      from './posts/tournament-info-page'
-import FreeSoftwareGuide, { meta as metaFreeSoftware }  from './posts/free-tournament-management-software-guide'
+import FreeSoftwareGuide,   { meta as metaFreeSoftware }  from './posts/free-tournament-management-software-guide'
 import FootballFormats,  { meta as metaFootballFormats } from './posts/football-tournament-formats'
 import BvbFormats,       { meta as metaBvbFormats }    from './posts/beach-volleyball-tournament-formats'
 import BvbDe,            { meta as metaBvbDe }         from './posts/beach-volleyball-double-elimination-bracket'
@@ -25,6 +29,10 @@ import LimitRegistration, { meta as metaLimitReg }       from './posts/how-to-li
 import TournamentDuration,{ meta as metaDuration }       from './posts/how-to-estimate-tournament-duration'
 
 export const posts = [
+  { ...metaRegAutoClose,    Component: RegAutoClose },
+  { ...metaMultiPitch,      Component: MultiPitch },
+  { ...metaBracketDesign,   Component: BracketDesign },
+  { ...metaPublicSchedule,  Component: PublicSchedulePage },
   { ...metaInfoPage,        Component: TournamentInfoPage },
   { ...metaFreeSoftware,    Component: FreeSoftwareGuide },
   { ...metaFootballFormats, Component: FootballFormats },
