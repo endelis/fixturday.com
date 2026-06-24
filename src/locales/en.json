@@ -496,7 +496,11 @@
     "printLink": "Print",
     "setupGuideTitle": "Getting started",
     "setupGuideDesc": "Follow the guide to add teams, set up venues, and generate the fixture schedule.",
-    "setupGuideBtn": "Open guide"
+    "setupGuideBtn": "Open guide",
+    "heroLabel": "Public page",
+    "openPublicPage": "Open public page",
+    "printQR": "Print QR for venue",
+    "qrHint": "Scan to see live standings & schedule"
   },
   "wizard": {
     "stepDone": "Step done!",

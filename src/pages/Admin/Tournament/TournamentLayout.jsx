@@ -36,7 +36,7 @@ export default function TournamentLayout() {
     async function load() {
       // Fetch tournament, age group count, and venues count in parallel
       const [{ data: tourney, error: tErr }, { count: agCnt, error: agErr }, { count: venCnt, error: venErr }] = await Promise.all([
-        supabase.from('tournaments').select('id, name, sport, is_active').eq('id', id).single(),
+        supabase.from('tournaments').select('id, name, sport, is_active, slug').eq('id', id).single(),
         supabase.from('age_groups').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
         supabase.from('venues').select('id', { count: 'exact', head: true }).eq('tournament_id', id),
       ])
