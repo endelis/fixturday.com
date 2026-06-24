@@ -21,7 +21,7 @@ export default function Info() {
     description: tournament?.name
       ? `Info, rules, and contact details for ${tournament.name}.`
       : 'Tournament information page.',
-    path: `/t/${slug}/info`,
+    path: `/t/${slug}`,
   })
 
   useEffect(() => {

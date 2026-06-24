@@ -44,7 +44,7 @@ export default function Schedule() {
       },
     ],
   } : null
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/schedule`, schema: seoSchema })
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}`, schema: seoSchema })
 
   useEffect(() => {
     async function load() {

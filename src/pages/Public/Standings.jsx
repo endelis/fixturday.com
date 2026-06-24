@@ -53,7 +53,7 @@ export default function Standings() {
       },
     ],
   } : null
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}`, schema: seoSchema })
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}`, schema: seoSchema })
 
   function handleFilterChange(id) {
     setSearchParams(prev => {
