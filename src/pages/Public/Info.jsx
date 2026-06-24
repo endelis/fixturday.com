@@ -13,19 +13,35 @@ export default function Info() {
   const { tournament, info, loading, error } = useTournamentInfo(slug)
   const [ageGroups, setAgeGroups] = useState([])
   const [tourneyDetails, setTourneyDetails] = useState({ rules: null, attachments: [] })
+  const [showRegister, setShowRegister] = useState(false)
 
   useEffect(() => {
     if (!tournament?.id) return
-    Promise.all([
-      supabase.from('age_groups').select('id, name').eq('tournament_id', tournament.id).order('name'),
-      supabase.from('tournaments').select('rules, attachments').eq('id', tournament.id).single(),
-    ]).then(([{ data: agData }, { data: tData }]) => {
+    async function loadDetails() {
+      const [{ data: agData }, { data: tData }] = await Promise.all([
+        supabase.from('age_groups').select('id, name, registration_open').eq('tournament_id', tournament.id).order('name'),
+        supabase.from('tournaments').select('rules, attachments').eq('id', tournament.id).single(),
+      ])
       setAgeGroups(agData ?? [])
-      setTourneyDetails({
-        rules: tData?.rules ?? null,
-        attachments: tData?.attachments ?? [],
-      })
-    })
+      setTourneyDetails({ rules: tData?.rules ?? null, attachments: tData?.attachments ?? [] })
+
+      const ags = agData ?? []
+      const anyRegOpen = ags.some(ag => ag.registration_open)
+      if (!anyRegOpen) { setShowRegister(false); return }
+
+      // registration_open=true — check if results already exist
+      const agIds = ags.map(ag => ag.id)
+      const { data: stages } = await supabase.from('stages').select('id').in('age_group_id', agIds)
+      const stageIds = (stages ?? []).map(s => s.id)
+      if (!stageIds.length) { setShowRegister(true); return }
+
+      const { count } = await supabase.from('fixtures')
+        .select('id', { count: 'exact', head: true })
+        .in('stage_id', stageIds)
+        .eq('status', 'completed')
+      setShowRegister((count ?? 0) === 0)
+    }
+    loadDetails()
   }, [tournament?.id])
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
@@ -48,7 +64,7 @@ export default function Info() {
 
   return (
     <div>
-      <PublicNav tournament={tournament} ageGroups={ageGroups} activeAgeGroupId={ageGroups[0]?.id} />
+      <PublicNav tournament={tournament} ageGroups={ageGroups} activeAgeGroupId={ageGroups[0]?.id} showRegister={showRegister} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
 
         {/* Breadcrumb */}
