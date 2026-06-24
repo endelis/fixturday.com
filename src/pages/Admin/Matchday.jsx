@@ -24,6 +24,7 @@ const inputSx = {
   borderRadius: 'var(--radius-sm)',
   fontSize: '0.875rem',
   fontFamily: 'var(--font-body)',
+  minHeight: '44px',
 }
 
 const setInputSx = {
@@ -610,7 +611,7 @@ export default function Matchday() {
           <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
             {statusBadge(f)}
             {!isPostponed && (
-              <button className="btn-secondary btn-sm" style={{ fontSize: '0.75rem' }} onClick={() => postpone(f.id)}>
+              <button className="btn-secondary btn-sm" style={{ fontSize: '0.75rem', minHeight: '44px' }} onClick={() => postpone(f.id)}>
                 {t('matchday.postponeBtn')}
               </button>
             )}

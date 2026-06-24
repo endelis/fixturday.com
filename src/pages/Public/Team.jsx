@@ -7,6 +7,7 @@ import { useTeamProfile, getLogoUrl } from '../../hooks/useTeamProfile'
 import { toast } from '../../components/Toast'
 import { formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
+import { useSEO } from '../../hooks/useSEO'
 
 function countryFlag(code) {
   if (!code) return ''
@@ -81,11 +82,13 @@ export default function Team() {
     if (error) toast(t('errors.loadFailed'), 'error')
   }, [error, t])
 
-  useEffect(() => {
-    if (!team) return
-    document.title = `${team.name} — Fixturday`
-    return () => { document.title = 'Fixturday' }
-  }, [team])
+  const seoTitle = team?.name
+    ? `${team.name}${tournament?.name ? ` — ${tournament.name}` : ''}`
+    : 'Team'
+  const seoDesc = team?.name
+    ? `Match record and fixtures for ${team.name}${team.age_groups?.name ? ` (${team.age_groups.name})` : ''}${tournament?.name ? ` at ${tournament.name}` : ''}. Results, stats, and schedule.`
+    : 'Team match record, results, and fixtures.'
+  useSEO({ title: seoTitle, description: seoDesc, path: `/${slug}/teams/${teamId}` })
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
 

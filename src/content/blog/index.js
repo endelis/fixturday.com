@@ -4,6 +4,7 @@
  * Order: newest first.
  */
 
+import FreeSoftwareGuide, { meta as metaFreeSoftware }  from './posts/free-tournament-management-software-guide'
 import FootballFormats,  { meta as metaFootballFormats } from './posts/football-tournament-formats'
 import BvbFormats,       { meta as metaBvbFormats }    from './posts/beach-volleyball-tournament-formats'
 import BvbDe,            { meta as metaBvbDe }         from './posts/beach-volleyball-double-elimination-bracket'
@@ -23,6 +24,7 @@ import LimitRegistration, { meta as metaLimitReg }       from './posts/how-to-li
 import TournamentDuration,{ meta as metaDuration }       from './posts/how-to-estimate-tournament-duration'
 
 export const posts = [
+  { ...metaFreeSoftware,    Component: FreeSoftwareGuide },
   { ...metaFootballFormats, Component: FootballFormats },
   { ...metaBvbFormats,      Component: BvbFormats },
   { ...metaBvbDe,           Component: BvbDe },

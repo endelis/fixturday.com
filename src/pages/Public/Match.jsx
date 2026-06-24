@@ -6,6 +6,7 @@ import { useMatch, getLogoUrl } from '../../hooks/useMatch'
 import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
 import { useEffect } from 'react'
+import { useSEO } from '../../hooks/useSEO'
 
 function countryFlag(code) {
   if (!code) return ''
@@ -93,20 +94,21 @@ function TeamBlock({ team, t }) {
 export default function Match() {
   const { t } = useTranslation()
   const dateLocale = useDateLocale()
-  const { matchId } = useParams()
+  const { slug, matchId } = useParams()
   const { match, loading, error } = useMatch(matchId)
 
   useEffect(() => {
     if (error) toast(t('errors.loadFailed'), 'error')
   }, [error, t])
 
-  useEffect(() => {
-    if (!match) return
-    const home = match.home_team?.name ?? '?'
-    const away = match.away_team?.name ?? '?'
-    document.title = `${home} – ${away} — Fixturday`
-    return () => { document.title = 'Fixturday' }
-  }, [match])
+  const seoHome = match?.home_team?.name
+  const seoAway = match?.away_team?.name
+  const seoTournament = match?.stages?.age_groups?.tournaments?.name
+  const seoTitle = seoHome && seoAway ? `${seoHome} – ${seoAway}` : 'Match'
+  const seoDesc = seoHome && seoAway
+    ? `Match result and details for ${seoHome} vs ${seoAway}${seoTournament ? ` — ${seoTournament}` : ''}. See kick-off time, pitch, goals, and match events.`
+    : 'Match result and details including kick-off time, goals, and match events.'
+  useSEO({ title: seoTitle, description: seoDesc, path: `/${slug}/matches/${matchId}` })
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
 

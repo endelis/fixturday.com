@@ -268,9 +268,11 @@ export default function TournamentList() {
               color: 'var(--color-text-muted)',
               marginBottom: '0.5rem',
             }}>
-              {t('public.noResults')}
+              {tournaments.length === 0 ? t('public.noTournaments') : t('public.noResults')}
             </h2>
-            <p style={{ fontSize: '0.9rem' }}>{t('public.noResultsHint')}</p>
+            <p style={{ fontSize: '0.9rem' }}>
+              {tournaments.length === 0 ? t('public.noTournamentsHint') : t('public.noResultsHint')}
+            </p>
             {(search || filterSport || filterCountry) && (
               <button
                 className="btn-secondary btn-sm"

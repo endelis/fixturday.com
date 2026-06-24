@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 
@@ -9,6 +9,24 @@ export default function CookieBanner() {
   const [dismissed, setDismissed] = useState(
     () => !!localStorage.getItem(STORAGE_KEY)
   )
+  const bannerRef = useRef(null)
+
+  useEffect(() => {
+    if (dismissed) {
+      document.body.style.paddingBottom = ''
+      return
+    }
+    const el = bannerRef.current
+    if (!el) return
+    const sync = () => { document.body.style.paddingBottom = el.offsetHeight + 'px' }
+    const ro = new ResizeObserver(sync)
+    ro.observe(el)
+    sync()
+    return () => {
+      ro.disconnect()
+      document.body.style.paddingBottom = ''
+    }
+  }, [dismissed])
 
   if (dismissed) return null
 
@@ -18,7 +36,7 @@ export default function CookieBanner() {
   }
 
   return (
-    <div style={{
+    <div ref={bannerRef} style={{
       position: 'fixed',
       bottom: 0,
       left: 0,

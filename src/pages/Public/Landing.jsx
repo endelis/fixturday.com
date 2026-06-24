@@ -25,9 +25,9 @@ export default function Landing() {
         { count: teamsC, error: teamsErr },
         { count: fc, error: fcErr },
       ] = await Promise.all([
-        supabase.from('tournaments').select('id', { count: 'exact', head: true }).eq('is_active', true),
-        supabase.from('teams').select('id', { count: 'exact', head: true }).eq('status', 'confirmed'),
-        supabase.from('fixtures').select('id', { count: 'exact', head: true }).eq('status', 'completed'),
+        supabase.from('tournaments').select('id', { count: 'exact' }).eq('is_active', true).limit(0),
+        supabase.from('teams').select('id', { count: 'exact' }).eq('status', 'confirmed').limit(0),
+        supabase.from('fixtures').select('id', { count: 'exact' }).eq('status', 'completed').limit(0),
       ])
       setStats({
         tournaments: tcErr ? 0 : (tc ?? 0),

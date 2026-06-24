@@ -71,7 +71,7 @@ export default function Standings() {
       // Age group always loads from the URL param — not the filter override
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
-        .select('*, tournaments(id, name, slug, sport, location)')
+        .select('*, tournaments(id, name, slug, sport, location, start_date, end_date)')
         .eq('id', ageGroupId)
         .single()
 
@@ -139,7 +139,7 @@ export default function Standings() {
 
   const now = new Date()
 
-  // Registration is open only if: manual flag on, division not full, no results yet, >24h before first kickoff
+  // Registration is open only if: manual flag on, division not full, no results yet, >24h before first kickoff, tournament not finished
   const confirmedCount = teams.length
   const isFull = ag.max_teams && confirmedCount >= ag.max_teams
   const firstKickoff = fixtures
@@ -147,7 +147,9 @@ export default function Standings() {
     .reduce((min, f) => { const d = new Date(f.kickoff_time); return (!min || d < min) ? d : min }, null)
   const cutoffReached = firstKickoff && (firstKickoff - now) < 24 * 60 * 60 * 1000
   const hasResults = results.length > 0
-  const isRegOpen = ag.registration_open && !isFull && !cutoffReached && !hasResults
+  const tournamentEndDate = tournament.end_date ? new Date(tournament.end_date) : (tournament.start_date ? new Date(tournament.start_date) : null)
+  const tournamentFinished = tournamentEndDate && now > tournamentEndDate
+  const isRegOpen = ag.registration_open && !isFull && !cutoffReached && !hasResults && !tournamentFinished
 
   const nextFixture = fixtures
     .filter(f => f.status !== 'completed' && f.home_team?.id && f.away_team?.id)
