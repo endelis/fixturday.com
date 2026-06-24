@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-choose-tournament-playoff-depth',
   title: 'Quarter-Final, Semi-Final, or Final Only: Choosing Your Playoff Depth',
-  description: 'The number of playoff rounds you run depends on team count, available time, and how many guaranteed games each team should get. Here\'s the decision framework.',
+  description: 'How many playoff rounds depends on team count, available time, and guaranteed games per team. The decision framework for tournament organisers.',
   date: '2026-06-17',
   readTime: '5 min read',
   tags: ['playoff format', 'tournament format', 'scheduling'],

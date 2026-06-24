@@ -2,7 +2,7 @@ import { Helmet } from 'react-helmet-async'
 
 const SITE_NAME = 'Fixturday'
 const DEFAULT_TITLE = 'Fixturday — Free Tournament Management Software'
-const DEFAULT_DESC = 'Organize sports tournaments in minutes. Auto schedules, real-time standings, team registration. Free forever.'
+const DEFAULT_DESC = 'Organize sports tournaments in minutes. Auto schedules, real-time standings, team registration. Free to start.'
 const DEFAULT_IMAGE = 'https://www.fixturday.com/og-image.png'
 const BASE_URL = 'https://www.fixturday.com'
 

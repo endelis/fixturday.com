@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import { formatTime, formatDate } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function TeamRoster() {
   const { slug, ageGroup: ageGroupId, teamId } = useParams()
@@ -26,7 +27,6 @@ export default function TeamRoster() {
       ])
       if (tErr) { setLoading(false); return }
       setTeam(td)
-      document.title = `${td.name} — Fixturday`
       setPlayers(pErr ? [] : (p ?? []))
 
       if (!fxErr && fx?.length) {
@@ -46,8 +46,13 @@ export default function TeamRoster() {
       setLoading(false)
     }
     load()
-    return () => { document.title = 'Fixturday' }
   }, [teamId])
+
+  const seoTitle = team ? `${team.name} — ${team.age_groups?.name} Roster` : 'Team Roster'
+  const seoDesc = team
+    ? `Player roster and match schedule for ${team.name}${team.club ? ` (${team.club})` : ''} competing in ${team.age_groups?.tournaments?.name}.`
+    : 'Team player roster and match schedule.'
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/teams/${teamId}` })
 
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (!team) return <div className="loading">{t('team.notFound')}</div>

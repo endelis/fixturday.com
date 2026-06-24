@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-estimate-tournament-duration',
   title: 'How to Estimate Total Tournament Duration Before Match Day',
-  description: 'Calculate how long a football tournament will take using game count, pitch count, game duration, gap between games, and lunch break. Includes the formula and a live calculator.',
+  description: 'Calculate how long a football tournament takes from game count, pitch count, and match duration. Includes the formula and a live duration calculator.',
   date: '2026-06-17',
   readTime: '5 min read',
   tags: ['scheduling', 'tournament planning', 'match day'],

@@ -49,7 +49,7 @@ const benefits = [
   'Real-time bracket view for players and spectators',
   'Online team registration with organiser approval',
   'Multi-division support — one tournament, multiple pools and brackets',
-  'Free forever — no subscription, no credit card',
+  'No subscription, no credit card required',
 ]
 
 const faqs = [
@@ -83,11 +83,11 @@ export default function BeachVolleyballTournament() {
   return (
     <ServiceLanding
       seoTitle="Beach Volleyball Tournament Software — Free & Online"
-      seoDescription="Free beach volleyball tournament software with double elimination brackets and set-by-set scoring. FIVB rules built in (21/21/15, win by 2). Live standings with set ratio and point ratio. Free forever."
+      seoDescription="Free beach volleyball tournament software. Double elimination brackets, FIVB scoring rules built in, live standings with set and point ratio. Free to start."
       path="/beach-volleyball-tournament-software"
       eyebrow="Beach Volleyball"
       headline="Beach Volleyball Tournament Software — Free and Instant"
-      subheadline="Generate double elimination brackets, enter set-by-set scores, and track live standings with set ratio and point ratio. Built for beach volleyball organizers. Free forever."
+      subheadline="Generate double elimination brackets, enter set-by-set scores, and track live standings with set ratio and point ratio. Built for beach volleyball organizers. Free to start."
       features={features}
       steps={steps}
       benefits={benefits}

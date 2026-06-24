@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-configure-group-stage-brackets',
   title: 'How to Configure Group Stage Brackets: 2, 3, or 4 Groups?',
-  description: 'Choosing the right number of groups changes how fair your tournament feels and how long it runs. This guide walks through the maths so you can decide before the first whistle.',
+  description: 'The right number of groups affects tournament fairness and duration. This guide walks through the maths so you can decide before the first whistle.',
   date: '2026-06-17',
   readTime: '5 min read',
   tags: ['group stage', 'tournament format', 'brackets'],

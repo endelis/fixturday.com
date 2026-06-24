@@ -19,8 +19,8 @@ export default function Schedule() {
 
   const seoTitle = ag ? `${ag.tournaments.name} — ${ag.name} Schedule` : 'Tournament Schedule'
   const seoDesc = ag
-    ? `Full match schedule and results for ${ag.tournaments.name} — ${ag.name}. Kick-off times, venues, and live scores.`
-    : 'Tournament match schedule, kick-off times and results.'
+    ? `Full match schedule and results for ${ag.tournaments.name} — ${ag.name}. See kick-off times, pitch assignments, and live scores updated after every match.`
+    : 'Full tournament match schedule with kick-off times, pitch assignments, and live scores. Results update automatically after every match.'
   const seoSchema = ag ? {
     '@context': 'https://schema.org',
     '@graph': [
@@ -44,7 +44,7 @@ export default function Schedule() {
       },
     ],
   } : null
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}`, schema: seoSchema })
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/fixtures`, schema: seoSchema })
 
   useEffect(() => {
     async function load() {
@@ -383,7 +383,7 @@ export default function Schedule() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
           <div>
             <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.25rem, 4vw, 1.875rem)', margin: 0 }}>
-              {ag?.name} — {t('schedule.title')}
+              {ag?.tournaments?.name} — {ag?.name} {t('schedule.title')}
             </h1>
             {lastUpdated && (
               <p style={{ margin: '0.2rem 0 0', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>

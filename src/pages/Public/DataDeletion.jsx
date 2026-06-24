@@ -13,7 +13,7 @@ export default function DataDeletion() {
 
   useSEO({
     title: 'Data Deletion Request — Fixturday',
-    description: 'Submit a request to delete your personal data from Fixturday in accordance with GDPR.',
+    description: 'Submit a data deletion request to Fixturday. Under GDPR, you have the right to erasure — we acknowledge all requests and process them within 30 days.',
     path: '/data-deletion',
     noSuffix: true,
   })

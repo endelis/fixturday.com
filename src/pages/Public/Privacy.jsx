@@ -9,7 +9,7 @@ export default function Privacy() {
 
   useSEO({
     title: 'Privacy Policy — Fixturday',
-    description: 'Learn how Fixturday collects, uses, and protects your personal data in accordance with GDPR.',
+    description: 'Learn how Fixturday collects, uses, and protects your personal data. Covers GDPR rights, data retention, third-party tools, and how to contact us.',
     path: '/privacy-policy',
     noSuffix: true,
   })

@@ -43,7 +43,7 @@ const steps = [
 ]
 
 const benefits = [
-  'No credit card required — free forever, not a trial',
+  'No credit card required — free to start, no trial period',
   'Unlimited tournaments, teams, and divisions',
   'Round-robin, knockout, and group stage + playoff formats',
   'Multi-pitch and multi-venue scheduling',
@@ -84,7 +84,7 @@ export default function FreeTournamentSoftware() {
   return (
     <ServiceLanding
       seoTitle="Free Tournament Management Software — No Credit Card"
-      seoDescription="Free tournament management software for any sport. Create unlimited tournaments, generate schedules automatically, track live standings. No credit card, no trial — free forever."
+      seoDescription="Free tournament management software for any sport. Unlimited tournaments, auto-generated schedules, live standings. No credit card required."
       path="/free-tournament-software"
       eyebrow="Free Tournament Software"
       headline="Free Tournament Management Software — No Credit Card, No Limits"

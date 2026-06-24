@@ -29,8 +29,8 @@ export default function Standings() {
     : 'Tournament Standings'
   const teamCount = data?.teams?.length ?? 0
   const seoDesc = data?.ag
-    ? `Live standings for ${data.ag.tournaments.name} — ${data.ag.name}${teamCount > 0 ? ` (${teamCount} teams)` : ''}. Real-time results updated after every match.`
-    : 'Live tournament standings and real-time results.'
+    ? `Live ${data.ag.tournaments.name} standings — ${data.ag.name}. Track points, wins, draws, goal difference, and goals scored. Updated in real time after every match.`
+    : 'Live tournament standings with points, goal difference, and head-to-head tiebreakers. Updated in real time after every match.'
   const seoSchema = data?.ag ? {
     '@context': 'https://schema.org',
     '@graph': [
@@ -53,7 +53,7 @@ export default function Standings() {
       },
     ],
   } : null
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}`, schema: seoSchema })
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}`, schema: seoSchema })
 
   function handleFilterChange(id) {
     setSearchParams(prev => {
@@ -252,7 +252,7 @@ export default function Standings() {
           </p>
         )}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: 0 }}>{ag.name} — {t('standings.title')}</h1>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: 0 }}>{tournament.name} — {ag.name} {t('standings.title')}</h1>
           <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
             <span style={{
               display: 'inline-flex', alignItems: 'center', gap: '0.35rem',

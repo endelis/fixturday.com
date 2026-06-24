@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-organize-a-beach-volleyball-tournament',
   title: 'How to Organize a Beach Volleyball Tournament: A Step-by-Step Guide',
-  description: 'How to organize a beach volleyball tournament from first registration to the final. Covers formats, scheduling, scoring rules, and what free tournament software handles automatically.',
+  description: 'Organize a beach volleyball tournament from registration to the final. Covers formats, scoring rules, and what tournament software handles automatically.',
   date: '2026-06-20',
   readTime: '7 min read',
   tags: ['beach volleyball', 'organisation', 'guide'],

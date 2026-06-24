@@ -13,7 +13,7 @@ export default function Landing() {
 
   useSEO({
     title: 'Fixturday — Free Tournament Management Software',
-    description: 'Organize football tournaments in minutes. Auto-generated schedules, live standings, and team registration. Round-robin, knockout, and group stage formats. Free forever.',
+    description: 'Free tournament management software. Auto schedules, live standings, online registration. Round-robin, knockout, and group stage formats. Free to start.',
     path: '/',
     noSuffix: true,
   })

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'why-excel-fails-tournament-management',
   title: 'Why an Excel Tournament Schedule Template Fails on Match Day',
-  description: 'An excel tournament schedule template seems like the free option — until match day arrives. These 3 real failure modes show why spreadsheets let tournament organisers down and what works better.',
+  description: 'Excel tournament templates fail on match day. Three real failure modes show why spreadsheets let tournament organisers down — and what actually works.',
   date: '2026-06-18',
   readTime: '6 min read',
   tags: ['organisation', 'tools', 'match day'],

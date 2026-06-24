@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'football-tournament-formats',
   title: 'Football Tournament Formats Explained: Round Robin, Knockout, and Group Stage',
-  description: 'Round robin, knockout, or group stage with playoff — which football tournament format is right for your event? Compare all three with team counts, match totals, and when to use each.',
+  description: 'Round robin, knockout, or group stage — which football tournament format fits? Compare all three with team counts, match totals, and when to use each.',
   date: '2026-06-20',
   readTime: '5 min read',
   tags: ['tournament format', 'football', 'organisation'],

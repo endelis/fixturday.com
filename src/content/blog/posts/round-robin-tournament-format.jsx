@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'round-robin-tournament-format',
   title: 'Round Robin Tournament Format: How It Works, When to Use It',
-  description: 'A complete guide to the round-robin tournament format — how games are scheduled, how standings are calculated, when it beats knockout, and how many games each team plays.',
+  description: 'The round-robin format guide: how games are scheduled, standings calculated, when it beats knockout, and how many games each team plays.',
   date: '2026-06-12',
   readTime: '7 min read',
   tags: ['formats', 'round-robin', 'standings'],

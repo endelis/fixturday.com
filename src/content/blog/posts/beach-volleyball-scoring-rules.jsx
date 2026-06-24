@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'beach-volleyball-scoring-rules',
   title: 'Beach Volleyball Scoring Rules Explained — Sets, Points, and Tiebreakers',
-  description: 'Beach volleyball scoring rules: sets 1 and 2 to 21 points, deciding set to 15, win by 2 in all sets. How set ratio and point ratio are calculated for pool standings.',
+  description: 'Beach volleyball scoring rules: sets to 21 points, deciding set to 15, win by 2. How set ratio and point ratio are calculated for pool play standings.',
   date: '2026-06-20',
   readTime: '5 min read',
   tags: ['beach volleyball', 'scoring', 'rules'],

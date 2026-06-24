@@ -4,6 +4,7 @@ import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
 import PublicNav from '../../components/PublicNav'
+import { useSEO } from '../../hooks/useSEO'
 
 function ChevronIcon({ open }) {
   return (
@@ -53,10 +54,13 @@ export default function Register() {
   const watchedP1 = watch('player1_name', '')
   const watchedP2 = watch('player2_name', '')
 
-  useEffect(() => {
-    document.title = `${t('register.title')} — Fixturday`
-    return () => { document.title = 'Fixturday' }
-  }, [t])
+  useSEO({
+    title: tournament?.name ? `${tournament.name} — Register Your Team` : 'Register Your Team',
+    description: tournament?.name
+      ? `Register your team for ${tournament.name}. Choose your age group, add team details, and submit your registration online.`
+      : 'Register your team for a tournament. Choose your age group and submit your team details online.',
+    path: `/t/${slug}/register`,
+  })
 
   useEffect(() => {
     async function load() {

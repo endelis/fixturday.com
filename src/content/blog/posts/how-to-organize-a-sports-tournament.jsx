@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-organize-a-sports-tournament',
   title: 'How to Organize a Sports Tournament: A Step-by-Step Guide',
-  description: 'Everything you need to organize a sports tournament from scratch — format selection, scheduling, registration, match day management, and tiebreaker rules. Free checklist included.',
+  description: 'Organize a sports tournament from scratch: format selection, scheduling, registration, match day management, and tiebreaker rules. Free checklist.',
   date: '2026-06-12',
   readTime: '8 min read',
   tags: ['guide', 'tournament organization', 'planning'],

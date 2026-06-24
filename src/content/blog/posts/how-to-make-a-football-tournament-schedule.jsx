@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-make-a-football-tournament-schedule',
   title: 'How to Make a Football Tournament Schedule',
-  description: 'Step-by-step guide to building a football tournament schedule. Covers game counts, the round-robin algorithm, multi-pitch timing, odd team numbers, and time slot calculation.',
+  description: 'How to build a football tournament schedule step by step. Covers game counts, round-robin algorithm, multi-pitch timing, odd teams, and time slot calculation.',
   date: '2026-06-13',
   readTime: '8 min read',
   tags: ['scheduling', 'football', 'round-robin'],

@@ -8,7 +8,7 @@ export default function Terms() {
 
   useSEO({
     title: 'Terms of Use — Fixturday',
-    description: 'Read the Terms of Use for Fixturday, the free sports tournament management platform.',
+    description: 'Read the Terms of Use for Fixturday, the free sports tournament management platform. Covers acceptable use, intellectual property, and liability.',
     path: '/terms-of-use',
     noSuffix: true,
   })

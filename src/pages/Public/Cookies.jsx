@@ -20,7 +20,7 @@ export default function Cookies() {
 
   useSEO({
     title: 'Cookie Policy — Fixturday',
-    description: 'Fixturday cookie policy: what cookies we use, why, and how to manage your preferences.',
+    description: 'Fixturday cookie policy: learn what cookies we set, why we use them, and how to manage or opt out of your preferences at any time.',
     path: '/cookie-policy',
     noSuffix: true,
   })

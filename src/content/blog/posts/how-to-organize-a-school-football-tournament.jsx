@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-organize-a-school-football-tournament',
   title: 'How to Organize a School Football Tournament',
-  description: 'A practical guide for teachers and PE coaches organizing a school football tournament. Covers format, scheduling, safeguarding, zero budget, and keeping it fun for every age group.',
+  description: 'Guide for teachers and PE coaches running a school football tournament. Covers format, scheduling, safeguarding, zero budget, and keeping it fun.',
   date: '2026-06-13',
   readTime: '7 min read',
   tags: ['school football', 'tournament organization', 'guide'],

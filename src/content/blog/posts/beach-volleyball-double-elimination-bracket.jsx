@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'beach-volleyball-double-elimination-bracket',
   title: 'Beach Volleyball Double Elimination Bracket: How It Works',
-  description: 'The beach volleyball double elimination bracket gives every team a second chance. How winners bracket, losers bracket, grand final, and bracket reset work — and why DE is the standard knockout format.',
+  description: 'Double elimination in beach volleyball gives every team a second chance. How winners bracket, losers bracket, grand final, and bracket reset work.',
   date: '2026-06-20',
   readTime: '6 min read',
   tags: ['beach volleyball', 'bracket', 'format', 'double elimination'],

@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'how-to-limit-tournament-registration',
   title: 'How to Limit Team Registrations for a Tournament',
-  description: 'Setting a registration cap prevents oversigning and closes the public form automatically when the limit is hit. Here\'s how max-team enforcement works and why it matters.',
+  description: 'A registration cap prevents oversigning and closes the form automatically when the limit is hit. How max-team limits work and why they matter.',
   date: '2026-06-17',
   readTime: '4 min read',
   tags: ['registration', 'tournament management', 'admin'],

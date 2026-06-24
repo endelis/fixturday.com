@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'beach-volleyball-tournament-formats',
   title: 'Beach Volleyball Tournament Formats Explained: All 5 Options Compared',
-  description: 'Pool Play, Double Elimination, Single Elimination, Pool Play + Single Elimination, or Pool Play + Double Elimination — compare all five beach volleyball tournament formats with match counts and when to use each.',
+  description: 'Five beach volleyball tournament formats compared: Pool Play, Single Elimination, Double Elimination, and hybrid options. Match counts and when to use each.',
   date: '2026-06-20',
   readTime: '6 min read',
   tags: ['beach volleyball', 'tournament format', 'organisation'],

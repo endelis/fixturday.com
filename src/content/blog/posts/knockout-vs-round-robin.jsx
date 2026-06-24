@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'knockout-vs-round-robin',
   title: 'Knockout Tournament vs Round Robin: Which Format Should You Use?',
-  description: 'Knockout tournament or round robin tournament? Compare both formats on fairness, drama, game count, and time — with a decision guide to pick the right one for your event.',
+  description: 'Knockout or round robin? Compare both formats on fairness, drama, game count, and time — with a decision guide to pick the right format for your event.',
   date: '2026-06-12',
   readTime: '6 min read',
   tags: ['formats', 'knockout', 'round-robin', 'comparison'],

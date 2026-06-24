@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom'
 export const meta = {
   slug: 'tournament-bracket-seeding-explained',
   title: 'Cross, Mirror, or Ranked: Tournament Bracket Seeding Explained',
-  description: 'How teams advance from group stage into the knockout bracket changes who plays who — and when. Here\'s what cross, mirror, and ranked seeding actually mean, with concrete examples.',
+  description: 'Tournament bracket seeding: how teams advance from group stage changes who plays who. What cross, mirror, and ranked seeding mean, with concrete examples.',
   date: '2026-06-17',
   readTime: '5 min read',
   tags: ['bracket seeding', 'tournament format', 'group stage'],

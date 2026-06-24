@@ -10,7 +10,7 @@ export default function About() {
 
   useSEO({
     title: 'About Fixturday — Sports Tournament Software',
-    description: 'Fixturday helps sports organizers run better tournaments. Free software with automatic schedules, live standings, online registration, and a public participant page.',
+    description: 'Fixturday helps organizers run better tournaments. Automatic schedules, live standings, online registration, and a public participant page. Free to use.',
     path: '/about',
     noSuffix: true,
   })

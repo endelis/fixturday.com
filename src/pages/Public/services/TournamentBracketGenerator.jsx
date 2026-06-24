@@ -82,7 +82,7 @@ export default function TournamentBracketGenerator() {
   return (
     <ServiceLanding
       seoTitle="Tournament Bracket Generator — Free, Online, Any Sport"
-      seoDescription="Free tournament bracket generator for any sport. Supports knockout, round-robin, and group stage formats. Generates brackets for 4 to 64+ teams instantly. Live updates as results come in."
+      seoDescription="Free tournament bracket generator. Knockout, round-robin, and group stage formats. Instant brackets for 4 to 64+ teams with live result updates."
       path="/tournament-bracket-generator"
       eyebrow="Bracket Generator"
       headline="Tournament Bracket Generator — Free for Any Sport"

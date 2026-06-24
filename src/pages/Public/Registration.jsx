@@ -5,6 +5,7 @@ import { useTranslation } from 'react-i18next'
 import { useRegistration } from '../../hooks/useRegistration'
 import PublicNav from '../../components/PublicNav'
 import Turnstile from '../../components/Turnstile'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Registration() {
   const { slug } = useParams()
@@ -18,10 +19,13 @@ export default function Registration() {
   const intervalRef = useRef(null)
   const handleVerify = useCallback((token) => setTurnstileToken(token), [])
 
-  useEffect(() => {
-    document.title = `${t('registration.title')} — Fixturday`
-    return () => { document.title = 'Fixturday' }
-  }, [t])
+  useSEO({
+    title: tournament?.name ? `${tournament.name} — Team Registration` : 'Team Registration',
+    description: tournament?.name
+      ? `Register your team for ${tournament.name}. Fill in team details and submit — the organiser will review and confirm your spot.`
+      : 'Register your team for a tournament. Fill in team details and submit your registration online.',
+    path: `/${slug}/registration`,
+  })
 
   useEffect(() => () => clearInterval(intervalRef.current), [])
 

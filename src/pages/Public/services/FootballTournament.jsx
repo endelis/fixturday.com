@@ -82,11 +82,11 @@ export default function FootballTournament() {
   return (
     <ServiceLanding
       seoTitle="Football Tournament Software — Free & Online"
-      seoDescription="Free football tournament management software. Generate fixtures automatically, track live standings, run online registration. Supports all formats: round-robin, knockout, group stage."
+      seoDescription="Free football tournament software. Auto-generate fixtures, track live standings, run online registration. Round-robin, knockout, and group stage formats."
       path="/football-tournament-software"
       eyebrow="Football"
       headline="Football Tournament Software — Free and Instant"
-      subheadline="Generate fixtures, track live standings, and manage team registration for any football tournament. Works for 5-a-side, 7-a-side, 11-a-side, and futsal. Free forever."
+      subheadline="Generate fixtures, track live standings, and manage team registration for any football tournament. Works for 5-a-side, 7-a-side, 11-a-side, and futsal. Free to start."
       features={features}
       steps={steps}
       benefits={benefits}
