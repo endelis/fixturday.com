@@ -51,6 +51,37 @@ export default function Footer() {
           </div>
         </div>
 
+        {/* Row 1b — Software landing pages */}
+        <div style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: '0.75rem',
+          flexWrap: 'wrap',
+          paddingBottom: '1.25rem',
+          marginBottom: '1.25rem',
+          borderBottom: '1px solid var(--color-border)',
+        }}>
+          <span style={{ fontSize: '0.72rem', color: 'var(--color-border)', textTransform: 'uppercase', letterSpacing: '0.07em', fontWeight: 600, flexShrink: 0 }}>
+            Software
+          </span>
+          {[
+            { to: '/free-tournament-software',            label: 'Free Tournament Software' },
+            { to: '/football-tournament-software',        label: 'Football Tournament' },
+            { to: '/beach-volleyball-tournament-software',label: 'Beach Volleyball Tournament' },
+            { to: '/tournament-bracket-generator',        label: 'Bracket Generator' },
+          ].map(item => (
+            <Link
+              key={item.to}
+              to={item.to}
+              style={footerNavLink}
+              onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
+              onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
+            >
+              {item.label}
+            </Link>
+          ))}
+        </div>
+
         {/* Row 2 — Support link */}
         <div style={{
           textAlign: 'center',

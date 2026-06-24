@@ -1,15 +1,17 @@
-import { useEffect } from 'react'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Terms() {
   const { t } = useTranslation()
 
-  useEffect(() => {
-    document.title = `${t('footer.terms')} — Fixturday`
-    return () => { document.title = 'Fixturday' }
-  }, [t])
+  useSEO({
+    title: 'Terms of Use — Fixturday',
+    description: 'Read the Terms of Use for Fixturday, the free sports tournament management platform.',
+    path: '/terms-of-use',
+    noSuffix: true,
+  })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>

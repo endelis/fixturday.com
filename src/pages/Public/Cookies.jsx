@@ -1,6 +1,7 @@
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import { useSEO } from '../../hooks/useSEO'
 
 const STORAGE_KEY = 'fixturday_cookie_consent'
 
@@ -16,6 +17,13 @@ function setConsent(value) {
 export default function Cookies() {
   const { t } = useTranslation()
   const current = getConsent()
+
+  useSEO({
+    title: 'Cookie Policy — Fixturday',
+    description: 'Fixturday cookie policy: what cookies we use, why, and how to manage your preferences.',
+    path: '/cookie-policy',
+    noSuffix: true,
+  })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>

@@ -6,9 +6,17 @@ import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function DataDeletion() {
   const { t } = useTranslation()
+
+  useSEO({
+    title: 'Data Deletion Request — Fixturday',
+    description: 'Submit a request to delete your personal data from Fixturday in accordance with GDPR.',
+    path: '/data-deletion',
+    noSuffix: true,
+  })
   const { register, handleSubmit, reset, formState: { errors, isSubmitting } } = useForm()
   const [submitted, setSubmitted] = useState(false)
 

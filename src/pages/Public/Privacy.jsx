@@ -1,16 +1,18 @@
-import { useEffect } from 'react'
 import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import PublicNav from '../../components/PublicNav'
 import Footer from '../../components/Footer'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Privacy() {
   const { t } = useTranslation()
 
-  useEffect(() => {
-    document.title = `${t('footer.privacy')} — Fixturday`
-    return () => { document.title = 'Fixturday' }
-  }, [t])
+  useSEO({
+    title: 'Privacy Policy — Fixturday',
+    description: 'Learn how Fixturday collects, uses, and protects your personal data in accordance with GDPR.',
+    path: '/privacy-policy',
+    noSuffix: true,
+  })
 
   return (
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>

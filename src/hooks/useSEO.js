@@ -34,8 +34,13 @@ export function useSEO({ title, description, path, image, noSuffix = false, sche
     setMeta('name',     'twitter:description', description)
     setMeta('name',     'twitter:image',     ogImage)
 
-    const linkEl = document.querySelector('link[rel="canonical"]')
-    if (linkEl) linkEl.setAttribute('href', canonical)
+    let linkEl = document.querySelector('link[rel="canonical"]')
+    if (!linkEl) {
+      linkEl = document.createElement('link')
+      linkEl.setAttribute('rel', 'canonical')
+      document.head.appendChild(linkEl)
+    }
+    linkEl.setAttribute('href', canonical)
 
     // Inject / update / remove page-level JSON-LD
     let schemaEl = document.getElementById('page-schema')

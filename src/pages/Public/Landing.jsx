@@ -329,19 +329,54 @@ export default function Landing() {
           <h2 style={sectionHeading}>{t('landing.sportsTitle')}</h2>
           <div className="landing-features-grid">
             {[
-              { id: 'round-robin-format',      title: t('landing.sport1Title'), desc: t('landing.sport1Desc') },
-              { id: 'knockout-format',         title: t('landing.sport2Title'), desc: t('landing.sport2Desc') },
-              { id: 'group-knockout-format',   title: t('landing.sport3Title'), desc: t('landing.sport3Desc') },
+              { id: 'round-robin-format',    title: t('landing.sport1Title'), desc: t('landing.sport1Desc'), link: '/blog/round-robin-tournament-format' },
+              { id: 'knockout-format',       title: t('landing.sport2Title'), desc: t('landing.sport2Desc'), link: '/blog/knockout-vs-round-robin' },
+              { id: 'group-knockout-format', title: t('landing.sport3Title'), desc: t('landing.sport3Desc'), link: '/blog/how-to-configure-group-stage-brackets' },
             ].map((s) => (
-              <article key={s.id} id={s.id} style={featureCard}
-                onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(240,165,0,0.35)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
-                onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)' }}
+              <Link key={s.id} to={s.link} style={{ textDecoration: 'none' }}>
+                <article id={s.id} style={featureCard}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = 'rgba(240,165,0,0.35)'; e.currentTarget.style.transform = 'translateY(-2px)' }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = 'var(--color-border)'; e.currentTarget.style.transform = 'translateY(0)' }}
+                >
+                  <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.5rem' }}>
+                    {s.title}
+                  </h3>
+                  <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.65, fontSize: '0.9375rem', marginBottom: '0.75rem' }}>{s.desc}</p>
+                  <span style={{ fontSize: '0.8rem', color: 'var(--color-accent)', fontWeight: 600 }}>Learn more →</span>
+                </article>
+              </Link>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ── Software links ───────────────────────────────────────── */}
+      <section style={{ padding: '2.5rem 1.5rem', borderTop: '1px solid var(--color-border)' }}>
+        <div style={{ maxWidth: '1100px', margin: '0 auto', textAlign: 'center' }}>
+          <p style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.09em', fontWeight: 600, marginBottom: '1rem' }}>
+            Tournament software
+          </p>
+          <div style={{ display: 'flex', gap: '0.625rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+            {[
+              { to: '/free-tournament-software',             label: 'Free Tournament Software' },
+              { to: '/football-tournament-software',         label: 'Football Tournament Software' },
+              { to: '/beach-volleyball-tournament-software', label: 'Beach Volleyball Tournament Software' },
+              { to: '/tournament-bracket-generator',         label: 'Tournament Bracket Generator' },
+            ].map(item => (
+              <Link
+                key={item.to}
+                to={item.to}
+                style={{
+                  fontSize: '0.82rem', color: 'var(--color-text-muted)',
+                  textDecoration: 'none', padding: '0.35rem 0.85rem',
+                  border: '1px solid var(--color-border)', borderRadius: '999px',
+                  transition: 'color 0.15s, border-color 0.15s',
+                }}
+                onMouseEnter={e => { e.currentTarget.style.color = 'var(--color-accent)'; e.currentTarget.style.borderColor = 'rgba(240,165,0,0.4)' }}
+                onMouseLeave={e => { e.currentTarget.style.color = 'var(--color-text-muted)'; e.currentTarget.style.borderColor = 'var(--color-border)' }}
               >
-                <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', fontWeight: 700, color: 'var(--color-text)', marginBottom: '0.5rem' }}>
-                  {s.title}
-                </h3>
-                <p style={{ color: 'var(--color-text-muted)', lineHeight: 1.65, fontSize: '0.9375rem' }}>{s.desc}</p>
-              </article>
+                {item.label}
+              </Link>
             ))}
           </div>
         </div>

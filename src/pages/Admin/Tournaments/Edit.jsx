@@ -215,12 +215,6 @@ export default function TournamentEdit() {
             />
           </div>
 
-          {/* Description */}
-          <div className="form-group">
-            <label>{t('tournament.description')}</label>
-            <textarea {...register('description')} rows={3} />
-          </div>
-
           {/* Organizer contact */}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
             <div className="form-group">
@@ -231,12 +225,6 @@ export default function TournamentEdit() {
               <label>{t('tournament.organizerPhone')}</label>
               <input type="tel" {...register('organizer_phone')} />
             </div>
-          </div>
-
-          {/* Rules */}
-          <div className="form-group">
-            <label>{t('tournament.rules')}</label>
-            <textarea {...register('rules')} rows={4} />
           </div>
 
           {/* Logo — single storage-backed upload */}

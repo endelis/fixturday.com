@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { useTournamentInfo } from '../../hooks/useTournamentInfo'
 import TournamentLogo from '../../components/TournamentLogo'
 import PublicNav from '../../components/PublicNav'
+import { useSEO } from '../../hooks/useSEO'
 
 export default function Info() {
   const { slug } = useParams()
@@ -14,6 +15,14 @@ export default function Info() {
   const [ageGroups, setAgeGroups] = useState([])
   const [tourneyDetails, setTourneyDetails] = useState({ rules: null, attachments: [] })
   const [showRegister, setShowRegister] = useState(false)
+
+  useSEO({
+    title: tournament?.name ?? 'Tournament Info',
+    description: tournament?.name
+      ? `Info, rules, and contact details for ${tournament.name}.`
+      : 'Tournament information page.',
+    path: `/t/${slug}/info`,
+  })
 
   useEffect(() => {
     if (!tournament?.id) return
