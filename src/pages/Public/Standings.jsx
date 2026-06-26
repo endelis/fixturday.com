@@ -135,6 +135,7 @@ export default function Standings() {
   const { ag, siblings, teams, fixtures, results } = data
   const tournament = ag.tournaments
   const tournamentSport = tournament.sport ?? 'football'
+  const isSetBased = isSetBased || tournamentSport === 'catch_serve'
   const standings = calculateStandings(teams, fixtures, results, tournamentSport)
 
   const now = new Date()
@@ -351,7 +352,7 @@ export default function Standings() {
           </div>
         )}
 
-        {tournamentSport === 'beach_volleyball' && ag.format !== 'double_elimination' && (
+        {isSetBased && ag.format !== 'double_elimination' && (
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.35rem', marginBottom: '0.875rem' }}>
             {[
               [t('standings.setsWon'),       t('standings.setsWonFull')],
@@ -402,11 +403,11 @@ export default function Standings() {
                     {t('standings.group')} {label}
                   </h2>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 540 : 420 }}>
+                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: isSetBased ? 540 : 420 }}>
                       <colgroup>
                         <col style={{ width: 28 }} /><col style={{ width: 170 }} />
                         <col style={{ width: 32 }} /><col style={{ width: 32 }} />
-                        {tournamentSport === 'beach_volleyball' ? (
+                        {isSetBased ? (
                           <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
                         ) : (
                           <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
@@ -415,7 +416,7 @@ export default function Standings() {
                       <thead>
                         <tr>
                           <th>#</th><th>{t('standings.team')}</th><th title="Played">{t('standings.played')}</th><th title="Won">{t('standings.won')}</th>
-                          {tournamentSport === 'beach_volleyball' ? (
+                          {isSetBased ? (
                             <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th></>
                           ) : (
                             <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
@@ -443,7 +444,7 @@ export default function Standings() {
                               </td>
                               <td>{row.played}</td>
                               <td>{row.won}</td>
-                              {tournamentSport === 'beach_volleyball' ? (
+                              {isSetBased ? (
                                 <>
                                   <td>{row.lost}</td>
                                   <td>{row.sets_won ?? 0}</td>
@@ -468,7 +469,7 @@ export default function Standings() {
                           if (isLastAdvancing) {
                             rows.push(
                               <tr key={`adv-sep-${label}`}>
-                                <td colSpan={tournamentSport === 'beach_volleyball' ? 11 : 10}
+                                <td colSpan={isSetBased ? 11 : 10}
                                   style={{ padding: 0, height: 2, background: 'rgba(34,197,94,0.28)', border: 'none', borderBottom: 'none' }} />
                               </tr>
                             )
@@ -499,14 +500,14 @@ export default function Standings() {
                         const homeWon = result && result.home_goals > result.away_goals
                         const awayWon = result && result.away_goals > result.home_goals
                         const scoreDisplay = result
-                          ? tournamentSport === 'beach_volleyball'
+                          ? isSetBased
                             ? formatBeachScore(result.sport_data)
                             : `${result.home_goals} : ${result.away_goals}`
                           : f.home_team ? t('fixture.vs') : '—'
                         return (
                           <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem' }}>
                             <span style={{ flex: 1, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--color-accent)' : 'inherit' }}>{homeName}</span>
-                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: tournamentSport === 'beach_volleyball' ? '0.8rem' : '1.125rem', minWidth: tournamentSport === 'beach_volleyball' ? '8rem' : '4rem', textAlign: 'center', flexShrink: 0 }}>
+                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: isSetBased ? '0.8rem' : '1.125rem', minWidth: isSetBased ? '8rem' : '4rem', textAlign: 'center', flexShrink: 0 }}>
                               {scoreDisplay}
                             </span>
                             <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--color-accent)' : 'inherit' }}>{awayName}</span>
@@ -521,11 +522,11 @@ export default function Standings() {
           </>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: tournamentSport === 'beach_volleyball' ? 540 : 420 }}>
+            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: isSetBased ? 540 : 420 }}>
               <colgroup>
                 <col style={{ width: 28 }} /><col style={{ width: 170 }} />
                 <col style={{ width: 32 }} /><col style={{ width: 32 }} />
-                {tournamentSport === 'beach_volleyball' ? (
+                {isSetBased ? (
                   <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
                 ) : (
                   <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
@@ -534,7 +535,7 @@ export default function Standings() {
               <thead>
                 <tr>
                   <th>#</th><th>{t('standings.team')}</th><th title="Played">{t('standings.played')}</th><th title="Won">{t('standings.won')}</th>
-                  {tournamentSport === 'beach_volleyball' ? (
+                  {isSetBased ? (
                     <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th></>
                   ) : (
                     <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
@@ -552,7 +553,7 @@ export default function Standings() {
                     </td>
                     <td>{row.played}</td>
                     <td>{row.won}</td>
-                    {tournamentSport === 'beach_volleyball' ? (
+                    {isSetBased ? (
                       <>
                         <td>{row.lost}</td>
                         <td>{row.sets_won ?? 0}</td>

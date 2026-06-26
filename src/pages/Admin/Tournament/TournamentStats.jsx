@@ -123,7 +123,7 @@ export default function TournamentStats() {
             </div>
 
             {/* Team performance */}
-            {ag.standings.length > 0 && tournament.sport === 'beach_volleyball' ? (
+            {ag.standings.length > 0 && (tournament.sport === 'beach_volleyball' || tournament.sport === 'catch_serve') ? (
               <div style={{ display: 'grid', gap: '0.5rem', marginBottom: '1.5rem' }}>
                 {ag.standings.map((row, i) => {
                   const sr = row.sets_lost > 0 ? (row.sets_won / row.sets_lost).toFixed(3) : row.sets_won > 0 ? '∞' : '—'
@@ -216,7 +216,7 @@ export default function TournamentStats() {
                       if (!res) return null
                       const homeWon = res.home_goals > res.away_goals
                       const awayWon = res.away_goals > res.home_goals
-                      const score = tournament.sport === 'beach_volleyball'
+                      const score = (tournament.sport === 'beach_volleyball' || tournament.sport === 'catch_serve')
                         ? formatBeachScore(res.sport_data)
                         : `${res.home_goals} : ${res.away_goals}`
                       return (
@@ -224,7 +224,7 @@ export default function TournamentStats() {
                           <span style={{ flex: 1, textAlign: 'right', fontWeight: homeWon ? 600 : 400, color: homeWon ? 'var(--color-text)' : 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {f.home_team?.name ?? '?'}
                           </span>
-                          <span style={{ fontFamily: 'var(--font-heading)', fontSize: tournament.sport === 'beach_volleyball' ? '0.78rem' : '0.95rem', minWidth: tournament.sport === 'beach_volleyball' ? '8rem' : '3.5rem', textAlign: 'center', flexShrink: 0, color: 'var(--color-accent)' }}>
+                          <span style={{ fontFamily: 'var(--font-heading)', fontSize: (tournament.sport === 'beach_volleyball' || tournament.sport === 'catch_serve') ? '0.78rem' : '0.95rem', minWidth: (tournament.sport === 'beach_volleyball' || tournament.sport === 'catch_serve') ? '8rem' : '3.5rem', textAlign: 'center', flexShrink: 0, color: 'var(--color-accent)' }}>
                             {score}
                           </span>
                           <span style={{ flex: 1, fontWeight: awayWon ? 600 : 400, color: awayWon ? 'var(--color-text)' : 'var(--color-text-muted)', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>

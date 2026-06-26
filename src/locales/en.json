@@ -2,6 +2,7 @@
   "sports": {
     "football": "Football",
     "beach_volleyball": "Beach Volleyball",
+    "catch_serve": "Catch'n Serve",
     "unsupported": "Unsupported sport"
   },
   "participants": {

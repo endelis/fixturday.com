@@ -10,11 +10,11 @@ import { toast } from '../../components/Toast'
 import {
   validateBeachVolleyballMatch,
   computeSportData,
-  setWinner,
   setsFromSportData,
   emptySetSlots,
   formatBeachScore,
 } from '../../utils/beachVolleyball'
+import { validateCatchServeMatch } from '../../utils/catchServe'
 
 const inputSx = {
   background: 'var(--color-surface)',
@@ -41,25 +41,37 @@ const setInputSx = {
 }
 
 /**
- * Set-by-set score entry for beach volleyball.
+ * Set-by-set score entry for set-based sports (beach volleyball / catch_serve).
  * Set 1 and Set 2 are always visible.
  * Set 3 unlocks only when it's 1-1 after Set 2.
+ * normalTarget: 21 for beach volleyball, 25 for catch_serve.
  */
-function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, isPostponed, t }) {
+function SetBasedScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, isPostponed, t, sport }) {
+  const normalTarget = sport === 'beach_volleyball' ? 21 : 25
+
+  function localSetWinner(h, a, isDecider) {
+    const hv = Number(h), av = Number(a)
+    if (!Number.isFinite(hv) || !Number.isFinite(av)) return null
+    const target = isDecider ? 15 : normalTarget
+    if (hv >= target && hv - av >= 2) return 'home'
+    if (av >= target && av - hv >= 2) return 'away'
+    return null
+  }
+
   function updateSet(idx, side, value) {
     const next = sets.map((s, i) => i === idx ? { ...s, [side]: value } : s)
     onSetsChange(next)
   }
 
-  const w1 = setWinner(sets[0].home, sets[0].away, false)
-  const w2 = setWinner(sets[1].home, sets[1].away, false)
+  const w1 = localSetWinner(sets[0].home, sets[0].away, false)
+  const w2 = localSetWinner(sets[1].home, sets[1].away, false)
   const show3 = w1 !== null && w2 !== null && w1 !== w2
 
   function validScore(h, a, isDecider) {
     if (h === '' || a === '') return true
     const hv = Number(h), av = Number(a)
     if (!Number.isFinite(hv) || !Number.isFinite(av)) return true
-    const target = isDecider ? 15 : 21
+    const target = isDecider ? 15 : normalTarget
     if (Math.max(hv, av) > target) return Math.abs(hv - av) === 2
     return true
   }
@@ -81,7 +93,7 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
           {[0, 1, 2].map(idx => {
             if (idx === 2 && !show3) return null
             const isDecider = idx === 2
-            const isWon = idx === 0 ? w1 : idx === 1 ? w2 : setWinner(sets[2].home, sets[2].away, true)
+            const isWon = idx === 0 ? w1 : idx === 1 ? w2 : localSetWinner(sets[2].home, sets[2].away, true)
             const setValid = idx === 0 ? v1 : idx === 1 ? v2 : v3
             const borderHome = !setValid ? 'var(--color-danger)' : isWon === 'home' ? 'var(--color-success)' : isWon === 'away' ? 'var(--color-danger)' : 'var(--color-accent)'
             const borderAway = !setValid ? 'var(--color-danger)' : isWon === 'away' ? 'var(--color-success)' : isWon === 'home' ? 'var(--color-danger)' : 'var(--color-accent)'
@@ -109,7 +121,7 @@ function BeachVolleyballScoreEntry({ f, sets, onSetsChange, onSave, saving, hasR
                 </div>
                 {!setValid && (
                   <span style={{ fontSize: '0.6rem', color: 'var(--color-danger)', marginTop: '0.15rem' }}>
-                    {t('matchday.setScoreInvalid', { target: isDecider ? 15 : 21 })}
+                    {t('matchday.setScoreInvalid', { target: isDecider ? 15 : normalTarget })}
                   </span>
                 )}
               </div>
@@ -391,10 +403,12 @@ export default function Matchday() {
     setSaving(prev => ({ ...prev, [f.id]: true }))
     const hasExisting = !!f.fixture_results?.[0]
 
-    if (tournamentSport === 'beach_volleyball') {
+    if (tournamentSport === 'beach_volleyball' || tournamentSport === 'catch_serve') {
       const allSlots = sets[f.id] ?? emptySetSlots()
       const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
-      const validation = validateBeachVolleyballMatch(filledSets)
+      const validation = tournamentSport === 'beach_volleyball'
+        ? validateBeachVolleyballMatch(filledSets)
+        : validateCatchServeMatch(filledSets)
       if (!validation.valid) {
         toast(validation.error, 'error')
         setSaving(prev => ({ ...prev, [f.id]: false }))
@@ -447,11 +461,13 @@ export default function Matchday() {
         // Derive sport from the fixture itself — never rely on tournamentSport state alone
         const fSport = f.stages?.age_groups?.tournaments?.sport ?? tournamentSport
 
-        if (fSport === 'beach_volleyball') {
+        if (fSport === 'beach_volleyball' || fSport === 'catch_serve') {
           const allSlots = sets[f.id] ?? emptySetSlots()
           const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
           if (filledSets.length === 0) return null // no data entered — skip
-          const validation = validateBeachVolleyballMatch(filledSets)
+          const validation = fSport === 'beach_volleyball'
+            ? validateBeachVolleyballMatch(filledSets)
+            : validateCatchServeMatch(filledSets)
           if (!validation.valid) return null // invalid — skip silently
           const sportData = computeSportData(filledSets)
           const payload = { home_goals: sportData.sets_home, away_goals: sportData.sets_away, sport_data: sportData }
@@ -617,9 +633,10 @@ export default function Matchday() {
             )}
           </div>
         </div>
-        {tournamentSport === 'beach_volleyball' ? (
-          <BeachVolleyballScoreEntry
+        {(tournamentSport === 'beach_volleyball' || tournamentSport === 'catch_serve') ? (
+          <SetBasedScoreEntry
             f={f}
+            sport={tournamentSport}
             sets={sets[f.id] ?? emptySetSlots()}
             onSetsChange={newSets => setSets(p => ({ ...p, [f.id]: newSets }))}
             onSave={() => saveScore(f)}
@@ -650,7 +667,7 @@ export default function Matchday() {
             )}
           </div>
         )}
-        {!isPostponed && tournamentSport !== 'beach_volleyball' && (
+        {!isPostponed && tournamentSport === 'football' && (
           <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '0.75rem' }}>
             <div style={{ fontSize: '0.78rem', fontWeight: 600, color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.04em' }}>{t('matchday.events')}</div>
             {fixtureEvents.length > 0 && (

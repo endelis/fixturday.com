@@ -85,7 +85,7 @@ const tdStyle = { padding: '0.6rem 0.4rem' }
 const tdCStyle = { ...tdStyle, textAlign: 'center' }
 
 function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
-  const isBvb = sport === 'beach_volleyball'
+  const isBvb = sport === 'beach_volleyball' || sport === 'catch_serve'
   return (
     <div style={{ overflowX: 'auto' }}>
       <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: isBvb ? 560 : 440 }}>
