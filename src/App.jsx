@@ -33,6 +33,7 @@ const Team            = lazy(() => import('./pages/Public/Team'))
 const PublicInfo      = lazy(() => import('./pages/Public/Info'))
 const Registration    = lazy(() => import('./pages/Public/Registration'))
 const NotFound        = lazy(() => import('./pages/Public/NotFound'))
+const AuthConfirm     = lazy(() => import('./pages/Public/AuthConfirm'))
 
 // ── Admin pages ───────────────────────────────────────────────────
 const Login          = lazy(() => import('./pages/Admin/Login'))
@@ -104,6 +105,7 @@ export default function App() {
           <Route path="/:slug/registration"                  element={<Registration />} />
 
           {/* Admin: top-level */}
+          <Route path="/auth/confirm"   element={<AuthConfirm />} />
           <Route path="/admin"          element={<Login />} />
           <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="/admin/dashboard"

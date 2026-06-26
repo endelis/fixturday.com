@@ -45,6 +45,7 @@ export default function Register() {
           last_name: lastName || null,
           phone: phone || null,
         },
+        emailRedirectTo: 'https://www.fixturday.com/auth/confirm',
       },
     })
     if (error) { setAuthError(error.message); return }
