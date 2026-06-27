@@ -46,13 +46,14 @@ const setInputSx = {
  * Set 3 unlocks only when it's 1-1 after Set 2.
  * normalTarget: 21 for beach volleyball, 25 for catch_serve.
  */
-function SetBasedScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, isPostponed, t, sport }) {
-  const normalTarget = sport === 'beach_volleyball' ? 21 : 25
+function SetBasedScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, isPostponed, t, sport, csSetTarget }) {
+  const normalTarget = sport === 'beach_volleyball' ? 21 : (csSetTarget ?? 15)
+  const decidingTarget = sport === 'beach_volleyball' ? 15 : (normalTarget === 25 ? 15 : 11)
 
   function localSetWinner(h, a, isDecider) {
     const hv = Number(h), av = Number(a)
     if (!Number.isFinite(hv) || !Number.isFinite(av)) return null
-    const target = isDecider ? 15 : normalTarget
+    const target = isDecider ? decidingTarget : normalTarget
     if (hv >= target && hv - av >= 2) return 'home'
     if (av >= target && av - hv >= 2) return 'away'
     return null
@@ -71,7 +72,7 @@ function SetBasedScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, 
     if (h === '' || a === '') return true
     const hv = Number(h), av = Number(a)
     if (!Number.isFinite(hv) || !Number.isFinite(av)) return true
-    const target = isDecider ? 15 : normalTarget
+    const target = isDecider ? decidingTarget : normalTarget
     if (Math.max(hv, av) > target) return Math.abs(hv - av) === 2
     return true
   }
@@ -80,7 +81,7 @@ function SetBasedScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, 
   const v3 = validScore(sets[2].home, sets[2].away, true)
   const hasInvalidScore = !v1 || !v2 || (show3 && !v3)
 
-  const SET_LABELS = ['Set 1', 'Set 2', 'Set 3 (to 15)']
+  const SET_LABELS = ['Set 1', 'Set 2', `Set 3 (to ${decidingTarget})`]
 
   return (
     <div>
@@ -121,7 +122,7 @@ function SetBasedScoreEntry({ f, sets, onSetsChange, onSave, saving, hasResult, 
                 </div>
                 {!setValid && (
                   <span style={{ fontSize: '0.6rem', color: 'var(--color-danger)', marginTop: '0.15rem' }}>
-                    {t('matchday.setScoreInvalid', { target: isDecider ? 15 : normalTarget })}
+                    {t('matchday.setScoreInvalid', { target: isDecider ? decidingTarget : normalTarget })}
                   </span>
                 )}
               </div>
@@ -187,7 +188,7 @@ export default function Matchday() {
         home_team:teams!home_team_id(id, name),
         away_team:teams!away_team_id(id, name),
         pitch:pitches(name, venues(name)),
-        stages(age_groups(name, tournaments(id, name, sport)))
+        stages(age_groups(name, cs_set_target, tournaments(id, name, sport)))
       `)
       .gte('kickoff_time', start)
       .lte('kickoff_time', end)
@@ -404,11 +405,12 @@ export default function Matchday() {
     const hasExisting = !!f.fixture_results?.[0]
 
     if (tournamentSport === 'beach_volleyball' || tournamentSport === 'catch_serve') {
+      const csSetTarget = f.stages?.age_groups?.cs_set_target ?? 15
       const allSlots = sets[f.id] ?? emptySetSlots()
       const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
       const validation = tournamentSport === 'beach_volleyball'
         ? validateBeachVolleyballMatch(filledSets)
-        : validateCatchServeMatch(filledSets)
+        : validateCatchServeMatch(filledSets, csSetTarget)
       if (!validation.valid) {
         toast(validation.error, 'error')
         setSaving(prev => ({ ...prev, [f.id]: false }))
@@ -462,12 +464,13 @@ export default function Matchday() {
         const fSport = f.stages?.age_groups?.tournaments?.sport ?? tournamentSport
 
         if (fSport === 'beach_volleyball' || fSport === 'catch_serve') {
+          const csSetTarget = f.stages?.age_groups?.cs_set_target ?? 15
           const allSlots = sets[f.id] ?? emptySetSlots()
           const filledSets = allSlots.filter(s => s.home !== '' && s.away !== '')
           if (filledSets.length === 0) return null // no data entered — skip
           const validation = fSport === 'beach_volleyball'
             ? validateBeachVolleyballMatch(filledSets)
-            : validateCatchServeMatch(filledSets)
+            : validateCatchServeMatch(filledSets, csSetTarget)
           if (!validation.valid) return null // invalid — skip silently
           const sportData = computeSportData(filledSets)
           const payload = { home_goals: sportData.sets_home, away_goals: sportData.sets_away, sport_data: sportData }
@@ -637,6 +640,7 @@ export default function Matchday() {
           <SetBasedScoreEntry
             f={f}
             sport={tournamentSport}
+            csSetTarget={f.stages?.age_groups?.cs_set_target ?? 15}
             sets={sets[f.id] ?? emptySetSlots()}
             onSetsChange={newSets => setSets(p => ({ ...p, [f.id]: newSets }))}
             onSave={() => saveScore(f)}

@@ -46,8 +46,11 @@
  *   - No completed fixtures → all teams returned with zeroed stats
  *   - Missing result for a completed fixture → that fixture is skipped
  */
+import { calculateCatchServeStandings } from './catchServe.js'
+
 export function calculateStandings(teams, fixtures, results, sport = 'football') {
-  if (sport === 'beach_volleyball' || sport === 'catch_serve') return calculateBeachVolleyballStandings(teams, fixtures, results);
+  if (sport === 'beach_volleyball') return calculateBeachVolleyballStandings(teams, fixtures, results);
+  if (sport === 'catch_serve') return calculateCatchServeStandings(teams, fixtures, results);
   if (!teams || teams.length === 0) return [];
 
   // --- Build a quick lookup: fixture_id → result ----------------------------

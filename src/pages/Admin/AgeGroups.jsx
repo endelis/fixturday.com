@@ -49,6 +49,7 @@ export default function AgeGroups() {
     setValue('bracket_seeding', ag.bracket_seeding ?? 'cross')
     setValue('registration_open', ag.registration_open)
     setValue('auto_approve', ag.auto_approve ?? false)
+    setValue('cs_set_target', String(ag.cs_set_target ?? 15))
 
     // Lock groups_count once any group stage game has a result
     let locked = false
@@ -112,6 +113,7 @@ export default function AgeGroups() {
       playoff_depth: playoffDepth,
       bracket_seeding: isGroupKnockout ? (values.bracket_seeding ?? 'cross') : null,
       teams_advancing: teamsAdvancing,
+      cs_set_target: Number(values.cs_set_target ?? 15),
     }
 
     if (editingId) {
@@ -293,6 +295,7 @@ const PLAYOFF_SLOTS = { final: 2, sf: 4, qf: 8, r16: 16 }
 
 function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFormat, watchedDepth, watchedGroups, locked, hasFixtures, fixturesUrl, onSubmit, onCancel, t, sport = 'football' }) {
   const isBeachVolleyball = sport === 'beach_volleyball'
+  const isCatchServe = sport === 'catch_serve'
   const isGroupKnockout = watchedFormat === 'group_knockout'
   const slots = PLAYOFF_SLOTS[watchedDepth] ?? 4
   const groups = Number(watchedGroups) || 2
@@ -340,6 +343,15 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
           <label>{t('ageGroup.maxTeams')}</label>
           <input type="number" {...register('max_teams')} min="2" />
         </div>
+        {isCatchServe && (
+          <div className="form-group">
+            <label>{t('ageGroup.csSetTarget')}</label>
+            <select {...register('cs_set_target')}>
+              <option value="15">{t('ageGroup.csSetTargetOptions.15')}</option>
+              <option value="25">{t('ageGroup.csSetTargetOptions.25')}</option>
+            </select>
+          </div>
+        )}
       </div>
 
       {isGroupKnockout && hasFixtures && (

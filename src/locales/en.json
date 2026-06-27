@@ -145,7 +145,12 @@
     "configLocked": "Locked — a match has already been played",
     "advancingPerGroup": "advancing per group",
     "playoffSlots": "playoff spots",
-    "advancingMismatch": "{{groups}} groups cannot fill {{slots}} playoff spots evenly — change groups or depth"
+    "advancingMismatch": "{{groups}} groups cannot fill {{slots}} playoff spots evenly — change groups or depth",
+    "csSetTarget": "Set scoring",
+    "csSetTargetOptions": {
+      "15": "15 / 15 / 11 — default (Latvian tournaments)",
+      "25": "25 / 25 / 15 — extended (ICSBF international)"
+    }
   },
   "team": {
     "title": "Teams",
