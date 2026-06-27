@@ -4,6 +4,9 @@
  * Order: newest first.
  */
 
+import CsOrganise,         { meta as metaCsOrganise }    from './posts/how-to-organize-a-catch-n-serve-ball-tournament'
+import CsScoring,          { meta as metaCsScoring }     from './posts/catch-n-serve-ball-scoring-rules'
+import PoolPlay,           { meta as metaPoolPlay }       from './posts/pool-play-format-volleyball-tournaments'
 import RegAutoClose,        { meta as metaRegAutoClose }  from './posts/tournament-registration-auto-close'
 import MultiPitch,          { meta as metaMultiPitch }    from './posts/multi-pitch-tournament-scheduling'
 import BracketDesign,       { meta as metaBracketDesign } from './posts/tournament-bracket-design'
@@ -29,6 +32,9 @@ import LimitRegistration, { meta as metaLimitReg }       from './posts/how-to-li
 import TournamentDuration,{ meta as metaDuration }       from './posts/how-to-estimate-tournament-duration'
 
 export const posts = [
+  { ...metaCsOrganise,      Component: CsOrganise },
+  { ...metaCsScoring,       Component: CsScoring },
+  { ...metaPoolPlay,        Component: PoolPlay },
   { ...metaRegAutoClose,    Component: RegAutoClose },
   { ...metaMultiPitch,      Component: MultiPitch },
   { ...metaBracketDesign,   Component: BracketDesign },
