@@ -39,7 +39,8 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   useEffect(() => {
     if (!ageGroup) return
     const isBV = ageGroup?.tournaments?.sport === 'beach_volleyball'
-    if (isBV) setSchedGameDuration(30)
+    const isSetBased = isBV || ageGroup?.tournaments?.sport === 'catch_serve'
+    if (isSetBased) setSchedGameDuration(30)
     else if (ageGroup.game_duration_minutes) setSchedGameDuration(ageGroup.game_duration_minutes)
     if (ageGroup.pitch_gap_minutes != null) setSchedPitchGap(ageGroup.pitch_gap_minutes)
     if (!ageGroup.tournaments) return

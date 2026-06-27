@@ -111,7 +111,8 @@ export default function Schedule() {
   if (loading) return <div className="loading">{t('common.loading')}</div>
   if (!ag) return <div className="loading">{t('common.error')}</div>
 
-  const isBvb = (ag.tournaments?.sport ?? 'football') === 'beach_volleyball'
+  const sport = ag.tournaments?.sport ?? 'football'
+  const isBvb = sport === 'beach_volleyball' || sport === 'catch_serve'
 
   const now = new Date()
   const hasResults = fixtures.some(f => f.fixture_results?.length > 0)
