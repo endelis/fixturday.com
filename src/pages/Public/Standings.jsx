@@ -135,8 +135,9 @@ export default function Standings() {
   const { ag, siblings, teams, fixtures, results } = data
   const tournament = ag.tournaments
   const tournamentSport = tournament.sport ?? 'football'
-  const isSetBased = isSetBased || tournamentSport === 'catch_serve'
-  const standings = calculateStandings(teams, fixtures, results, tournamentSport)
+  const isSetBased = tournamentSport === 'beach_volleyball' || tournamentSport === 'catch_serve'
+  const rugbyOpts = { rugbyPointsSystem: ag.rugby_points_system ?? '4_2_1' }
+  const standings = calculateStandings(teams, fixtures, results, tournamentSport, rugbyOpts)
 
   const now = new Date()
 
@@ -395,7 +396,8 @@ export default function Standings() {
                 groupTeams,
                 groupFixtures.filter(f => f.group_label === label),
                 results,
-                tournamentSport
+                tournamentSport,
+                rugbyOpts
               )
               return (
                 <div key={label} style={{ marginBottom: '2rem' }}>

@@ -23,6 +23,7 @@ const SPORT_LABELS = {
   football: '⚽ Football',
   beach_volleyball: '🏐 Beach Volleyball',
   catch_serve: "🤾‍♀️ Catch'n Serve",
+  rugby: '🏉 Rugby',
 }
 
 export default function TournamentEdit() {
