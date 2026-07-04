@@ -48,9 +48,10 @@
  */
 import { calculateCatchServeStandings } from './catchServe.js'
 
-export function calculateStandings(teams, fixtures, results, sport = 'football') {
+export function calculateStandings(teams, fixtures, results, sport = 'football', options = {}) {
   if (sport === 'beach_volleyball') return calculateBeachVolleyballStandings(teams, fixtures, results);
   if (sport === 'catch_serve') return calculateCatchServeStandings(teams, fixtures, results);
+  if (sport === 'rugby') return calculateRugbyStandings(teams, fixtures, results, options.rugbyPointsSystem ?? '4_2_1');
   if (!teams || teams.length === 0) return [];
 
   // --- Build a quick lookup: fixture_id → result ----------------------------
@@ -334,4 +335,132 @@ function bvbHeadToHead(teamAId, teamBId, completedFixtures, resultMap) {
     if (ag > hg) return fixture.away_team_id === teamAId ? -1 : 1;
   }
   return 0;
+}
+
+// ---------------------------------------------------------------------------
+// Rugby
+// Supports two points systems:
+//   '4_2_1' — international: Win=4, Draw=2, Loss=1, Technical forfeit=0
+//   '3_1'   — simplified:    Win=3, Draw=2, Loss=1 (no draws in practice)
+//
+// Sorting: standing points → PF/PA ratio → PF → head-to-head → name
+// ---------------------------------------------------------------------------
+
+function calculateRugbyStandings(teams, fixtures, results, pointsSystem = '4_2_1') {
+  if (!teams || teams.length === 0) return [];
+
+  const winPts  = pointsSystem === '3_1' ? 3 : 4;
+  const drawPts = pointsSystem === '3_1' ? 2 : 2; // draws rare but consistent
+  const lossPts = 1; // both systems award 1 pt for a loss
+
+  const resultMap = new Map();
+  if (results) {
+    for (const r of results) resultMap.set(r.fixture_id, r);
+  }
+
+  const statsMap = new Map();
+  for (const team of teams) {
+    statsMap.set(team.id, {
+      team,
+      played: 0,
+      won:    0,
+      drawn:  0,
+      lost:   0,
+      gf:     0,
+      ga:     0,
+      gd:     0,
+      points: 0,
+    });
+  }
+
+  const completedFixtures = fixtures
+    ? fixtures.filter((f) => f.status === 'completed')
+    : [];
+
+  for (const fixture of completedFixtures) {
+    const result = resultMap.get(fixture.id);
+    if (!result) continue;
+
+    const homeStats = statsMap.get(fixture.home_team_id);
+    const awayStats = statsMap.get(fixture.away_team_id);
+    if (!homeStats || !awayStats) continue;
+
+    const hg = Number(result.home_goals) || 0;
+    const ag = Number(result.away_goals) || 0;
+
+    homeStats.played += 1;
+    awayStats.played += 1;
+    homeStats.gf += hg;
+    homeStats.ga += ag;
+    awayStats.gf += ag;
+    awayStats.ga += hg;
+
+    if (hg > ag) {
+      homeStats.won    += 1; homeStats.points += winPts;
+      awayStats.lost   += 1; awayStats.points += lossPts;
+    } else if (ag > hg) {
+      awayStats.won    += 1; awayStats.points += winPts;
+      homeStats.lost   += 1; homeStats.points += lossPts;
+    } else {
+      homeStats.drawn  += 1; homeStats.points += drawPts;
+      awayStats.drawn  += 1; awayStats.points += drawPts;
+    }
+  }
+
+  for (const s of statsMap.values()) {
+    s.gd = s.gf - s.ga;
+  }
+
+  const rows = Array.from(statsMap.values());
+
+  rows.sort((a, b) => {
+    if (b.points !== a.points) return b.points - a.points;
+
+    // Points ratio (PF ÷ PA) — per tournament regulations
+    const ratioA = a.ga === 0 ? (a.gf > 0 ? 999 : 1) : a.gf / a.ga;
+    const ratioB = b.ga === 0 ? (b.gf > 0 ? 999 : 1) : b.gf / b.ga;
+    if (Math.abs(ratioB - ratioA) > 0.0001) return ratioB - ratioA;
+
+    // Points scored
+    if (b.gf !== a.gf) return b.gf - a.gf;
+
+    // Head-to-head
+    const h2h = rugbyHeadToHead(a.team.id, b.team.id, completedFixtures, resultMap, winPts, lossPts, drawPts);
+    if (h2h !== 0) return h2h;
+
+    return a.team.name.localeCompare(b.team.name);
+  });
+
+  return rows;
+}
+
+function rugbyHeadToHead(teamAId, teamBId, completedFixtures, resultMap, winPts, lossPts, drawPts) {
+  let ptsA = 0;
+  let ptsB = 0;
+
+  for (const fixture of completedFixtures) {
+    const isH2H =
+      (fixture.home_team_id === teamAId && fixture.away_team_id === teamBId) ||
+      (fixture.home_team_id === teamBId && fixture.away_team_id === teamAId);
+    if (!isH2H) continue;
+
+    const result = resultMap.get(fixture.id);
+    if (!result) continue;
+
+    const hg = Number(result.home_goals) || 0;
+    const ag = Number(result.away_goals) || 0;
+
+    if (hg > ag) {
+      if (fixture.home_team_id === teamAId) { ptsA += winPts; ptsB += lossPts; }
+      else { ptsB += winPts; ptsA += lossPts; }
+    } else if (ag > hg) {
+      if (fixture.away_team_id === teamAId) { ptsA += winPts; ptsB += lossPts; }
+      else { ptsB += winPts; ptsA += lossPts; }
+    } else {
+      ptsA += drawPts;
+      ptsB += drawPts;
+    }
+  }
+
+  return ptsB - ptsA; // positive = A is better (sort puts A first)
 }

@@ -3,6 +3,7 @@
     "football": "Football",
     "beach_volleyball": "Beach Volleyball",
     "catch_serve": "Catch'n Serve",
+    "rugby": "Rugby",
     "unsupported": "Unsupported sport"
   },
   "participants": {
@@ -150,6 +151,11 @@
     "csSetTargetOptions": {
       "15": "15 / 15 / 11 — default (Latvian tournaments)",
       "25": "25 / 25 / 15 — extended (ICSBF international)"
+    },
+    "rugbyPoints": "Points system",
+    "rugbyPointsOptions": {
+      "4_2_1": "4 / 2 / 1 / 0 — international (W=4, D=2, L=1)",
+      "3_1":   "3 / 1 / 0 — simplified (W=3, L=1, no draws)"
     }
   },
   "team": {

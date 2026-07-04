@@ -163,6 +163,7 @@ export default function TournamentNew() {
                 { value: 'football',         label: t('sports.football'),         emoji: '⚽' },
                 { value: 'beach_volleyball', label: t('sports.beach_volleyball'), emoji: '🏐' },
                 { value: 'catch_serve',      label: t('sports.catch_serve'),      emoji: '🤾‍♀️' },
+                { value: 'rugby',            label: t('sports.rugby'),            emoji: '🏉' },
               ].map(({ value, label, emoji }) => {
                 const active = selectedSport === value
                 return (
