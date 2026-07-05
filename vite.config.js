@@ -1,6 +1,23 @@
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
+// Static pages that need per-page canonical + meta baked into HTML at build time.
+// Googlebot gets a real response instead of the generic SPA shell, which fixes
+// "Duplicate without user-selected canonical" and "Crawled - currently not indexed".
+const STATIC_PAGES = [
+  {
+    path: '/about',
+    title: 'About Fixturday — Sports Tournament Software',
+    description: 'Fixturday helps organizers run better tournaments. Automatic schedules, live standings, online registration, and a public participant page. Free to use.',
+    noSuffix: true,
+  },
+  {
+    path: '/guide',
+    title: 'How to Organize a Sports Tournament',
+    description: 'Step-by-step guide to organizing any sports tournament with Fixturday. Create your schedule, manage teams, run match day, and track results — all free.',
+  },
+]
+
 function blogPrerenderMeta() {
   return {
     name: 'blog-prerender-meta',
@@ -26,8 +43,30 @@ function blogPrerenderMeta() {
         return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;')
       }
 
+      function buildHtml(template, { pageTitle, description, canonical, type = 'website', ldJson = null }) {
+        let html = template
+          .replace(/<title>.*?<\/title>/, `<title>${esc(pageTitle)}</title>`)
+          .replace(
+            /<meta name="description" content="[^"]*"[^>]*>/,
+            `<meta name="description" content="${esc(description)}">`
+          )
+        if (type !== 'website') {
+          html = html.replace(/<meta property="og:type" content="[^"]*"[^>]*>/, `<meta property="og:type" content="${type}">`)
+        }
+        const extras = [
+          `  <meta property="og:title" content="${esc(pageTitle)}">`,
+          `  <meta property="og:description" content="${esc(description)}">`,
+          `  <meta property="og:url" content="${canonical}">`,
+          `  <link rel="canonical" href="${canonical}">`,
+        ]
+        if (ldJson) extras.push(`  <script type="application/ld+json">${ldJson}</script>`)
+        extras.push('</head>')
+        return html.replace('</head>', extras.join('\n'))
+      }
+
+      // ── Blog posts ────────────────────────────────────────────────
       const files = await readdir(postsDir)
-      let count = 0
+      let blogCount = 0
 
       for (const file of files) {
         if (!file.endsWith('.jsx')) continue
@@ -40,30 +79,33 @@ function blogPrerenderMeta() {
 
         const pageTitle = `${title} | Fixturday`
         const canonical = `https://www.fixturday.com/blog/${slug}`
+        const ldJson = JSON.stringify({
+          '@context': 'https://schema.org', '@type': 'Article',
+          headline: title, description, url: canonical, datePublished: date,
+          publisher: { '@type': 'Organization', name: 'Fixturday', url: 'https://www.fixturday.com' },
+        })
 
-        const html = template
-          .replace(/<title>.*?<\/title>/, `<title>${esc(pageTitle)}</title>`)
-          .replace(
-            /<meta name="description" content="[^"]*"[^>]*>/,
-            `<meta name="description" content="${esc(description)}">`
-          )
-          .replace(/<meta property="og:type" content="[^"]*"[^>]*>/, '<meta property="og:type" content="article">')
-          .replace('</head>', [
-            `  <meta property="og:title" content="${esc(pageTitle)}">`,
-            `  <meta property="og:description" content="${esc(description)}">`,
-            `  <meta property="og:url" content="${canonical}">`,
-            `  <link rel="canonical" href="${canonical}">`,
-            `  <script type="application/ld+json">{"@context":"https://schema.org","@type":"Article","headline":"${title.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}","description":"${description.replace(/\\/g, '\\\\').replace(/"/g, '\\"')}","url":"${canonical}","datePublished":"${date}","publisher":{"@type":"Organization","name":"Fixturday","url":"https://www.fixturday.com"}}</script>`,
-            '</head>',
-          ].join('\n'))
-
+        const html = buildHtml(template, { pageTitle, description, canonical, type: 'article', ldJson })
         const dir = join(distDir, 'blog', slug)
         await mkdir(dir, { recursive: true })
         await writeFile(join(dir, 'index.html'), html)
-        count++
+        blogCount++
       }
 
-      console.log(`[blog-prerender-meta] Generated ${count} blog HTML files`)
+      // ── Static pages ──────────────────────────────────────────────
+      let staticCount = 0
+
+      for (const page of STATIC_PAGES) {
+        const pageTitle = page.noSuffix ? page.title : `${page.title} — Fixturday`
+        const canonical = `https://www.fixturday.com${page.path}`
+        const html = buildHtml(template, { pageTitle, description: page.description, canonical })
+        const dir = join(distDir, page.path.slice(1)) // strip leading /
+        await mkdir(dir, { recursive: true })
+        await writeFile(join(dir, 'index.html'), html)
+        staticCount++
+      }
+
+      console.log(`[blog-prerender-meta] Generated ${blogCount} blog + ${staticCount} static HTML files`)
     },
   }
 }
