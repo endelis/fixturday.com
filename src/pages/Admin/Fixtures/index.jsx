@@ -24,12 +24,21 @@ export default function Fixtures() {
   const [schedulerOpen, setSchedulerOpen] = useState(false)
 
   async function load() {
-    const [{ data: ag }, { data: tm }, { data: st }, { data: fx }] = await Promise.all([
+    const [agRes, tmRes, stRes, fxRes] = await Promise.all([
       supabase.from('age_groups').select('*, tournaments(id, name, sport, start_date, first_game_time, last_game_time, lunch_start, lunch_end)').eq('id', ageGroupId).single(),
       supabase.from('teams').select('*').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
       supabase.from('stages').select('*').eq('age_group_id', ageGroupId).order('sequence'),
       supabase.from('fixtures').select('*, round_name, group_label, home_placeholder, away_placeholder, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), pitch:pitches(name), stages!inner(age_group_id, type), fixture_results(home_goals, away_goals)').eq('stages.age_group_id', ageGroupId).order('round'),
     ])
+    if (agRes.error || tmRes.error || stRes.error || fxRes.error) {
+      toast(t('common.error'), 'error')
+      setLoading(false)
+      return
+    }
+    const { data: ag } = agRes
+    const { data: tm } = tmRes
+    const { data: st } = stRes
+    const { data: fx } = fxRes
     setAgeGroup(ag)
     setTeams(tm ?? [])
     setStages(st ?? [])

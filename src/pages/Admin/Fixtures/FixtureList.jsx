@@ -37,13 +37,14 @@ export default function FixtureList({ fixtures, format: agFormat, pitches, teams
       const ourEnd = new Date(kickoffMs + gameDuration * 60000).toISOString()
       const windowStart = new Date(kickoffMs - gameDuration * 60000).toISOString()
 
-      const { data: conflicts } = await supabase
+      const { data: conflicts, error: conflictErr } = await supabase
         .from('fixtures')
         .select('id, home_team:home_team_id(name), away_team:away_team_id(name)')
         .eq('pitch_id', f.pitch_id)
         .neq('id', f.id)
         .lt('kickoff_time', ourEnd)
         .gt('kickoff_time', windowStart)
+      if (conflictErr) return
 
       if (conflicts?.length) {
         const names = conflicts.map(c =>

@@ -202,10 +202,13 @@ export default function TournamentStandings() {
     const results = []
 
     for (const ag of ageGroups) {
-      const [{ data: teams }, { data: stages }] = await Promise.all([
+      const [teamsRes, stagesRes] = await Promise.all([
         supabase.from('teams').select('id, name').eq('age_group_id', ag.id).eq('status', 'confirmed'),
         supabase.from('stages').select('id, type').eq('age_group_id', ag.id),
       ])
+      if (teamsRes.error || stagesRes.error) { results.push({ ag, type: 'simple', rows: [] }); continue }
+      const teams = teamsRes.data
+      const stages = stagesRes.data
 
       if (!stages?.length) {
         results.push({ ag, type: 'simple', rows: [] })
@@ -216,15 +219,17 @@ export default function TournamentStandings() {
       const groupStageIds = new Set(stages.filter(s => s.type === 'group_stage').map(s => s.id))
       const knockoutStageIds = new Set(stages.filter(s => s.type === 'knockout').map(s => s.id))
 
-      const { data: allFixtures } = await supabase
+      const { data: allFixtures, error: fxErr } = await supabase
         .from('fixtures')
         .select('id, stage_id, home_team_id, away_team_id, status, group_label, home_placeholder, away_placeholder')
         .in('stage_id', allStageIds)
+      if (fxErr) { results.push({ ag, type: 'simple', rows: [] }); continue }
 
       const fixtureIds = (allFixtures ?? []).filter(f => f.home_team_id || f.away_team_id).map(f => f.id)
-      const { data: fixtureResults } = fixtureIds.length > 0
+      const { data: fixtureResults, error: frErr } = fixtureIds.length > 0
         ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals, sport_data').in('fixture_id', fixtureIds)
-        : { data: [] }
+        : { data: [], error: null }
+      if (frErr) { results.push({ ag, type: 'simple', rows: [] }); continue }
 
       if (ag.format === 'group_knockout' && groupStageIds.size > 0) {
         const groupFixtures = (allFixtures ?? []).filter(f => groupStageIds.has(f.stage_id))
