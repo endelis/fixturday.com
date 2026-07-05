@@ -124,6 +124,9 @@ export default function Landing() {
               {t('landing.heroSecondary')}
             </Link>
           </div>
+          <p style={{ margin: '0.85rem 0 0', fontSize: '0.8rem', color: 'rgba(143,163,188,0.7)', letterSpacing: '0.01em' }}>
+            {t('landing.ctaMicro')}
+          </p>
         </div>
 
         <div style={{ position: 'absolute', bottom: '2rem', left: '50%', transform: 'translateX(-50%)', animation: 'bounce 2s infinite', opacity: 0.6 }}>
@@ -259,6 +262,9 @@ export default function Landing() {
           >
             {t('landing.heroCta')}
           </Link>
+          <p style={{ margin: '0.85rem 0 0', fontSize: '0.8rem', color: 'rgba(143,163,188,0.7)', letterSpacing: '0.01em' }}>
+            {t('landing.ctaMicro')}
+          </p>
         </div>
       </section>
 
