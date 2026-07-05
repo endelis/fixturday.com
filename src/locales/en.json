@@ -82,6 +82,7 @@
     "country": "Country",
     "registerCTA": "Register team →",
     "status": {
+      "live": "Live",
       "ongoing": "Ongoing",
       "upcoming": "Upcoming",
       "finished": "Finished"

@@ -21,7 +21,7 @@ function getTournamentStatus(tournament) {
 }
 
 const STATUS_CONFIG = {
-  ongoing:  { labelKey: 'tournament.status.ongoing',  cls: 'badge-success' },
+  ongoing:  { labelKey: 'tournament.status.live',     cls: 'badge-live'    },
   upcoming: { labelKey: 'tournament.status.upcoming', cls: 'badge-warning' },
   finished: { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
 }
