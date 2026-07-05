@@ -372,7 +372,7 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
           <span style={{ flexShrink: 0, marginTop: '0.05rem' }}>⚠</span>
           <span>
             {t('ageGroup.fixturesExistWarning')}{' '}
-            <Link to={fixturesUrl} style={{ color: 'var(--color-accent)', fontWeight: 600 }}>→ Fixtures</Link>
+            <Link to={fixturesUrl} style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{t('common.toFixtures')}</Link>
           </span>
         </div>
       )}
