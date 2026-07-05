@@ -124,7 +124,8 @@ export default function AgeGroups() {
 
       if (isGroupKnockout) {
         // stages → fixtures → fixture_results all cascade on delete
-        await supabase.from('stages').delete().eq('age_group_id', editingId)
+        const { error: stagesErr } = await supabase.from('stages').delete().eq('age_group_id', editingId)
+        if (stagesErr) { toast(t('common.error'), 'error'); return }
         toast(t('ageGroup.savedAndCleared'))
       } else {
         toast(t('common.saved'))

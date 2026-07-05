@@ -115,7 +115,8 @@ export default function TournamentNew() {
         }
       }
       if (uploaded.length > 0) {
-        await supabase.from('tournaments').update({ attachments: uploaded }).eq('id', data.id)
+        const { error: attErr } = await supabase.from('tournaments').update({ attachments: uploaded }).eq('id', data.id)
+        if (attErr) toast(t('common.error'), 'error')
       }
     }
 

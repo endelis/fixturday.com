@@ -84,6 +84,7 @@ export default function TournamentEdit() {
     if (!deleteConfirm) { setDeleteConfirm(true); return }
     const { error } = await supabase.from('tournaments').delete().eq('id', id)
     if (error) { toast(`${t('common.error')}: ${error.message}`, 'error'); return }
+    toast(t('common.saved'))
     navigate('/admin/dashboard')
   }
 
