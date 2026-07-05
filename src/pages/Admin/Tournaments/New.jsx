@@ -128,7 +128,7 @@ export default function TournamentNew() {
     <div>
       <nav className="admin-nav">
         <Link to="/admin/dashboard" style={{ color: 'var(--color-accent)', textDecoration: 'none', fontFamily: 'var(--font-heading)', fontSize: '1.5rem' }}>
-          ← Fixturday Admin
+          {t('common.backToAdmin')}
         </Link>
       </nav>
 

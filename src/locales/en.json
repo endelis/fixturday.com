@@ -797,7 +797,9 @@
     "noData": "No data",
     "lastUpdated": "Updated: {{time}}",
     "required": "Required field.",
-    "download": "Download"
+    "download": "Download",
+    "backToAdmin": "← Fixturday Admin",
+    "toFixtures": "→ Fixtures"
   },
   "errors": {
     "loadFailed": "Failed to load. Please try again."

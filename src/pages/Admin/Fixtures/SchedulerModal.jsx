@@ -61,33 +61,30 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     const tournamentId = ageGroup?.tournament_id ?? ageGroup?.tournaments?.id
     if (!tournamentId) return
     let cancelled = false
-    supabase
-      .from('venues')
-      .select('id, name, pitches(id, name)')
-      .eq('tournament_id', tournamentId)
-      .order('name')
-      .then(({ data }) => {
-        if (cancelled) return
-        const flat = (data ?? []).flatMap(v =>
-          (v.pitches ?? []).map(p => ({ id: p.id, label: `${v.name} — ${p.name}` }))
-        )
-        setAvailablePitches(flat)
-        setSelectedPitchIds(new Set(flat.map(p => p.id)))
+    ;(async () => {
+      const { data, error } = await supabase
+        .from('venues')
+        .select('id, name, pitches(id, name)')
+        .eq('tournament_id', tournamentId)
+        .order('name')
+      if (cancelled || error) return
+      const flat = (data ?? []).flatMap(v =>
+        (v.pitches ?? []).map(p => ({ id: p.id, label: `${v.name} — ${p.name}` }))
+      )
+      setAvailablePitches(flat)
+      setSelectedPitchIds(new Set(flat.map(p => p.id)))
 
-        // Fetch already-scheduled fixtures for these pitches from other age groups
-        const ids = flat.map(p => p.id)
-        if (ids.length > 0) {
-          supabase
-            .from('fixtures')
-            .select('kickoff_time, pitch_id, stages!inner(age_group_id)')
-            .in('pitch_id', ids)
-            .not('kickoff_time', 'is', null)
-            .then(({ data: bk }) => {
-              if (cancelled) return
-              setAllBookings((bk ?? []).filter(f => f.stages?.age_group_id !== ageGroup?.id))
-            })
-        }
-      })
+      // Fetch already-scheduled fixtures for these pitches from other age groups
+      const ids = flat.map(p => p.id)
+      if (ids.length === 0) return
+      const { data: bk, error: bkErr } = await supabase
+        .from('fixtures')
+        .select('kickoff_time, pitch_id, stages!inner(age_group_id)')
+        .in('pitch_id', ids)
+        .not('kickoff_time', 'is', null)
+      if (cancelled || bkErr) return
+      setAllBookings((bk ?? []).filter(f => f.stages?.age_group_id !== ageGroup?.id))
+    })()
     return () => { cancelled = true }
   }, [open, ageGroup])
 
