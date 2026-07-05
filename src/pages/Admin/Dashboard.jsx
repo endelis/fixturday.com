@@ -52,6 +52,7 @@ export default function Dashboard() {
       const { error } = await supabase.from('tournaments').delete().eq('id', tourney.id)
       if (error) throw error
       setTournaments(prev => prev.filter(tm => tm.id !== tourney.id))
+      toast(t('common.saved'))
     } catch {
       toast(t('dashboard.deleteError'), 'error')
     }

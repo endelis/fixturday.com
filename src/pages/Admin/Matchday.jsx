@@ -202,9 +202,10 @@ export default function Matchday() {
     const fixtureIds = allFx.map(f => f.id)
 
     // Fetch fixture_results separately — embedded joins silently drop rows for authenticated users
-    const { data: resultData } = fixtureIds.length > 0
+    const { data: resultData, error: resultErr } = fixtureIds.length > 0
       ? await supabase.from('fixture_results').select('id, fixture_id, home_goals, away_goals, sport_data').in('fixture_id', fixtureIds)
-      : { data: [] }
+      : { data: [], error: null }
+    if (resultErr) { toast(t('common.error'), 'error'); setLoading(false); return }
     const resultMap = Object.fromEntries((resultData ?? []).map(r => [r.fixture_id, r]))
     const allFxWithResults = allFx.map(f => ({
       ...f,
@@ -393,7 +394,8 @@ export default function Matchday() {
       if (!df.home_team_id && (df.home_placeholder === loserEN  || df.home_placeholder === loserLV))  upd.home_team_id = loser
       if (!df.away_team_id && (df.away_placeholder === loserEN  || df.away_placeholder === loserLV))  upd.away_team_id = loser
       if (Object.keys(upd).length > 0) {
-        await supabase.from('fixtures').update(upd).eq('id', df.id)
+        const { error: advErr } = await supabase.from('fixtures').update(upd).eq('id', df.id)
+        if (advErr) { toast(t('common.error'), 'error'); return false }
         changed = true
       }
     }
@@ -426,7 +428,8 @@ export default function Matchday() {
         ? await supabase.from('fixture_results').update(payload).eq('fixture_id', f.id)
         : await supabase.from('fixture_results').insert({ fixture_id: f.id, ...payload })
       if (resErr) { toast(`${t('common.error')}: ${resErr.message}`, 'error'); setSaving(prev => ({ ...prev, [f.id]: false })); return }
-      await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+      const { error: statusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+      if (statusErr) { toast(`${t('common.error')}: ${statusErr.message}`, 'error'); setSaving(prev => ({ ...prev, [f.id]: false })); return }
       toast(t('common.saved'))
       setSaving(prev => ({ ...prev, [f.id]: false }))
       load()
@@ -511,6 +514,7 @@ export default function Matchday() {
     if (!confirm(t('matchday.confirmPostpone'))) return
     const { error } = await supabase.from('fixtures').update({ status: 'postponed' }).eq('id', fixtureId)
     if (error) { toast(t('common.error'), 'error'); return }
+    toast(t('common.saved'))
     load()
   }
 
