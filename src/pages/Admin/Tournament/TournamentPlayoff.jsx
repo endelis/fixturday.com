@@ -8,18 +8,29 @@ const BRACKET_STYLE = `
   .bracket-scroll::-webkit-scrollbar { display: none; }
   .bracket-scroll { -ms-overflow-style: none; scrollbar-width: none; }
 
-  @media (max-width: 640px) {
+  .bracket-wrapper {
+    flex-direction: column !important;
+    overflow-x: visible !important;
+    gap: 1.5rem !important;
+  }
+  .bracket-round {
+    min-width: 0 !important;
+    width: 100% !important;
+    flex: 1 0 100% !important;
+  }
+  .bracket-round-label { text-align: left !important; }
+  @media (min-width: 641px) {
     .bracket-wrapper {
-      flex-direction: column !important;
-      overflow-x: visible !important;
-      gap: 1.5rem !important;
+      flex-direction: row !important;
+      overflow-x: auto !important;
+      gap: 1rem !important;
     }
     .bracket-round {
-      min-width: 0 !important;
-      width: 100% !important;
-      flex: none !important;
+      min-width: 190px !important;
+      width: auto !important;
+      flex: 0 0 auto !important;
     }
-    .bracket-round-label { text-align: left !important; }
+    .bracket-round-label { text-align: center !important; }
   }
 `
 
