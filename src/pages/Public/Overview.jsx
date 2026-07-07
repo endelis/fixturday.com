@@ -122,11 +122,13 @@ export default function TournamentOverviewPublic() {
   let finalPodium = [] // [{pos, team, medal}]
   if (tournamentFinished) {
     if (hasKnockout) {
-      const finalFx = knockoutFixtures.find(f => f.round_name === 'Final') ??
-        (knockoutFixtures.length > 0 ? knockoutFixtures[knockoutFixtures.length - 1] : null)
-      const thirdFx = knockoutFixtures.find(f =>
-        f.round_name === '3rd_place' || f.round_name === '3rd Place' || f.round_name === '3rd place'
-      )
+      const is3rdPlace = f =>
+        f.round_name === '3rd_place' || f.round_name === '3rd Place' || f.round_name === '3rd place' ||
+        f.home_placeholder?.toLowerCase().includes('loser') ||
+        f.away_placeholder?.toLowerCase().includes('loser')
+      const thirdFx = knockoutFixtures.find(is3rdPlace)
+      const finalFx = knockoutFixtures.find(f => f.round_name === 'Final' || f.round_name === 'final') ??
+        knockoutFixtures.filter(f => !is3rdPlace(f)).at(-1) ?? null
 
       if (finalFx?.status === 'completed') {
         const r = resultMap[finalFx.id]
@@ -147,7 +149,7 @@ export default function TournamentOverviewPublic() {
         // No 3rd place match — find semi-final losers as joint 3rd
         const podiumIds = new Set(finalPodium.map(p => p.team?.id))
         const semiLosers = knockoutFixtures
-          .filter(f => f.id !== finalFx?.id && f.status === 'completed' && !podiumIds.has(f.home_team?.id) && !podiumIds.has(f.away_team?.id))
+          .filter(f => f.id !== finalFx?.id && !is3rdPlace(f) && f.status === 'completed' && !podiumIds.has(f.home_team?.id) && !podiumIds.has(f.away_team?.id))
           .flatMap(f => {
             const r = resultMap[f.id]
             if (!r) return []
