@@ -335,7 +335,7 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
             )}
           </select>
           <a
-            href={isBeachVolleyball ? '/blog/beach-volleyball-tournament-formats' : '/blog/football-tournament-formats'}
+            href={isBeachVolleyball ? '/blog/beach-volleyball-tournament-formats' : isCatchServe ? '/blog/how-to-organize-a-catch-n-serve-ball-tournament' : '/blog/football-tournament-formats'}
             target="_blank"
             rel="noopener noreferrer"
             style={{ display: 'inline-block', marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--color-accent)', textDecoration: 'none', opacity: 0.85 }}
