@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { supabase } from '../../lib/supabase'
+import { setWinner, getTargets } from '../../utils/catchServe'
 import { format } from 'date-fns'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
@@ -148,8 +149,22 @@ export default function Schedule() {
     const result = f.fixture_results?.[0]
     const isCompleted = f.status === 'completed'
     const isLive = f.status === 'live'
-    const homeWon = result && result.home_goals > result.away_goals
-    const awayWon = result && result.away_goals > result.home_goals
+    // For catch_serve re-derive set counts from raw sport_data.sets.
+    // Retroactively fixes records where home_goals=0 due to the BV target bug.
+    let displayHome = result?.home_goals ?? 0
+    let displayAway = result?.away_goals ?? 0
+    if (sport === 'catch_serve' && result?.sport_data?.sets?.length > 0) {
+      const { normalTarget, decidingTarget } = getTargets(ag?.cs_set_target ?? 15)
+      displayHome = 0; displayAway = 0
+      result.sport_data.sets.forEach((s, i) => {
+        const w = setWinner(s.h, s.a, i === 2, normalTarget, decidingTarget)
+        if (w === 'home') displayHome++
+        else if (w === 'away') displayAway++
+      })
+    }
+
+    const homeWon = result && displayHome > displayAway
+    const awayWon = result && displayAway > displayHome
 
     const homeName = f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder_label ?? '?')
     const awayName = f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder_label ?? '?')
@@ -158,7 +173,7 @@ export default function Schedule() {
 
     const scoreDisplay = result
       ? isBvb
-        ? `${result.home_goals} : ${result.away_goals}`
+        ? `${displayHome} : ${displayAway}`
         : `${result.home_goals} – ${result.away_goals}`
       : null
 
