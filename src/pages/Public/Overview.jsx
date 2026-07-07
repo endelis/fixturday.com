@@ -42,7 +42,7 @@ export default function TournamentOverviewPublic() {
 
       const fixtureIds = (fixtures ?? []).map(f => f.id)
       const { data: results } = fixtureIds.length > 0
-        ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fixtureIds)
+        ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals, sport_data').in('fixture_id', fixtureIds)
         : { data: [] }
 
       setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
@@ -65,7 +65,7 @@ export default function TournamentOverviewPublic() {
   const { ag, siblings, teams, fixtures, results } = data
   const tournament = ag.tournaments
   const sport = tournament.sport ?? 'football'
-  const rugbyOpts = { rugbyPointsSystem: ag.rugby_points_system ?? '4_2_1' }
+  const sportOpts = { rugbyPointsSystem: ag.rugby_points_system ?? '4_2_1', csSetTarget: ag.cs_set_target ?? 15 }
 
   const now = new Date()
   const resultMap = Object.fromEntries(results.map(r => [r.fixture_id, r]))
@@ -104,26 +104,68 @@ export default function TournamentOverviewPublic() {
   // Group standings
   const groupFixtures = fixtures.filter(f => f.group_label)
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
-  const allStandings = calculateStandings(teams, fixtures, results, sport, rugbyOpts)
+  const allStandings = calculateStandings(teams, fixtures, results, sport, sportOpts)
 
   function groupStandings(label) {
     const gTeamIds = new Set(
       fixtures.filter(f => f.group_label === label).flatMap(f => [f.home_team_id, f.away_team_id].filter(Boolean))
     )
-    return allStandings.filter(r => gTeamIds.has(r.teamId))
+    return allStandings.filter(r => gTeamIds.has(r.team?.id))
   }
 
-  // Final result (last knockout fixture)
+  // Final standings: all KO positions, or top 5 for round-robin
   const knockoutFixtures = fixtures.filter(f => !f.group_label && f.home_team?.id && f.away_team?.id)
-  const finalFixture = knockoutFixtures.find(f => f.round_name === 'Final') ??
-    (knockoutFixtures.length > 0 ? knockoutFixtures[knockoutFixtures.length - 1] : null)
-  let winner = null, runnerUp = null
-  if (tournamentFinished && finalFixture?.status === 'completed') {
-    const r = resultMap[finalFixture.id]
-    if (r) {
-      const homeWon = r.home_goals > r.away_goals
-      winner = homeWon ? finalFixture.home_team : finalFixture.away_team
-      runnerUp = homeWon ? finalFixture.away_team : finalFixture.home_team
+  const hasKnockout = knockoutFixtures.length > 0
+
+  let finalPodium = [] // [{pos, team, medal}]
+  if (tournamentFinished) {
+    if (hasKnockout) {
+      const finalFx = knockoutFixtures.find(f => f.round_name === 'Final') ??
+        (knockoutFixtures.length > 0 ? knockoutFixtures[knockoutFixtures.length - 1] : null)
+      const thirdFx = knockoutFixtures.find(f =>
+        f.round_name === '3rd_place' || f.round_name === '3rd Place' || f.round_name === '3rd place'
+      )
+
+      if (finalFx?.status === 'completed') {
+        const r = resultMap[finalFx.id]
+        if (r) {
+          const homeWon = r.home_goals > r.away_goals
+          finalPodium.push({ pos: 1, team: homeWon ? finalFx.home_team : finalFx.away_team, medal: '🥇' })
+          finalPodium.push({ pos: 2, team: homeWon ? finalFx.away_team : finalFx.home_team, medal: '🥈' })
+        }
+      }
+      if (thirdFx?.status === 'completed') {
+        const r = resultMap[thirdFx.id]
+        if (r) {
+          const homeWon = r.home_goals > r.away_goals
+          finalPodium.push({ pos: 3, team: homeWon ? thirdFx.home_team : thirdFx.away_team, medal: '🥉' })
+          finalPodium.push({ pos: 4, team: homeWon ? thirdFx.away_team : thirdFx.home_team, medal: '4th' })
+        }
+      } else if (finalPodium.length === 2) {
+        // No 3rd place match — find semi-final losers as joint 3rd
+        const podiumIds = new Set(finalPodium.map(p => p.team?.id))
+        const semiLosers = knockoutFixtures
+          .filter(f => f.id !== finalFx?.id && f.status === 'completed' && !podiumIds.has(f.home_team?.id) && !podiumIds.has(f.away_team?.id))
+          .flatMap(f => {
+            const r = resultMap[f.id]
+            if (!r) return []
+            const homeWon = r.home_goals > r.away_goals
+            return [homeWon ? f.away_team : f.home_team]
+          })
+          .filter(Boolean)
+        semiLosers.forEach((team, i) => {
+          finalPodium.push({ pos: 3, team, medal: i === 0 ? '🥉' : '🥉' })
+        })
+      }
+    } else if (allStandings.length > 0) {
+      // Round-robin only: top 5
+      const medals = ['🥇', '🥈', '🥉', '4th', '5th']
+      finalPodium = allStandings.slice(0, 5).map((row, i) => ({
+        pos: i + 1,
+        team: row.team,
+        medal: medals[i] ?? `${i + 1}th`,
+        points: row.points,
+      }))
     }
   }
 
@@ -198,7 +240,7 @@ export default function TournamentOverviewPublic() {
         </div>
 
         {/* Final standings (when tournament is over) */}
-        {tournamentFinished && (winner || allStandings.length > 0) && (
+        {tournamentFinished && finalPodium.length > 0 && (
           <div
             className="card"
             style={{ marginBottom: '1.75rem', background: 'linear-gradient(135deg, rgba(240,165,0,0.07) 0%, rgba(240,165,0,0.02) 100%)', borderColor: 'rgba(240,165,0,0.22)' }}
@@ -206,32 +248,20 @@ export default function TournamentOverviewPublic() {
             <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.875rem' }}>
               {t('overview.finalStandings')}
             </div>
-            {winner && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.75rem' }}>
-                {[{ medal: '🥇', team: winner }, { medal: '🥈', team: runnerUp }].filter(x => x.team).map(({ medal, team }) => (
-                  <div key={team.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.05rem', fontWeight: 600 }}>
-                    <span>{medal}</span>
-                    <span>{team.name}</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            {!winner && allStandings.length > 0 && (
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                {allStandings.slice(0, 3).map((row, i) => (
-                  <div key={row.teamId} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.95rem', fontWeight: i === 0 ? 700 : 400 }}>
-                    <span>{['🥇','🥈','🥉'][i]}</span>
-                    <span>{row.teamName}</span>
-                    <span style={{ marginLeft: 'auto', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)' }}>{row.points} pts</span>
-                  </div>
-                ))}
-              </div>
-            )}
-            <div style={{ marginTop: '0.75rem' }}>
-              <Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>
-                {t('overview.fullStandingsLink')} →
-              </Link>
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem' }}>
+              {finalPodium.map((entry, i) => (
+                <div key={`${entry.team?.id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: i < 3 ? '1rem' : '0.9rem', fontWeight: i === 0 ? 700 : 400 }}>
+                  <span style={{ minWidth: '1.75rem', fontSize: i < 3 ? '1.1rem' : '0.85rem', color: i >= 3 ? 'var(--color-text-muted)' : undefined }}>{entry.medal}</span>
+                  <span>{entry.team?.name}</span>
+                  {entry.points != null && (
+                    <span style={{ marginLeft: 'auto', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '0.85rem' }}>{entry.points} pts</span>
+                  )}
+                </div>
+              ))}
             </div>
+            <Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>
+              {t('overview.fullStandingsLink')} →
+            </Link>
           </div>
         )}
 
@@ -349,14 +379,14 @@ export default function TournamentOverviewPublic() {
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>P</th>
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>W</th>
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>L</th>
-                          <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.pts')}</th>
+                          <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.points')}</th>
                         </tr>
                       </thead>
                       <tbody>
                         {rows.map((row, i) => (
-                          <tr key={row.teamId} style={{ borderTop: '1px solid var(--color-border)' }}>
+                          <tr key={row.team.id} style={{ borderTop: '1px solid var(--color-border)' }}>
                             <td style={{ padding: '0.4rem 0.75rem', color: 'var(--color-text-muted)' }}>{i + 1}</td>
-                            <td style={{ padding: '0.4rem 0.5rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamName}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.team.name}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
@@ -386,14 +416,14 @@ export default function TournamentOverviewPublic() {
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>P</th>
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>W</th>
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>L</th>
-                  <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.pts')}</th>
+                  <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.points')}</th>
                 </tr>
               </thead>
               <tbody>
                 {allStandings.map((row, i) => (
-                  <tr key={row.teamId} style={{ borderTop: '1px solid var(--color-border)' }}>
+                  <tr key={row.team.id} style={{ borderTop: '1px solid var(--color-border)' }}>
                     <td style={{ padding: '0.4rem 0.75rem', color: 'var(--color-text-muted)' }}>{i + 1}</td>
-                    <td style={{ padding: '0.4rem 0.5rem' }}>{row.teamName}</td>
+                    <td style={{ padding: '0.4rem 0.5rem' }}>{row.team.name}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
