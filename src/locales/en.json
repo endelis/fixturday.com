@@ -325,7 +325,8 @@
     "setRatioFull": "Set Ratio",
     "pointsWonFull": "Pts Won",
     "pointsAgainstFull": "Pts Lost",
-    "pointRatioFull": "Pt Ratio"
+    "pointRatioFull": "Pt Ratio",
+    "matchPointsFull": "Match Points"
   },
   "playoff": {
     "final": "Final",

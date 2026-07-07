@@ -362,6 +362,7 @@ export default function Standings() {
               [t('standings.pointsWon'),      t('standings.pointsWonFull')],
               [t('standings.pointsAgainst'),  t('standings.pointsAgainstFull')],
               [t('standings.pointRatio'),     t('standings.pointRatioFull')],
+              [t('standings.points'),         t('standings.matchPointsFull')],
             ].map(([abbr, full]) => (
               <span key={abbr} style={{
                 display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
@@ -405,12 +406,12 @@ export default function Standings() {
                     {t('standings.group')} {label}
                   </h2>
                   <div style={{ overflowX: 'auto' }}>
-                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: isSetBased ? 540 : 420 }}>
+                    <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: isSetBased ? 590 : 420 }}>
                       <colgroup>
                         <col style={{ width: 28 }} /><col style={{ width: 170 }} />
                         <col style={{ width: 32 }} /><col style={{ width: 32 }} />
                         {isSetBased ? (
-                          <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
+                          <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /><col style={{ width: 44 }} /></>
                         ) : (
                           <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
                         )}
@@ -419,7 +420,7 @@ export default function Standings() {
                         <tr>
                           <th>#</th><th>{t('standings.team')}</th><th title="Played">{t('standings.played')}</th><th title="Won">{t('standings.won')}</th>
                           {isSetBased ? (
-                            <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th></>
+                            <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th><th title="Match Points">{t('standings.points')}</th></>
                           ) : (
                             <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
                           )}
@@ -455,6 +456,7 @@ export default function Standings() {
                                   <td>{row.points_won ?? 0}</td>
                                   <td>{row.points_against ?? 0}</td>
                                   <td><strong>{row.points_against > 0 ? (row.points_won / row.points_against).toFixed(3) : (row.points_won > 0 ? '∞' : '—')}</strong></td>
+                                  <td style={{ color: 'var(--color-accent)', fontWeight: 700 }}>{row.points ?? 0}</td>
                                 </>
                               ) : (
                                 <>
@@ -471,9 +473,10 @@ export default function Standings() {
                           if (isLastAdvancing) {
                             rows.push(
                               <tr key={`adv-sep-${label}`}>
-                                <td colSpan={isSetBased ? 11 : 10}
+                                <td colSpan={isSetBased ? 12 : 10}
                                   style={{ padding: 0, height: 2, background: 'rgba(34,197,94,0.28)', border: 'none', borderBottom: 'none' }} />
                               </tr>
+
                             )
                           }
                           return rows
@@ -524,12 +527,12 @@ export default function Standings() {
           </>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: isSetBased ? 540 : 420 }}>
+            <table className="table-clean" style={{ tableLayout: 'fixed', minWidth: isSetBased ? 590 : 420 }}>
               <colgroup>
                 <col style={{ width: 28 }} /><col style={{ width: 170 }} />
                 <col style={{ width: 32 }} /><col style={{ width: 32 }} />
                 {isSetBased ? (
-                  <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /></>
+                  <><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 32 }} /><col style={{ width: 44 }} /><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 52 }} /><col style={{ width: 44 }} /></>
                 ) : (
                   <><col style={{ width: 36 }} /><col style={{ width: 36 }} /><col style={{ width: 40 }} /><col style={{ width: 40 }} /><col style={{ width: 44 }} /><col style={{ width: 44 }} /></>
                 )}
@@ -538,7 +541,7 @@ export default function Standings() {
                 <tr>
                   <th>#</th><th>{t('standings.team')}</th><th title="Played">{t('standings.played')}</th><th title="Won">{t('standings.won')}</th>
                   {isSetBased ? (
-                    <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th></>
+                    <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th><th title="Match Points">{t('standings.points')}</th></>
                   ) : (
                     <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
                   )}
