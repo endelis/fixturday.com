@@ -32,7 +32,7 @@ export default function TournamentDetail() {
         setNotFound(true)
         return
       }
-      navigate(`/t/${slug}/${ags[0].id}`, { replace: true })
+      navigate(`/t/${slug}/${ags[0].id}/overview`, { replace: true })
     }
     doRedirect()
   }, [slug, navigate])

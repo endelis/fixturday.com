@@ -1,10 +1,11 @@
 import { useEffect, useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
+import { parseISO } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
-import { formatTime } from '../../utils/dateFormat'
+import { formatTime, formatDate } from '../../utils/dateFormat'
 import { useSEO } from '../../hooks/useSEO'
 
 export default function TournamentOverviewPublic() {
@@ -176,14 +177,25 @@ export default function TournamentOverviewPublic() {
         )}
 
         {/* Header */}
-        {tournament.location && (
-          <p style={{ margin: '0 0 0.35rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
-            📍 {tournament.location}
-          </p>
-        )}
-        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: '0 0 1.5rem' }}>
-          {tournament.name} — {ag.name}
-        </h1>
+        <div style={{ marginBottom: '1.75rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.4rem, 4vw, 2.25rem)', margin: '0 0 0.5rem', lineHeight: 1.15 }}>
+            {tournament.name}
+          </h1>
+          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', alignItems: 'center', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+            {(tournament.start_date || tournament.end_date) && (
+              <span>
+                📅 {tournament.start_date ? formatDate(parseISO(tournament.start_date)) : ''}
+                {tournament.end_date && tournament.end_date !== tournament.start_date
+                  ? ` – ${formatDate(parseISO(tournament.end_date))}`
+                  : ''}
+              </span>
+            )}
+            {tournament.location && <span>📍 {tournament.location}</span>}
+            {siblings.length > 1 && (
+              <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{ag.name}</span>
+            )}
+          </div>
+        </div>
 
         {/* Final standings (when tournament is over) */}
         {tournamentFinished && (winner || allStandings.length > 0) && (
