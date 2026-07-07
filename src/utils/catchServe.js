@@ -93,6 +93,32 @@ export function validateCatchServeMatch(sets, csSetTarget = 15) {
   return { valid: true, setsHome, setsAway }
 }
 
+// ── Sport data ───────────────────────────────────────────────────────────────
+
+/**
+ * Builds the sport_data JSONB object for a Catch'n Serve result.
+ * Uses the correct CS set-win targets (not beach volleyball's 21-point rules).
+ *
+ * @param {Array<{home:number|string, away:number|string}>} sets - Only played sets
+ * @param {number} csSetTarget - 15 (default) or 25
+ * @returns {{ sets: Array<{h:number,a:number}>, sets_home: number, sets_away: number }}
+ */
+export function computeCatchServeSportData(sets, csSetTarget = 15) {
+  const { normalTarget, decidingTarget } = getTargets(csSetTarget)
+  let setsHome = 0
+  let setsAway = 0
+  sets.forEach((s, i) => {
+    const w = setWinner(s.home, s.away, i === 2, normalTarget, decidingTarget)
+    if (w === 'home') setsHome++
+    else if (w === 'away') setsAway++
+  })
+  return {
+    sets: sets.map(s => ({ h: Number(s.home), a: Number(s.away) })),
+    sets_home: setsHome,
+    sets_away: setsAway,
+  }
+}
+
 // ── Standings ────────────────────────────────────────────────────────────────
 
 /**
@@ -109,7 +135,7 @@ export function validateCatchServeMatch(sets, csSetTarget = 15) {
  * @param {Array<{fixture_id:*, home_goals:number, away_goals:number, sport_data:*}>} results
  * @returns {Array<object>} Sorted standings rows
  */
-export function calculateCatchServeStandings(teams, fixtures, results) {
+export function calculateCatchServeStandings(teams, fixtures, results, csSetTarget = 15) {
   if (!teams || teams.length === 0) return []
 
   const resultMap = new Map()
@@ -145,8 +171,22 @@ export function calculateCatchServeStandings(teams, fixtures, results) {
     const awayStats = statsMap.get(fixture.away_team_id)
     if (!homeStats || !awayStats) continue
 
-    const setsHome = Number(result.home_goals) || 0
-    const setsAway = Number(result.away_goals) || 0
+    // Re-derive set counts from raw sport_data.sets using CS scoring rules.
+    // This retroactively fixes records saved with the BV target (21) which
+    // produced home_goals=0/away_goals=0 for all CS scores.
+    let setsHome = 0
+    let setsAway = 0
+    if (result.sport_data?.sets?.length > 0) {
+      const { normalTarget, decidingTarget } = getTargets(csSetTarget)
+      result.sport_data.sets.forEach((s, i) => {
+        const w = setWinner(s.h, s.a, i === 2, normalTarget, decidingTarget)
+        if (w === 'home') setsHome++
+        else if (w === 'away') setsAway++
+      })
+    } else {
+      setsHome = Number(result.home_goals) || 0
+      setsAway = Number(result.away_goals) || 0
+    }
 
     let ptsHome = 0, ptsAway = 0
     if (result.sport_data?.sets) {

@@ -14,7 +14,7 @@ import {
   emptySetSlots,
   formatBeachScore,
 } from '../../utils/beachVolleyball'
-import { validateCatchServeMatch } from '../../utils/catchServe'
+import { validateCatchServeMatch, computeCatchServeSportData } from '../../utils/catchServe'
 
 const inputSx = {
   background: 'var(--color-surface)',
@@ -418,7 +418,9 @@ export default function Matchday() {
         setSaving(prev => ({ ...prev, [f.id]: false }))
         return
       }
-      const sportData = computeSportData(filledSets)
+      const sportData = tournamentSport === 'catch_serve'
+        ? computeCatchServeSportData(filledSets, csSetTarget)
+        : computeSportData(filledSets)
       const payload = {
         home_goals: sportData.sets_home,
         away_goals: sportData.sets_away,
@@ -475,7 +477,9 @@ export default function Matchday() {
             ? validateBeachVolleyballMatch(filledSets)
             : validateCatchServeMatch(filledSets, csSetTarget)
           if (!validation.valid) return null // invalid — skip silently
-          const sportData = computeSportData(filledSets)
+          const sportData = fSport === 'catch_serve'
+            ? computeCatchServeSportData(filledSets, csSetTarget)
+            : computeSportData(filledSets)
           const payload = { home_goals: sportData.sets_home, away_goals: sportData.sets_away, sport_data: sportData }
           const { error: resErr } = hasExisting
             ? await supabase.from('fixture_results').update(payload).eq('fixture_id', f.id)

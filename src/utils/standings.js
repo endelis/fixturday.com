@@ -50,7 +50,7 @@ import { calculateCatchServeStandings } from './catchServe.js'
 
 export function calculateStandings(teams, fixtures, results, sport = 'football', options = {}) {
   if (sport === 'beach_volleyball') return calculateBeachVolleyballStandings(teams, fixtures, results);
-  if (sport === 'catch_serve') return calculateCatchServeStandings(teams, fixtures, results);
+  if (sport === 'catch_serve') return calculateCatchServeStandings(teams, fixtures, results, options.csSetTarget ?? 15);
   if (sport === 'rugby') return calculateRugbyStandings(teams, fixtures, results, options.rugbyPointsSystem ?? '4_2_1');
   if (!teams || teams.length === 0) return [];
 
