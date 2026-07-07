@@ -379,6 +379,12 @@ export default function Standings() {
           </div>
         )}
 
+        {isSetBased && ag.format !== 'double_elimination' && (
+          <p style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', margin: '-0.25rem 0 1rem' }}>
+            {tournamentSport === 'catch_serve' ? t('standings.pointsRuleCS') : t('standings.pointsRuleBV')}
+          </p>
+        )}
+
         {ag.format === 'double_elimination' ? (
           fixtures.filter(f => f.stages?.bracket).length === 0
             ? <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>

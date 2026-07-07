@@ -326,7 +326,9 @@
     "pointsWonFull": "Pts Won",
     "pointsAgainstFull": "Pts Lost",
     "pointRatioFull": "Pt Ratio",
-    "matchPointsFull": "Match Points"
+    "matchPointsFull": "Match Points",
+    "pointsRuleCS": "Pts: 2–0 win = 3 pts · 2–1 win = 2 pts, loser gets 1 pt",
+    "pointsRuleBV": "Pts: 1 per win"
   },
   "playoff": {
     "final": "Final",
