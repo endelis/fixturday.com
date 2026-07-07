@@ -104,13 +104,15 @@ export default function TournamentOverviewPublic() {
   // Group standings
   const groupFixtures = fixtures.filter(f => f.group_label)
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
-  const allStandings = calculateStandings(teams, fixtures, results, sport, sportOpts)
+  // For round-robin final podium: exclude knockout fixtures from standings
+  const standingsFixtures = groupFixtures.length > 0 ? groupFixtures : fixtures
+  const allStandings = calculateStandings(teams, standingsFixtures, results, sport, sportOpts)
 
   function groupStandings(label) {
-    const gTeamIds = new Set(
-      fixtures.filter(f => f.group_label === label).flatMap(f => [f.home_team_id, f.away_team_id].filter(Boolean))
-    )
-    return allStandings.filter(r => gTeamIds.has(r.team?.id))
+    const gFixtures = fixtures.filter(f => f.group_label === label)
+    const gTeamIds = new Set(gFixtures.flatMap(f => [f.home_team_id, f.away_team_id].filter(Boolean)))
+    const gTeams = teams.filter(t => gTeamIds.has(t.id))
+    return calculateStandings(gTeams, gFixtures, results, sport, sportOpts)
   }
 
   // Final standings: all KO positions, or top 5 for round-robin
