@@ -1,0 +1,405 @@
+import { useEffect, useState } from 'react'
+import { useParams, Link, Navigate } from 'react-router-dom'
+import { useTranslation } from 'react-i18next'
+import { supabase } from '../../lib/supabase'
+import { calculateStandings } from '../../utils/standings'
+import PublicNav from '../../components/PublicNav'
+import { formatTime } from '../../utils/dateFormat'
+import { useSEO } from '../../hooks/useSEO'
+
+export default function TournamentOverviewPublic() {
+  const { slug, ageGroup: ageGroupId } = useParams()
+  const { t } = useTranslation()
+  const [data, setData] = useState(null)
+  const [loading, setLoading] = useState(true)
+  const [loadError, setLoadError] = useState(null)
+
+  const seoTitle = data?.ag ? `${data.ag.tournaments.name} — Overview` : 'Tournament Overview'
+  const seoDesc = data?.ag
+    ? `Live overview of ${data.ag.tournaments.name} — scores, standings, and upcoming matches in one view.`
+    : 'Tournament overview with live scores, standings, and upcoming matches.'
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/overview` })
+
+  useEffect(() => {
+    async function load() {
+      const { data: ag, error: agErr } = await supabase
+        .from('age_groups')
+        .select('*, tournaments(id, name, slug, sport, location, start_date, end_date)')
+        .eq('id', ageGroupId)
+        .single()
+      if (agErr || !ag) { setLoadError('not_found'); setLoading(false); return }
+
+      const [{ data: siblings }, { data: teams }, { data: fixtures }] = await Promise.all([
+        supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
+        supabase.from('teams').select('id, name').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
+        supabase
+          .from('fixtures')
+          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, kickoff_time, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id)')
+          .eq('stages.age_group_id', ageGroupId)
+          .order('kickoff_time', { ascending: true, nullsFirst: false }),
+      ])
+
+      const fixtureIds = (fixtures ?? []).map(f => f.id)
+      const { data: results } = fixtureIds.length > 0
+        ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fixtureIds)
+        : { data: [] }
+
+      setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
+      setLoading(false)
+    }
+    load()
+
+    const channel = supabase
+      .channel(`overview-${ageGroupId}`)
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, load)
+      .subscribe()
+    const poll = setInterval(load, 30000)
+    return () => { supabase.removeChannel(channel); clearInterval(poll) }
+  }, [ageGroupId])
+
+  if (loading) return <div className="loading">{t('common.loading')}</div>
+  if (loadError === 'not_found') return <Navigate to={`/t/${slug}`} replace />
+  if (!data?.ag) return <Navigate to={`/t/${slug}`} replace />
+
+  const { ag, siblings, teams, fixtures, results } = data
+  const tournament = ag.tournaments
+  const sport = tournament.sport ?? 'football'
+  const rugbyOpts = { rugbyPointsSystem: ag.rugby_points_system ?? '4_2_1' }
+
+  const now = new Date()
+  const resultMap = Object.fromEntries(results.map(r => [r.fixture_id, r]))
+  const hasResults = results.length > 0
+  const firstKickoff = fixtures
+    .filter(f => f.kickoff_time)
+    .reduce((min, f) => { const d = new Date(f.kickoff_time); return (!min || d < min) ? d : min }, null)
+  const cutoffReached = firstKickoff && (firstKickoff - now) < 24 * 60 * 60 * 1000
+  const tournamentEndDate = tournament.end_date ? new Date(tournament.end_date) : null
+  const tournamentFinished = tournamentEndDate && now > tournamentEndDate
+  const confirmedCount = teams.length
+  const isFull = ag.max_teams && confirmedCount >= ag.max_teams
+  const isRegOpen = ag.registration_open && !isFull && !cutoffReached && !hasResults && !tournamentFinished
+
+  // Progress
+  const playableFixtures = fixtures.filter(f => f.home_team?.id && f.away_team?.id)
+  const completedFixtures = playableFixtures.filter(f => f.status === 'completed')
+  const totalCount = playableFixtures.length
+  const doneCount = completedFixtures.length
+  const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
+
+  // Live, upcoming, latest results
+  const liveMatches = playableFixtures.filter(f => f.status === 'live')
+  const latestResults = [...completedFixtures]
+    .sort((a, b) => {
+      if (!a.kickoff_time && !b.kickoff_time) return 0
+      if (!a.kickoff_time) return 1; if (!b.kickoff_time) return -1
+      return new Date(b.kickoff_time) - new Date(a.kickoff_time)
+    })
+    .slice(0, 5)
+  const upcomingMatches = playableFixtures
+    .filter(f => f.status !== 'completed' && f.status !== 'live')
+    .filter(f => !f.kickoff_time || new Date(f.kickoff_time) >= now)
+    .slice(0, 5)
+
+  // Group standings
+  const groupFixtures = fixtures.filter(f => f.group_label)
+  const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
+  const allStandings = calculateStandings(teams, fixtures, results, sport, rugbyOpts)
+
+  function groupStandings(label) {
+    const gTeamIds = new Set(
+      fixtures.filter(f => f.group_label === label).flatMap(f => [f.home_team_id, f.away_team_id].filter(Boolean))
+    )
+    return allStandings.filter(r => gTeamIds.has(r.teamId))
+  }
+
+  // Final result (last knockout fixture)
+  const knockoutFixtures = fixtures.filter(f => !f.group_label && f.home_team?.id && f.away_team?.id)
+  const finalFixture = knockoutFixtures.find(f => f.round_name === 'Final') ??
+    (knockoutFixtures.length > 0 ? knockoutFixtures[knockoutFixtures.length - 1] : null)
+  let winner = null, runnerUp = null
+  if (tournamentFinished && finalFixture?.status === 'completed') {
+    const r = resultMap[finalFixture.id]
+    if (r) {
+      const homeWon = r.home_goals > r.away_goals
+      winner = homeWon ? finalFixture.home_team : finalFixture.away_team
+      runnerUp = homeWon ? finalFixture.away_team : finalFixture.home_team
+    }
+  }
+
+  const scoreStr = (fixtureId) => {
+    const r = resultMap[fixtureId]
+    return r ? `${r.home_goals} – ${r.away_goals}` : '– – –'
+  }
+
+  const matchRowStyle = {
+    display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+    gap: '0.5rem', padding: '0.5rem 0.75rem',
+    borderBottom: '1px solid var(--color-border)',
+    fontSize: '0.85rem',
+  }
+  const teamNameStyle = { flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }
+
+  return (
+    <div>
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
+      <div className="container" style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
+
+        {/* Registration CTA */}
+        {isRegOpen && (
+          <Link
+            to={`/t/${slug}/register`}
+            style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              gap: '1rem', flexWrap: 'wrap', textDecoration: 'none',
+              background: 'rgba(240,165,0,0.08)',
+              border: '1px solid rgba(240,165,0,0.3)',
+              borderRadius: '10px', padding: '1rem 1.25rem',
+              marginBottom: '1.5rem',
+            }}
+          >
+            <div>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-accent)', marginBottom: '0.2rem' }}>
+                {t('overview.regOpen')}
+              </div>
+              <div style={{ fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                {t('overview.regOpenHint')}
+              </div>
+            </div>
+            <span style={{
+              flexShrink: 0, padding: '0.5rem 1.25rem',
+              background: 'var(--color-accent)', color: '#0a1628',
+              borderRadius: '6px', fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.9rem',
+            }}>
+              {t('overview.regBtn')}
+            </span>
+          </Link>
+        )}
+
+        {/* Header */}
+        {tournament.location && (
+          <p style={{ margin: '0 0 0.35rem', fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
+            📍 {tournament.location}
+          </p>
+        )}
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: '0 0 1.5rem' }}>
+          {tournament.name} — {ag.name}
+        </h1>
+
+        {/* Final standings (when tournament is over) */}
+        {tournamentFinished && (winner || allStandings.length > 0) && (
+          <div
+            className="card"
+            style={{ marginBottom: '1.75rem', background: 'linear-gradient(135deg, rgba(240,165,0,0.07) 0%, rgba(240,165,0,0.02) 100%)', borderColor: 'rgba(240,165,0,0.22)' }}
+          >
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.875rem' }}>
+              {t('overview.finalStandings')}
+            </div>
+            {winner && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', marginBottom: '0.75rem' }}>
+                {[{ medal: '🥇', team: winner }, { medal: '🥈', team: runnerUp }].filter(x => x.team).map(({ medal, team }) => (
+                  <div key={team.id} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '1.05rem', fontWeight: 600 }}>
+                    <span>{medal}</span>
+                    <span>{team.name}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            {!winner && allStandings.length > 0 && (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
+                {allStandings.slice(0, 3).map((row, i) => (
+                  <div key={row.teamId} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.95rem', fontWeight: i === 0 ? 700 : 400 }}>
+                    <span>{['🥇','🥈','🥉'][i]}</span>
+                    <span>{row.teamName}</span>
+                    <span style={{ marginLeft: 'auto', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)' }}>{row.points} pts</span>
+                  </div>
+                ))}
+              </div>
+            )}
+            <div style={{ marginTop: '0.75rem' }}>
+              <Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>
+                {t('overview.fullStandingsLink')} →
+              </Link>
+            </div>
+          </div>
+        )}
+
+        {/* Progress bar */}
+        {totalCount > 0 && (
+          <div className="card" style={{ marginBottom: '1.5rem', padding: '1rem 1.25rem' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem', fontSize: '0.85rem' }}>
+              <span style={{ color: 'var(--color-text-muted)' }}>
+                {t('overview.matchesPlayed', { done: doneCount, total: totalCount })}
+              </span>
+              <span style={{ fontFamily: 'var(--font-heading)', color: doneCount === totalCount ? 'var(--color-success)' : 'var(--color-accent)' }}>
+                {progressPct}%
+              </span>
+            </div>
+            <div style={{ height: '6px', background: 'var(--color-border)', borderRadius: '3px', overflow: 'hidden' }}>
+              <div style={{
+                width: `${progressPct}%`, height: '100%',
+                background: doneCount === totalCount ? 'var(--color-success)' : 'var(--color-accent)',
+                borderRadius: '3px', transition: 'width 0.4s ease',
+              }} />
+            </div>
+          </div>
+        )}
+
+        {/* Live matches */}
+        {liveMatches.length > 0 && (
+          <div className="card" style={{ marginBottom: '1.5rem', borderColor: 'var(--color-live)' }}>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-live)', marginBottom: '0.625rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+              <span style={{ width: '7px', height: '7px', borderRadius: '50%', background: 'var(--color-live)', display: 'inline-block', animation: 'live-dot-pulse 2s ease-in-out infinite' }} />
+              {t('standings.live')}
+            </div>
+            {liveMatches.map(f => (
+              <div key={f.id} style={matchRowStyle}>
+                <span style={teamNameStyle}>{f.home_team.name}</span>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-live)', flexShrink: 0 }}>{scoreStr(f.id)}</span>
+                <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* Latest results + Up next */}
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+          <style>{`@media (min-width: 640px) { .ovw-cols { grid-template-columns: 1fr 1fr !important; } }`}</style>
+          <div className="ovw-cols" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
+
+            {/* Latest results */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--color-border)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+                {t('overview.latestResults')}
+              </div>
+              {latestResults.length === 0 ? (
+                <div style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                  {t('overview.noResultsYet')}
+                </div>
+              ) : (
+                latestResults.map(f => (
+                  <div key={f.id} style={matchRowStyle}>
+                    <span style={teamNameStyle}>{f.home_team.name}</span>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', color: 'var(--color-text)', flexShrink: 0 }}>{scoreStr(f.id)}</span>
+                    <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+                  </div>
+                ))
+              )}
+              {doneCount > 5 && (
+                <Link to={`/t/${slug}/${ageGroupId}/fixtures`} style={{ display: 'block', padding: '0.5rem 0.75rem', fontSize: '0.78rem', color: 'var(--color-accent)', textDecoration: 'none', borderTop: '1px solid var(--color-border)' }}>
+                  {t('overview.allResults')} →
+                </Link>
+              )}
+            </div>
+
+            {/* Up next */}
+            <div className="card" style={{ padding: 0, overflow: 'hidden' }}>
+              <div style={{ padding: '0.75rem 1rem', borderBottom: '1px solid var(--color-border)', fontFamily: 'var(--font-heading)', fontSize: '0.8rem', letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--color-text-muted)' }}>
+                {t('overview.upNext')}
+              </div>
+              {upcomingMatches.length === 0 ? (
+                <div style={{ padding: '1rem', fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>
+                  {doneCount === totalCount && totalCount > 0 ? t('overview.allDone') : t('overview.noUpcoming')}
+                </div>
+              ) : (
+                upcomingMatches.map(f => (
+                  <div key={f.id} style={matchRowStyle}>
+                    <span style={teamNameStyle}>{f.home_team.name}</span>
+                    <span style={{ flexShrink: 0, textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.75rem', minWidth: '56px' }}>
+                      {f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : 'vs'}
+                    </span>
+                    <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+                  </div>
+                ))
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Group standings (condensed) */}
+        {groupLabels.length > 0 && (
+          <div style={{ marginBottom: '1.5rem' }}>
+            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-text-muted)', marginBottom: '0.75rem' }}>
+              {t('overview.groupStandings')}
+            </div>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '0.75rem' }}>
+              {groupLabels.map(label => {
+                const rows = groupStandings(label)
+                return (
+                  <div key={label} className="card" style={{ padding: 0, overflow: 'hidden' }}>
+                    <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--color-border)', fontFamily: 'var(--font-heading)', fontSize: '0.82rem', color: 'var(--color-accent)' }}>
+                      {t('standings.group')} {label}
+                    </div>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+                      <thead>
+                        <tr style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem' }}>
+                          <th style={{ padding: '0.3rem 0.75rem', textAlign: 'left', fontWeight: 500 }}>#</th>
+                          <th style={{ padding: '0.3rem 0.5rem', textAlign: 'left', fontWeight: 500 }}>{t('standings.team')}</th>
+                          <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>P</th>
+                          <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>W</th>
+                          <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>L</th>
+                          <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.pts')}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {rows.map((row, i) => (
+                          <tr key={row.teamId} style={{ borderTop: '1px solid var(--color-border)' }}>
+                            <td style={{ padding: '0.4rem 0.75rem', color: 'var(--color-text-muted)' }}>{i + 1}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.teamName}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
+                            <td style={{ padding: '0.4rem 0.75rem', textAlign: 'center', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{row.points}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
+
+        {/* No groups — full standings (condensed) */}
+        {groupLabels.length === 0 && allStandings.length > 0 && (
+          <div className="card" style={{ marginBottom: '1.5rem', padding: 0, overflow: 'hidden' }}>
+            <div style={{ padding: '0.5rem 0.75rem', borderBottom: '1px solid var(--color-border)', fontFamily: 'var(--font-heading)', fontSize: '0.82rem', color: 'var(--color-accent)' }}>
+              {t('standings.title')}
+            </div>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.82rem' }}>
+              <thead>
+                <tr style={{ color: 'var(--color-text-muted)', fontSize: '0.72rem' }}>
+                  <th style={{ padding: '0.3rem 0.75rem', textAlign: 'left', fontWeight: 500 }}>#</th>
+                  <th style={{ padding: '0.3rem 0.5rem', textAlign: 'left', fontWeight: 500 }}>{t('standings.team')}</th>
+                  <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>P</th>
+                  <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>W</th>
+                  <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>L</th>
+                  <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.pts')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {allStandings.map((row, i) => (
+                  <tr key={row.teamId} style={{ borderTop: '1px solid var(--color-border)' }}>
+                    <td style={{ padding: '0.4rem 0.75rem', color: 'var(--color-text-muted)' }}>{i + 1}</td>
+                    <td style={{ padding: '0.4rem 0.5rem' }}>{row.teamName}</td>
+                    <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
+                    <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
+                    <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
+                    <td style={{ padding: '0.4rem 0.75rem', textAlign: 'center', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{row.points}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        )}
+
+        {/* Quick links */}
+        <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+          <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm">{t('nav.standings')} →</Link>
+          <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">{t('nav.schedule')} →</Link>
+        </div>
+
+      </div>
+    </div>
+  )
+}

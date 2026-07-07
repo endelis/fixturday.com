@@ -23,6 +23,7 @@
     "guide": "Guide",
     "schedule": "Schedule",
     "standings": "Standings",
+    "overview": "Overview",
     "info": "Info",
     "register": "Register",
     "openMenu": "Open menu",
@@ -974,6 +975,21 @@
     "lbRound": "LB R{{n}}",
     "notGenerated": "Bracket not yet generated.",
     "pending": "Pending"
+  },
+  "overview": {
+    "regOpen": "Registration is open",
+    "regOpenHint": "Spots available — sign up your team now",
+    "regBtn": "Register →",
+    "finalStandings": "Final Standings",
+    "fullStandingsLink": "Full standings",
+    "matchesPlayed": "{{done}} of {{total}} matches played",
+    "latestResults": "Latest Results",
+    "upNext": "Up Next",
+    "noResultsYet": "No results yet",
+    "noUpcoming": "No upcoming matches",
+    "allDone": "All matches complete",
+    "allResults": "All results",
+    "groupStandings": "Group Standings"
   },
   "notFound": {
     "title": "Page not found",
