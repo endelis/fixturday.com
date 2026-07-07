@@ -10,10 +10,19 @@ export default function TournamentOverview() {
   const [stats, setStats] = useState(null)
   const [ageGroups, setAgeGroups] = useState([])
   const [loading, setLoading] = useState(true)
+  const [copied, setCopied] = useState(false)
 
   const publicUrl = tournament.slug
     ? `https://www.fixturday.com/t/${tournament.slug}`
     : null
+
+  function copyLink() {
+    if (!publicUrl) return
+    navigator.clipboard.writeText(publicUrl).then(() => {
+      setCopied(true)
+      setTimeout(() => setCopied(false), 2000)
+    })
+  }
 
   function printQR() {
     if (!publicUrl) return
@@ -140,6 +149,9 @@ export default function TournamentOverview() {
               <a href={publicUrl} target="_blank" rel="noreferrer" className="btn-secondary btn-sm">
                 {t('workspace.openPublicPage')} ↗
               </a>
+              <button type="button" className="btn-secondary btn-sm" onClick={copyLink} style={{ minWidth: '6rem' }}>
+                {copied ? `✓ ${t('workspace.copied')}` : `⎘ ${t('workspace.copyLink')}`}
+              </button>
               <button type="button" className="btn-primary btn-sm" onClick={printQR}>
                 🖨 {t('workspace.printQR')}
               </button>

@@ -155,9 +155,16 @@ export default function Print() {
           ? (await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals').in('fixture_id', fixtureIds)).data ?? []
           : []
 
-        const standingsRows = calculateStandings(teams ?? [], fxList, allResults)
+        // Merge results into fixture list — the embedded join can return empty due to RLS
+        const resultMap = Object.fromEntries(allResults.map(r => [r.fixture_id, r]))
+        const fxWithResults = fxList.map(f => ({
+          ...f,
+          fixture_results: resultMap[f.id] ? [resultMap[f.id]] : (f.fixture_results ?? []),
+        }))
 
-        return { ag, fixtures: fxList, standings: standingsRows }
+        const standingsRows = calculateStandings(teams ?? [], fxWithResults, allResults)
+
+        return { ag, fixtures: fxWithResults, standings: standingsRows }
       }))
 
       setAgeGroupData(results)

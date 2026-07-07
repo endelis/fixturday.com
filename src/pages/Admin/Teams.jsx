@@ -10,6 +10,24 @@ import TeamLogoUpload from '../../components/admin/TeamLogoUpload'
 
 const STATUS_BADGES = { pending: 'badge-warning', confirmed: 'badge-success', rejected: 'badge-danger' }
 
+const editInputStyle = {
+  width: '100%',
+  background: 'var(--color-surface-2)',
+  border: '1px solid var(--color-border)',
+  color: 'var(--color-text)',
+  padding: '0.4rem 0.75rem',
+  borderRadius: 'var(--radius-sm)',
+  fontSize: '0.875rem',
+}
+
+const editLabelStyle = {
+  fontSize: '0.72rem',
+  color: 'var(--color-text-muted)',
+  marginBottom: '0.2rem',
+  textTransform: 'uppercase',
+  letterSpacing: '0.05em',
+}
+
 export default function Teams() {
   const { ageGroupId } = useParams()
   const { t } = useTranslation()
@@ -21,6 +39,8 @@ export default function Teams() {
   const [expandedTeam, setExpandedTeam] = useState(null)
   const [loading, setLoading] = useState(true)
   const [metaDraft, setMetaDraft] = useState({ contact_name: '', country_code: 'LV' })
+  const [editingTeamId, setEditingTeamId] = useState(null)
+  const [editDraft, setEditDraft] = useState({})
   const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
   const watchedP1 = watch('player1_name', '')
   const watchedP2 = watch('player2_name', '')
@@ -134,6 +154,34 @@ export default function Teams() {
     if (error) { toast(t('admin.team.metaFailed'), 'error'); return }
     setTeams(prev => prev.map(tm => tm.id === teamId ? { ...tm, ...metaDraft } : tm))
     toast(t('admin.team.metaSaved'))
+  }
+
+  function startEdit(team) {
+    setEditingTeamId(team.id)
+    setEditDraft({
+      name: team.name ?? '',
+      club: team.club ?? '',
+      contact_name: team.contact_name ?? '',
+      contact_email: team.contact_email ?? '',
+      contact_phone: team.contact_phone ?? '',
+    })
+  }
+
+  async function saveEdit(teamId) {
+    const { error } = await supabase
+      .from('teams')
+      .update({
+        name: editDraft.name.trim() || null,
+        club: editDraft.club.trim() || null,
+        contact_name: editDraft.contact_name.trim() || null,
+        contact_email: editDraft.contact_email.trim() || null,
+        contact_phone: editDraft.contact_phone.trim() || null,
+      })
+      .eq('id', teamId)
+    if (error) { toast(t('common.error'), 'error'); return }
+    toast(t('common.saved'))
+    setEditingTeamId(null)
+    load()
   }
 
   async function bulkApprove() {
@@ -321,6 +369,12 @@ export default function Teams() {
                       {t('common.confirm')}
                     </button>
                   )}
+                  <button
+                    className="btn-secondary btn-sm"
+                    onClick={() => editingTeamId === team.id ? setEditingTeamId(null) : startEdit(team)}
+                  >
+                    {editingTeamId === team.id ? t('common.cancel') : t('common.edit')}
+                  </button>
                   {!isBeachVolleyball && (
                     <button className="btn-secondary btn-sm" onClick={() => toggleExpand(team.id)}>
                       {expandedTeam === team.id ? t('common.close') : t('team.players')}
@@ -329,6 +383,39 @@ export default function Teams() {
                   <button className="btn-danger btn-sm" onClick={() => deleteTeam(team.id)}>×</button>
                 </div>
               </div>
+
+              {editingTeamId === team.id && (
+                <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: '0.75rem', marginBottom: '0.75rem' }}>
+                    <div>
+                      <div style={editLabelStyle}>{t('team.name')}</div>
+                      <input value={editDraft.name} onChange={e => setEditDraft(p => ({ ...p, name: e.target.value }))} style={editInputStyle} />
+                    </div>
+                    {!isBeachVolleyball && (
+                      <div>
+                        <div style={editLabelStyle}>{t('team.club')}</div>
+                        <input value={editDraft.club} onChange={e => setEditDraft(p => ({ ...p, club: e.target.value }))} style={editInputStyle} />
+                      </div>
+                    )}
+                    <div>
+                      <div style={editLabelStyle}>{t('team.contactName')}</div>
+                      <input value={editDraft.contact_name} onChange={e => setEditDraft(p => ({ ...p, contact_name: e.target.value }))} style={editInputStyle} />
+                    </div>
+                    <div>
+                      <div style={editLabelStyle}>{t('team.contactEmail')}</div>
+                      <input type="email" value={editDraft.contact_email} onChange={e => setEditDraft(p => ({ ...p, contact_email: e.target.value }))} style={editInputStyle} />
+                    </div>
+                    <div>
+                      <div style={editLabelStyle}>{t('team.contactPhone')}</div>
+                      <input value={editDraft.contact_phone} onChange={e => setEditDraft(p => ({ ...p, contact_phone: e.target.value }))} style={editInputStyle} />
+                    </div>
+                  </div>
+                  <div style={{ display: 'flex', gap: '0.5rem' }}>
+                    <button className="btn-primary btn-sm" onClick={() => saveEdit(team.id)}>{t('common.save')}</button>
+                    <button className="btn-secondary btn-sm" onClick={() => setEditingTeamId(null)}>{t('common.cancel')}</button>
+                  </div>
+                </div>
+              )}
 
               {!isBeachVolleyball && expandedTeam === team.id && (
                 <div style={{ marginTop: '1rem', borderTop: '1px solid var(--color-border)', paddingTop: '1rem' }}>

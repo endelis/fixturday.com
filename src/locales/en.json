@@ -513,6 +513,8 @@
     "setupGuideBtn": "Open guide",
     "heroLabel": "Public page",
     "openPublicPage": "Open public page",
+    "copyLink": "Copy link",
+    "copied": "Copied!",
     "printQR": "Print QR for venue",
     "qrHint": "Scan to see live standings & schedule"
   },
