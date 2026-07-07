@@ -53,7 +53,8 @@ export default function Standings() {
       },
     ],
   } : null
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}`, schema: seoSchema })
+  const ogImage = `https://www.fixturday.com/api/og?slug=${encodeURIComponent(slug)}&ag=${encodeURIComponent(ageGroupId)}&type=standings`
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}`, image: ogImage, schema: seoSchema })
 
   function handleFilterChange(id) {
     setSearchParams(prev => {

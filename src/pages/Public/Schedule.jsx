@@ -45,7 +45,8 @@ export default function Schedule() {
       },
     ],
   } : null
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/fixtures`, schema: seoSchema })
+  const ogImage = `https://www.fixturday.com/api/og?slug=${encodeURIComponent(slug)}&ag=${encodeURIComponent(ageGroupId)}&type=schedule`
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/fixtures`, image: ogImage, schema: seoSchema })
 
   useEffect(() => {
     async function load() {
