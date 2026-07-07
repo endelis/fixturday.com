@@ -19,7 +19,8 @@ export default function TournamentOverviewPublic() {
   const seoDesc = data?.ag
     ? `Live overview of ${data.ag.tournaments.name} — scores, standings, and upcoming matches in one view.`
     : 'Tournament overview with live scores, standings, and upcoming matches.'
-  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/overview` })
+  const ogImage = `https://www.fixturday.com/api/og?slug=${encodeURIComponent(slug)}&ag=${encodeURIComponent(ageGroupId)}`
+  useSEO({ title: seoTitle, description: seoDesc, path: `/t/${slug}/${ageGroupId}/overview`, image: ogImage })
 
   useEffect(() => {
     async function load() {
