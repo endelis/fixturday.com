@@ -165,6 +165,7 @@ export default function Schedule() {
 
     const homeWon = result && displayHome > displayAway
     const awayWon = result && displayAway > displayHome
+    const showEst = isBvb && !isCompleted && !isLive && !!time
 
     const homeName = f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder_label ?? '?')
     const awayName = f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder_label ?? '?')
@@ -194,6 +195,19 @@ export default function Schedule() {
         }}>
           {/* Time + court stacked */}
           <div style={{ width: 56, flexShrink: 0 }}>
+            {showEst && (
+              <div style={{
+                fontSize: '0.55rem',
+                fontWeight: 700,
+                letterSpacing: '0.07em',
+                textTransform: 'uppercase',
+                color: 'rgba(240,165,0,0.55)',
+                lineHeight: 1,
+                marginBottom: 2,
+              }}>
+                {t('schedule.est')}
+              </div>
+            )}
             <div style={{
               fontSize: '0.82rem',
               fontVariantNumeric: 'tabular-nums',

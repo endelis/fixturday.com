@@ -468,7 +468,8 @@
     "filterLive": "Live",
     "filterUpcoming": "Upcoming",
     "filterDone": "Done",
-    "ft": "FT"
+    "ft": "FT",
+    "est": "Est."
   },
   "dashboard": {
     "loadError": "Error loading tournaments",
