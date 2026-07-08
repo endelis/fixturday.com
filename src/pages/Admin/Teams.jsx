@@ -49,7 +49,7 @@ export default function Teams() {
   async function load() {
     const [{ data: ag, error: agErr }, { data: t_, error: tErr }] = await Promise.all([
       supabase.from('age_groups').select('*, tournaments(id, name, sport)').eq('id', ageGroupId).single(),
-      supabase.from('teams').select('*').eq('age_group_id', ageGroupId).order('name'),
+      supabase.from('teams').select('*').eq('age_group_id', ageGroupId).order('created_at'),
     ])
     if (agErr || tErr) { toast(t('common.error'), 'error'); setLoading(false); return }
     setAgeGroup(ag)
@@ -338,11 +338,12 @@ export default function Teams() {
         )}
 
         <div style={{ display: 'grid', gap: '0.75rem' }}>
-          {teams.map(team => (
+          {teams.map((team, idx) => (
             <div key={team.id} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
                   <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0 0.75rem' }}>
+                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.85rem', color: 'var(--color-text-muted)', minWidth: '2rem' }}>#{idx + 1}</span>
                     <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem' }}>{team.name}</strong>
                     {team.club && (
                       <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{team.club}</span>
