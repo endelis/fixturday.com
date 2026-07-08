@@ -30,7 +30,9 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
   }, [tournament?.id])
 
   async function handleShare() {
-    const url = window.location.href
+    const url = tournament?.slug
+      ? `https://www.fixturday.com/t/${tournament.slug}`
+      : window.location.href
     const title = document.title
     if (navigator.share) {
       try { await navigator.share({ title, url }) } catch {}
