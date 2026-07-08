@@ -86,26 +86,6 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
 
           {tournament ? (
             <>
-              <span style={{ color: 'var(--color-border)', fontSize: '1.1rem', flexShrink: 0, lineHeight: 1 }}>›</span>
-              <Link
-                to={`/t/${tournament.slug}`}
-                style={{
-                  color: 'var(--color-text-muted)',
-                  fontSize: '0.875rem',
-                  overflow: 'hidden',
-                  textOverflow: 'ellipsis',
-                  whiteSpace: 'nowrap',
-                  maxWidth: '180px',
-                  textDecoration: 'none',
-                  transition: 'color var(--transition-fast)',
-                  fontWeight: 500,
-                }}
-                onMouseEnter={e => e.currentTarget.style.color = 'var(--color-text)'}
-                onMouseLeave={e => e.currentTarget.style.color = 'var(--color-text-muted)'}
-              >
-                {tournament.name}
-              </Link>
-
               {ageGroups.length > 1 && (
                 <div className="pub-nav-divisions-desktop" style={{
                   display: 'flex',
