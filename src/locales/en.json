@@ -354,6 +354,10 @@
     "pitchDeleted": "Pitch deleted",
     "confirmDeleteVenue": "Delete venue and all its pitches?",
     "scheduleByPitch": "Schedule by pitch",
+    "pitchSchedule": "Pitch schedule",
+    "fullOverview": "Full overview",
+    "hideSchedule": "Hide schedule",
+    "games": "games",
     "printSchedule": "Print",
     "noScheduledGames": "No scheduled games"
   },

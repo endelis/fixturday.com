@@ -1,5 +1,5 @@
-import { useEffect, useState } from 'react'
-import { useParams, Link, Navigate } from 'react-router-dom'
+import { useEffect, useRef, useState } from 'react'
+import { useParams, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
@@ -7,28 +7,180 @@ import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
+const PRINT_STYLES = `
+  @media print {
+    body.venue-print-mode * { visibility: hidden !important; }
+    body.venue-print-mode .print-active,
+    body.venue-print-mode .print-active * { visibility: visible !important; }
+    body.venue-print-mode .print-active {
+      position: absolute !important; left: 0; top: 0; width: 100%; padding: 1rem;
+    }
+    body.venue-print-mode .print-active .pitch-content { display: block !important; }
+    body.venue-print-mode .no-print { visibility: hidden !important; }
+  }
+`
+
+function triggerPrint(key) {
+  const el = document.querySelector(`[data-print="${key}"]`)
+  if (!el) return
+  el.classList.add('print-active')
+  document.body.classList.add('venue-print-mode')
+  window.print()
+  document.body.classList.remove('venue-print-mode')
+  el.classList.remove('print-active')
+}
+
+function FixtureRow({ fx }) {
+  const d = new Date(fx.kickoff_time)
+  const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+  const dateStr = format(d, 'dd.MM')
+  const division = fx.stage?.age_group?.name ?? ''
+  const home = fx.home_team?.name ?? fx.home_placeholder ?? '—'
+  const away = fx.away_team?.name ?? fx.away_placeholder ?? '—'
+  const label = fx.round_name ?? (fx.group_label ? `${fx.group_label} R${fx.round}` : `R${fx.round}`)
+  return (
+    <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
+      <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-accent)', fontWeight: 600, width: '3rem' }}>{timeStr}</td>
+      <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-text-muted)', width: '3.5rem' }}>{dateStr}</td>
+      <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', width: '4rem', fontSize: '0.78rem' }}>{division}</td>
+      <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', width: '5rem', fontSize: '0.78rem' }}>{label}</td>
+      <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{home}</td>
+      <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', textAlign: 'center', width: '1.5rem' }}>vs</td>
+      <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{away}</td>
+    </tr>
+  )
+}
+
+function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, t }) {
+  return (
+    <div
+      data-print={`pitch-${pitch.id}`}
+      style={{
+        marginBottom: '0.5rem', border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-sm)', overflow: 'hidden',
+        breakInside: 'avoid', pageBreakInside: 'avoid',
+      }}
+    >
+      <div
+        onClick={onToggle}
+        style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: '0.5rem 0.75rem', background: 'var(--color-surface-2)',
+          cursor: 'pointer', userSelect: 'none',
+        }}
+      >
+        <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '1rem' }}>
+          {pitch.name}
+        </span>
+        <div
+          style={{ display: 'flex', gap: '0.5rem', alignItems: 'center' }}
+          onClick={e => e.stopPropagation()}
+        >
+          <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>
+            {fixtures.length} {t('venue.games')}
+          </span>
+          <button className="btn-secondary btn-sm no-print" onClick={onPrint} title={t('venue.printSchedule')}>
+            🖨
+          </button>
+          <span className="no-print" style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem', width: '1rem', textAlign: 'center' }}>
+            {expanded ? '▲' : '▼'}
+          </span>
+        </div>
+      </div>
+      <div className="pitch-content" style={{ display: expanded ? 'block' : 'none' }}>
+        {fixtures.length === 0 ? (
+          <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', padding: '0.5rem 0.75rem' }}>
+            {t('venue.noScheduledGames')}
+          </p>
+        ) : (
+          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+            <tbody>
+              {fixtures.map(fx => <FixtureRow key={fx.id} fx={fx} />)}
+            </tbody>
+          </table>
+        )}
+      </div>
+    </div>
+  )
+}
+
+function SchedulePanel({ title, pitchGroups, scheduleByPitch, loading, pitchExpanded, togglePitch, printKey, onPrint, onClose, onPrintPitch, t }) {
+  return (
+    <div className="card" data-print={printKey} style={{ marginBottom: '1rem' }}>
+      <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+        <span style={{
+          fontFamily: 'var(--font-heading)', fontSize: '1rem',
+          textTransform: 'uppercase', letterSpacing: '0.06em', color: 'var(--color-text-muted)',
+        }}>
+          {title}
+        </span>
+        <div style={{ display: 'flex', gap: '0.5rem' }}>
+          <button className="btn-secondary btn-sm" onClick={onPrint}>
+            🖨 {t('venue.printSchedule')}
+          </button>
+          <button className="btn-secondary btn-sm" onClick={onClose}>
+            {t('common.close')}
+          </button>
+        </div>
+      </div>
+
+      {loading ? (
+        <div style={{ color: 'var(--color-text-muted)', padding: '1rem 0' }}>{t('common.loading')}</div>
+      ) : (
+        pitchGroups.map(({ venueLabel, pitches }) => (
+          <div key={venueLabel ?? '__default'}>
+            {venueLabel && (
+              <div style={{
+                fontFamily: 'var(--font-heading)', fontSize: '0.8rem', textTransform: 'uppercase',
+                letterSpacing: '0.08em', color: 'var(--color-accent)',
+                marginTop: '1rem', marginBottom: '0.5rem',
+                paddingBottom: '0.25rem', borderBottom: '1px solid var(--color-accent)',
+              }}>
+                {venueLabel}
+              </div>
+            )}
+            {pitches.map(pitch => (
+              <PitchAccordion
+                key={pitch.id}
+                pitch={pitch}
+                fixtures={scheduleByPitch[pitch.id] ?? []}
+                expanded={!!pitchExpanded[pitch.id]}
+                onToggle={() => togglePitch(pitch.id)}
+                onPrint={() => onPrintPitch(pitch.id)}
+                t={t}
+              />
+            ))}
+          </div>
+        ))
+      )}
+    </div>
+  )
+}
+
 export default function Venues() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
-  const [tournament, setTournament] = useState(null)
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
   const [showVenueForm, setShowVenueForm] = useState(false)
   const [pitchForms, setPitchForms] = useState({})
-  const [showSchedule, setShowSchedule] = useState(false)
+  const [venueScheduleOpen, setVenueScheduleOpen] = useState({})
+  const [pitchExpanded, setPitchExpanded] = useState({})
+  const [showFullOverview, setShowFullOverview] = useState(false)
   const [scheduleByPitch, setScheduleByPitch] = useState({})
-  const [scheduleLoading, setScheduleLoading] = useState(false)
+  const [scheduleLoading, setScheduleLoading] = useState({})
+  const loadedPitchIds = useRef(new Set())
   const venueForm = useForm()
   const pitchForm = useForm()
 
   async function load() {
-    const [{ data: t_, error: tErr }, { data: v, error: vErr }] = await Promise.all([
-      supabase.from('tournaments').select('*').eq('id', tournamentId).single(),
-      supabase.from('venues').select('*, pitches(*)').eq('tournament_id', tournamentId).order('name'),
-    ])
-    if (tErr || vErr) { toast(t('common.error'), 'error'); setLoading(false); return }
-    setTournament(t_)
+    const { data: v, error: vErr } = await supabase
+      .from('venues')
+      .select('*, pitches(*)')
+      .eq('tournament_id', tournamentId)
+      .order('name')
+    if (vErr) { toast(t('common.error'), 'error'); setLoading(false); return }
     setVenues(v ?? [])
     setLoading(false)
   }
@@ -37,6 +189,56 @@ export default function Venues() {
     if (authLoading || !user) return
     load()
   }, [tournamentId, authLoading, user])
+
+  async function fetchSchedule(pitchIds, loadingKey) {
+    const missing = pitchIds.filter(id => !loadedPitchIds.current.has(id))
+    if (missing.length === 0) return
+    setScheduleLoading(prev => ({ ...prev, [loadingKey]: true }))
+    const { data: fx, error } = await supabase
+      .from('fixtures')
+      .select('id, kickoff_time, round, round_name, group_label, home_placeholder, away_placeholder, pitch_id, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), stage:stages(type, age_group:age_groups(name))')
+      .in('pitch_id', missing)
+      .not('kickoff_time', 'is', null)
+      .order('kickoff_time')
+    if (error) { toast(t('common.error'), 'error'); setScheduleLoading(prev => ({ ...prev, [loadingKey]: false })); return }
+    const grouped = {}
+    for (const id of missing) { grouped[id] = []; loadedPitchIds.current.add(id) }
+    for (const f of fx ?? []) {
+      if (!grouped[f.pitch_id]) grouped[f.pitch_id] = []
+      grouped[f.pitch_id].push(f)
+    }
+    setScheduleByPitch(prev => ({ ...prev, ...grouped }))
+    setScheduleLoading(prev => ({ ...prev, [loadingKey]: false }))
+  }
+
+  async function toggleVenueSchedule(venue) {
+    const isOpen = !!venueScheduleOpen[venue.id]
+    setVenueScheduleOpen(prev => ({ ...prev, [venue.id]: !isOpen }))
+    if (isOpen) return
+    const pitches = venue.pitches ?? []
+    if (pitches.length > 0) setPitchExpanded(prev => ({ ...prev, [pitches[0].id]: true }))
+    await fetchSchedule(pitches.map(p => p.id), venue.id)
+  }
+
+  async function toggleFullOverview() {
+    if (showFullOverview) { setShowFullOverview(false); return }
+    setShowFullOverview(true)
+    const allPitchIds = venues.flatMap(v => (v.pitches ?? []).map(p => p.id))
+    await fetchSchedule(allPitchIds, 'overview')
+  }
+
+  function togglePitch(pitchId) {
+    setPitchExpanded(prev => ({ ...prev, [pitchId]: !prev[pitchId] }))
+  }
+
+  function printPitch(pitchId) {
+    if (!pitchExpanded[pitchId]) {
+      setPitchExpanded(prev => ({ ...prev, [pitchId]: true }))
+      requestAnimationFrame(() => requestAnimationFrame(() => triggerPrint(`pitch-${pitchId}`)))
+    } else {
+      triggerPrint(`pitch-${pitchId}`)
+    }
+  }
 
   async function addVenue(values) {
     const { error } = await supabase.from('venues').insert({ ...values, tournament_id: tournamentId })
@@ -72,39 +274,19 @@ export default function Venues() {
     load()
   }
 
-  async function openSchedule() {
-    setScheduleLoading(true)
-    setShowSchedule(true)
-    const allPitchIds = venues.flatMap(v => (v.pitches ?? []).map(p => p.id))
-    if (allPitchIds.length === 0) { setScheduleLoading(false); return }
-    const { data: fx, error: fxErr } = await supabase
-      .from('fixtures')
-      .select('id, kickoff_time, round, round_name, group_label, home_placeholder, away_placeholder, pitch_id, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), stage:stages(type, age_group:age_groups(name))')
-      .in('pitch_id', allPitchIds)
-      .not('kickoff_time', 'is', null)
-      .order('kickoff_time')
-    if (fxErr) { toast(t('common.error'), 'error'); setScheduleLoading(false); return }
-    const grouped = {}
-    for (const f of fx ?? []) {
-      if (!grouped[f.pitch_id]) grouped[f.pitch_id] = []
-      grouped[f.pitch_id].push(f)
-    }
-    setScheduleByPitch(grouped)
-    setScheduleLoading(false)
-  }
-
   if (authLoading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
   return (
     <div>
+      <style>{PRINT_STYLES}</style>
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('venue.title')}</h1>
           <div style={{ display: 'flex', gap: '0.5rem' }}>
-            <button className="btn-secondary" onClick={showSchedule ? () => setShowSchedule(false) : openSchedule}>
-              {showSchedule ? t('common.close') : t('venue.scheduleByPitch')}
+            <button className="btn-secondary" onClick={toggleFullOverview}>
+              {showFullOverview ? t('common.close') : t('venue.fullOverview')}
             </button>
             {!showVenueForm && (
               <button className="btn-primary" onClick={() => setShowVenueForm(true)}>
@@ -143,138 +325,123 @@ export default function Venues() {
           </div>
         )}
 
+        {showFullOverview && (
+          <SchedulePanel
+            title={t('venue.fullOverview')}
+            pitchGroups={venues.map(v => ({ venueLabel: v.name, pitches: v.pitches ?? [] }))}
+            scheduleByPitch={scheduleByPitch}
+            loading={!!scheduleLoading['overview']}
+            pitchExpanded={pitchExpanded}
+            togglePitch={togglePitch}
+            printKey="overview"
+            onPrint={() => triggerPrint('overview')}
+            onClose={() => setShowFullOverview(false)}
+            onPrintPitch={printPitch}
+            t={t}
+          />
+        )}
+
         {venues.length === 0 && !showVenueForm && (
           <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
         )}
 
-        {showSchedule && (
-          <div className="pitch-schedule-panel" style={{ marginBottom: '2rem' }}>
-            <style>{`
-              @media print {
-                body * { visibility: hidden; }
-                .pitch-schedule-panel, .pitch-schedule-panel * { visibility: visible; }
-                .pitch-schedule-panel { position: absolute; left: 0; top: 0; width: 100%; padding: 1rem; }
-                .pitch-schedule-no-print { display: none !important; }
-              }
-            `}</style>
-            <div className="pitch-schedule-no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
-                {t('venue.scheduleByPitch')}
-              </span>
-              <button className="btn-secondary btn-sm" onClick={() => window.print()}>
-                🖨 {t('venue.printSchedule')}
-              </button>
-            </div>
-            {scheduleLoading ? (
-              <div style={{ color: 'var(--color-text-muted)', padding: '1rem 0' }}>{t('common.loading')}</div>
-            ) : (
-              venues.flatMap(v => v.pitches ?? []).map(pitch => (
-                <div key={pitch.id} style={{ marginBottom: '1.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
-                  <div style={{
-                    fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 700,
-                    borderBottom: '2px solid var(--color-accent)', paddingBottom: '0.25rem', marginBottom: '0.5rem',
-                  }}>
-                    {pitch.name}
-                  </div>
-                  {(scheduleByPitch[pitch.id] ?? []).length === 0 ? (
-                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('venue.noScheduledGames')}</p>
-                  ) : (
-                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-                      <tbody>
-                        {(scheduleByPitch[pitch.id] ?? []).map(fx => {
-                          const d = new Date(fx.kickoff_time)
-                          const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
-                          const dateStr = format(d, 'dd.MM')
-                          const division = fx.stage?.age_group?.name ?? ''
-                          const home = fx.home_team?.name ?? fx.home_placeholder ?? '—'
-                          const away = fx.away_team?.name ?? fx.away_placeholder ?? '—'
-                          const label = fx.round_name ?? (fx.group_label ? `${fx.group_label} R${fx.round}` : `R${fx.round}`)
-                          return (
-                            <tr key={fx.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
-                              <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-accent)', fontWeight: 600, width: '3rem' }}>{timeStr}</td>
-                              <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-text-muted)', width: '3.5rem' }}>{dateStr}</td>
-                              <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', width: '4rem', fontSize: '0.78rem' }}>{division}</td>
-                              <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', width: '5rem', fontSize: '0.78rem' }}>{label}</td>
-                              <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{home}</td>
-                              <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', textAlign: 'center', width: '1.5rem' }}>vs</td>
-                              <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{away}</td>
-                            </tr>
-                          )
-                        })}
-                      </tbody>
-                    </table>
+        {venues.map(venue => (
+          <div key={venue.id}>
+            <div
+              className="card"
+              style={{
+                marginBottom: venueScheduleOpen[venue.id] ? 0 : '1rem',
+                ...(venueScheduleOpen[venue.id] ? { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, borderBottom: 'none' } : {}),
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+                <div>
+                  <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>{venue.name}</strong>
+                  {venue.address && (
+                    <span style={{ marginLeft: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
+                      {venue.address}
+                    </span>
                   )}
                 </div>
-              ))
-            )}
-          </div>
-        )}
-
-        {venues.map(venue => (
-          <div key={venue.id} className="card" style={{ marginBottom: '1rem' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
-              <div>
-                <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem' }}>{venue.name}</strong>
-                {venue.address && (
-                  <span style={{ marginLeft: '1rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>
-                    {venue.address}
-                  </span>
-                )}
+                <div style={{ display: 'flex', gap: '0.5rem' }}>
+                  <button
+                    className="btn-secondary btn-sm"
+                    onClick={() => setPitchForms(prev => ({ ...prev, [venue.id]: !prev[venue.id] }))}
+                  >
+                    + {t('venue.newPitch')}
+                  </button>
+                  <button className="btn-danger btn-sm" onClick={() => deleteVenue(venue.id)}>
+                    {t('common.delete')}
+                  </button>
+                </div>
               </div>
-              <div style={{ display: 'flex', gap: '0.5rem' }}>
-                <button
-                  className="btn-secondary btn-sm"
-                  onClick={() => setPitchForms(prev => ({ ...prev, [venue.id]: !prev[venue.id] }))}
+
+              {pitchForms[venue.id] && (
+                <form
+                  onSubmit={pitchForm.handleSubmit(v => addPitch(venue.id, v))}
+                  style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}
                 >
-                  + {t('venue.newPitch')}
-                </button>
-                <button className="btn-danger btn-sm" onClick={() => deleteVenue(venue.id)}>
-                  {t('common.delete')}
-                </button>
+                  <input
+                    {...pitchForm.register('name', { required: true })}
+                    placeholder={t('venue.pitchName')}
+                    style={{ flex: 1, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)' }}
+                  />
+                  <button type="submit" className="btn-primary btn-sm">{t('common.add')}</button>
+                  <button type="button" className="btn-secondary btn-sm" onClick={() => { setPitchForms(prev => ({ ...prev, [venue.id]: false })); pitchForm.reset() }}>
+                    {t('common.cancel')}
+                  </button>
+                </form>
+              )}
+
+              <div>
+                <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+                  {t('venue.pitches')}
+                </p>
+                <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
+                  {(venue.pitches ?? []).map(pitch => (
+                    <div key={pitch.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      background: 'var(--color-surface-2)', padding: '0.25rem 0.75rem',
+                      borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)',
+                    }}>
+                      <span>{pitch.name}</span>
+                      <button
+                        onClick={() => deletePitch(pitch.id)}
+                        style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: 0, lineHeight: 1, fontSize: '1rem' }}
+                        title={t('common.delete')}
+                      >×</button>
+                    </div>
+                  ))}
+                  {(venue.pitches ?? []).length === 0 && (
+                    <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('venue.noPitches')}</span>
+                  )}
+                </div>
               </div>
+
+              {(venue.pitches ?? []).length > 0 && (
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end' }}>
+                  <button className="btn-secondary btn-sm" onClick={() => toggleVenueSchedule(venue)}>
+                    {venueScheduleOpen[venue.id] ? t('venue.hideSchedule') : t('venue.pitchSchedule')}
+                  </button>
+                </div>
+              )}
             </div>
 
-            {pitchForms[venue.id] && (
-              <form
-                onSubmit={pitchForm.handleSubmit(v => addPitch(venue.id, v))}
-                style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}
-              >
-                <input
-                  {...pitchForm.register('name', { required: true })}
-                  placeholder={t('venue.pitchName')}
-                  style={{ flex: 1, background: 'var(--color-surface-2)', border: '1px solid var(--color-border)', color: 'var(--color-text)', padding: '0.4rem 0.75rem', borderRadius: 'var(--radius-sm)' }}
-                />
-                <button type="submit" className="btn-primary btn-sm">{t('common.add')}</button>
-                <button type="button" className="btn-secondary btn-sm" onClick={() => { setPitchForms(prev => ({ ...prev, [venue.id]: false })); pitchForm.reset() }}>
-                  {t('common.cancel')}
-                </button>
-              </form>
+            {venueScheduleOpen[venue.id] && (
+              <SchedulePanel
+                title={`${venue.name} — ${t('venue.pitchSchedule')}`}
+                pitchGroups={[{ venueLabel: null, pitches: venue.pitches ?? [] }]}
+                scheduleByPitch={scheduleByPitch}
+                loading={!!scheduleLoading[venue.id]}
+                pitchExpanded={pitchExpanded}
+                togglePitch={togglePitch}
+                printKey={`venue-${venue.id}`}
+                onPrint={() => triggerPrint(`venue-${venue.id}`)}
+                onClose={() => setVenueScheduleOpen(prev => ({ ...prev, [venue.id]: false }))}
+                onPrintPitch={printPitch}
+                t={t}
+              />
             )}
-
-            <div>
-              <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
-                {t('venue.pitches')}
-              </p>
-              <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap' }}>
-                {(venue.pitches ?? []).map(pitch => (
-                  <div key={pitch.id} style={{
-                    display: 'flex', alignItems: 'center', gap: '0.5rem',
-                    background: 'var(--color-surface-2)', padding: '0.25rem 0.75rem',
-                    borderRadius: 'var(--radius-sm)', border: '1px solid var(--color-border)',
-                  }}>
-                    <span>{pitch.name}</span>
-                    <button
-                      onClick={() => deletePitch(pitch.id)}
-                      style={{ background: 'none', border: 'none', color: 'var(--color-danger)', cursor: 'pointer', padding: 0, lineHeight: 1, fontSize: '1rem' }}
-                      title={t('common.delete')}
-                    >×</button>
-                  </div>
-                ))}
-                {(venue.pitches ?? []).length === 0 && (
-                  <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('venue.noPitches')}</span>
-                )}
-              </div>
-            </div>
           </div>
         ))}
       </div>
