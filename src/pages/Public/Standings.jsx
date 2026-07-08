@@ -332,15 +332,6 @@ export default function Standings() {
           </Link>
         )}
 
-        <div style={{ position: 'sticky', top: 0, background: 'var(--color-bg)', paddingTop: '0.5rem', paddingBottom: '0.5rem', marginBottom: '0.75rem', zIndex: 10 }}>
-          <ClassFilter
-            tournamentId={tournament.id}
-            value={selectedAgeGroupId ?? ageGroupId}
-            onChange={handleFilterChange}
-            showAll={false}
-          />
-        </div>
-
         {pitchEntries.length > 0 && (
           pitchEntries.every(e => !e.pitchName) ? (
             // No pitch assignments — show single next match (fallback)
