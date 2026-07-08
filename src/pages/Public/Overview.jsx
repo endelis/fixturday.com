@@ -252,16 +252,23 @@ export default function TournamentOverviewPublic() {
                 {tournament.sponsors_label}
               </div>
             )}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem', justifyContent: 'center', alignItems: 'center' }}>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem', justifyContent: 'center', alignItems: 'center', maxWidth: '720px', margin: '0 auto' }}>
               {tournament.sponsors.map((s, i) => {
                 const logoUrl = supabase.storage.from('tournament-logos').getPublicUrl(s.logo_path).data.publicUrl
-                return (
-                  <div key={i} style={{ background: 'rgba(255,255,255,0.97)', borderRadius: '8px', padding: '0.5rem 0.875rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
-                    <img src={logoUrl} alt={s.name || 'Sponsor'} style={{ height: '48px', maxWidth: '130px', objectFit: 'contain', display: 'block' }} />
+                const inner = (
+                  <div style={{ background: 'rgba(255,255,255,0.97)', borderRadius: '8px', padding: '0.5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', minWidth: '80px', maxWidth: '160px', transition: 'opacity 0.15s' }}>
+                    <img src={logoUrl} alt={s.name || 'Sponsor'} style={{ height: '52px', maxWidth: '130px', objectFit: 'contain', display: 'block' }} />
                     {s.name && (
-                      <div style={{ fontSize: '0.62rem', color: '#333', fontWeight: 600, marginTop: '0.1rem' }}>{s.name}</div>
+                      <div style={{ fontSize: '0.62rem', color: '#333', fontWeight: 600, marginTop: '0.1rem', textAlign: 'center', lineHeight: 1.3 }}>{s.name}</div>
                     )}
                   </div>
+                )
+                return s.website ? (
+                  <a key={i} href={s.website} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: 'block' }} onMouseEnter={e => e.currentTarget.querySelector('div').style.opacity = '0.8'} onMouseLeave={e => e.currentTarget.querySelector('div').style.opacity = '1'}>
+                    {inner}
+                  </a>
+                ) : (
+                  <div key={i}>{inner}</div>
                 )
               })}
             </div>

@@ -42,6 +42,7 @@ export default function TournamentEdit() {
   const [sponsorsLabel, setSponsorsLabel] = useState('')
   const [sponsorUploading, setSponsorUploading] = useState(false)
   const [newSponsorName, setNewSponsorName] = useState('')
+  const [newSponsorWebsite, setNewSponsorWebsite] = useState('')
   const sponsorFileRef = useRef(null)
   const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
 
@@ -131,11 +132,12 @@ export default function TournamentEdit() {
     const path = `sponsors/${id}/${Date.now()}.${ext}`
     const { error: upErr } = await supabase.storage.from('tournament-logos').upload(path, file)
     if (upErr) { toast(t('tournament.sponsorUploadError'), 'error'); setSponsorUploading(false); e.target.value = ''; return }
-    const newSponsors = [...sponsors, { logo_path: path, name: newSponsorName.trim() }]
+    const newSponsors = [...sponsors, { logo_path: path, name: newSponsorName.trim(), website: newSponsorWebsite.trim() }]
     const { error } = await supabase.from('tournaments').update({ sponsors: newSponsors }).eq('id', id)
     if (error) { toast(t('common.error'), 'error'); setSponsorUploading(false); return }
     setSponsors(newSponsors)
     setNewSponsorName('')
+    setNewSponsorWebsite('')
     setSponsorUploading(false)
     e.target.value = ''
     toast(t('common.saved'))
@@ -394,18 +396,23 @@ export default function TournamentEdit() {
           {sponsors.length > 0 && (
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
               {sponsors.map((s, i) => (
-                <div key={i} className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', padding: '0.75rem', minWidth: '90px', maxWidth: '140px' }}>
+                <div key={i} className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', padding: '0.75rem', minWidth: '90px', maxWidth: '160px' }}>
                   <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '6px', padding: '0.375rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
                     <img
                       src={supabase.storage.from('tournament-logos').getPublicUrl(s.logo_path).data.publicUrl}
                       alt={s.name || 'Sponsor'}
-                      style={{ maxHeight: '44px', maxWidth: '100px', objectFit: 'contain', display: 'block' }}
+                      style={{ maxHeight: '44px', maxWidth: '110px', objectFit: 'contain', display: 'block' }}
                     />
                   </div>
                   {s.name && (
                     <div style={{ fontSize: '0.72rem', textAlign: 'center', color: 'var(--color-text-muted)', lineHeight: 1.2 }}>
                       {s.name}
                     </div>
+                  )}
+                  {s.website && (
+                    <a href={s.website} target="_blank" rel="noreferrer" style={{ fontSize: '0.68rem', color: 'var(--color-accent)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '130px' }}>
+                      ↗ {s.website.replace(/^https?:\/\//, '')}
+                    </a>
                   )}
                   <button
                     type="button"
@@ -420,8 +427,8 @@ export default function TournamentEdit() {
           )}
 
           {/* Add new sponsor */}
-          <div style={{ display: 'flex', gap: '0.5rem', flexWrap: 'wrap', alignItems: 'flex-end' }}>
-            <div className="form-group" style={{ flex: 1, minWidth: '160px', margin: 0 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
+            <div className="form-group" style={{ margin: 0 }}>
               <label style={{ marginBottom: '0.3rem', display: 'block', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
                 {t('tournament.sponsorName')}
               </label>
@@ -431,6 +438,19 @@ export default function TournamentEdit() {
                 placeholder={t('tournament.sponsorNamePlaceholder')}
               />
             </div>
+            <div className="form-group" style={{ margin: 0 }}>
+              <label style={{ marginBottom: '0.3rem', display: 'block', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
+                {t('tournament.sponsorWebsite')}
+              </label>
+              <input
+                value={newSponsorWebsite}
+                onChange={e => setNewSponsorWebsite(e.target.value)}
+                placeholder="https://example.com"
+                type="url"
+              />
+            </div>
+          </div>
+          <div>
             <input ref={sponsorFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSponsorUpload} />
             <button
               type="button"
@@ -441,7 +461,7 @@ export default function TournamentEdit() {
                 border: '1px solid var(--color-accent)', color: 'var(--color-accent)',
                 background: 'none', borderRadius: '6px', padding: '0.5rem 1rem',
                 cursor: sponsorUploading ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem', fontWeight: 500, opacity: sponsorUploading ? 0.6 : 1, flexShrink: 0,
+                fontSize: '0.875rem', fontWeight: 500, opacity: sponsorUploading ? 0.6 : 1,
               }}
             >
               🖼 {sponsorUploading ? t('tournament.sponsorUploading') : t('tournament.addSponsor')}

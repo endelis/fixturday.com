@@ -51,6 +51,7 @@
     "addSponsor": "Upload logo",
     "sponsorName": "Sponsor name (optional)",
     "sponsorNamePlaceholder": "e.g. Acme Corp",
+    "sponsorWebsite": "Website (optional)",
     "sponsorUploading": "Uploading…",
     "sponsorDeleted": "Sponsor removed",
     "sponsorUploadError": "Upload failed",
