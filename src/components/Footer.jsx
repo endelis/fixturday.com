@@ -2,20 +2,20 @@ import { Link } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { Coffee } from 'lucide-react'
 
-export default function Footer() {
+export default function Footer({ slim = false }) {
   const { t } = useTranslation()
 
   return (
     <footer style={{
       background: 'var(--color-surface)',
       borderTop: '1px solid var(--color-border)',
-      padding: '2.5rem 1.5rem 1.75rem',
+      padding: slim ? '1.25rem 1.5rem' : '2.5rem 1.5rem 1.75rem',
       marginTop: 'auto',
     }}>
       <div style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
         {/* Row 1 — Logo + nav links */}
-        <div style={{
+        {!slim && <div style={{
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -49,10 +49,10 @@ export default function Footer() {
               </Link>
             ))}
           </div>
-        </div>
+        </div>}
 
         {/* Row 1b — Software landing pages */}
-        <div style={{
+        {!slim && <div style={{
           display: 'flex',
           alignItems: 'center',
           gap: '0.75rem',
@@ -80,7 +80,7 @@ export default function Footer() {
               {item.label}
             </Link>
           ))}
-        </div>
+        </div>}
 
         {/* Row 2 — Free + Support */}
         <div style={{

@@ -509,7 +509,7 @@ export default function TournamentOverviewPublic() {
         </div>
 
       </div>
-      <Footer />
+      <Footer slim />
     </div>
   )
 }

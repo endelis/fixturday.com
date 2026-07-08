@@ -571,7 +571,7 @@ export default function Schedule() {
           </div>
         ))}
       </div>
-      <Footer />
+      <Footer slim />
     </div>
   )
 }

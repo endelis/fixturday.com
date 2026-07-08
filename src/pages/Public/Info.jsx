@@ -178,7 +178,7 @@ export default function Info() {
         )}
 
       </div>
-      <Footer />
+      <Footer slim />
     </div>
   )
 }

@@ -614,7 +614,7 @@ export default function Standings() {
           </div>
         )}
       </div>
-      <Footer />
+      <Footer slim />
     </div>
   )
 }
