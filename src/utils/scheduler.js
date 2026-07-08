@@ -227,20 +227,35 @@ export function generateSchedule({
     return endTime;
   }
 
-  // --- PASS 1: Schedule group fixtures ---
+  // --- PASS 1: Schedule group fixtures (best-fit greedy) ---
+  // At each step pick whichever pending fixture can start earliest, so a team
+  // that played late in round N doesn't block pitches idle while other fixtures
+  // that involve fully-rested teams could run right now.
   let lastGroupEnd = firstMins;
+  const pending = [...groupFixtures];
 
-  for (const fixture of groupFixtures) {
-    const { id: fixtureId, homeTeamId, awayTeamId } = fixture;
-    const slot = findSlot(homeTeamId, awayTeamId, true);
+  while (pending.length > 0) {
+    // Scan all pending fixtures; pick the one with the earliest available kickoff.
+    let bestIdx = -1, bestSlot = null;
+    for (let i = 0; i < pending.length; i++) {
+      const f = pending[i];
+      const slot = findSlot(f.homeTeamId, f.awayTeamId, true);
+      if (slot && (bestSlot === null || slot.kickoff < bestSlot.kickoff)) {
+        bestSlot = slot;
+        bestIdx = i;
+      }
+    }
 
-    if (slot) {
-      const endTime = commitSlot(fixtureId, homeTeamId, awayTeamId, slot.pitch, slot.kickoff);
+    if (bestIdx !== -1) {
+      const f = pending.splice(bestIdx, 1)[0];
+      const endTime = commitSlot(f.id, f.homeTeamId, f.awayTeamId, bestSlot.pitch, bestSlot.kickoff);
       lastGroupEnd = Math.max(lastGroupEnd, endTime);
       continue;
     }
 
-    // Fallback: no slot respects team rest — pick the slot with most rest.
+    // Fallback: no pending fixture fits before lastGameTime — use best-rest for the first one.
+    const f = pending.shift();
+    const { id: fixtureId, homeTeamId, awayTeamId } = f;
     const homeLastEnd = homeTeamId != null ? (teamLastEnd[homeTeamId] ?? null) : null;
     const awayLastEnd = awayTeamId != null ? (teamLastEnd[awayTeamId] ?? null) : null;
     let fallbackPitch = null, fallbackKickoff = Infinity, bestRest = null;
