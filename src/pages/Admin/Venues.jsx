@@ -216,11 +216,8 @@ function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, tourname
   )
 }
 
-function pitchPublicUrl(pitchId, scheduleByPitch, slug) {
-  const fixtures = scheduleByPitch[pitchId] ?? []
-  const agIds = [...new Set(fixtures.map(fx => fx.stage?.age_group?.id).filter(Boolean))]
-  const base = `${BASE_URL}/t/${slug}`
-  return agIds.length === 1 ? `${base}/${agIds[0]}/schedule` : base
+function pitchPublicUrl(slug) {
+  return `${BASE_URL}/t/${slug}`
 }
 
 function SchedulePanel({
@@ -262,7 +259,7 @@ function SchedulePanel({
               </div>
             )}
             {pitches.map(pitch => {
-              const url = tournament ? pitchPublicUrl(pitch.id, scheduleByPitch, tournament.slug) : ''
+              const url = tournament ? pitchPublicUrl(tournament.slug) : ''
               return (
                 <PitchAccordion
                   key={pitch.id}
@@ -340,9 +337,7 @@ export default function Venues() {
       const key = `pitch-${pitchId}`
       if (qrGeneratedRef.current.has(key)) return
       qrGeneratedRef.current.add(key)
-      const agIds = [...new Set((scheduleByPitch[pitchId] ?? []).map(fx => fx.stage?.age_group?.id).filter(Boolean))]
-      const url = agIds.length === 1 ? `${base}/${agIds[0]}/schedule` : base
-      makeQR(url).then(dataUrl => setQrCodes(prev => ({ ...prev, [key]: dataUrl })))
+      makeQR(base).then(dataUrl => setQrCodes(prev => ({ ...prev, [key]: dataUrl })))
     })
   }, [scheduleByPitch, tournament])
 
