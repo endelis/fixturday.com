@@ -1,7 +1,8 @@
 import { useState, useEffect } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
-import { X, Menu } from 'lucide-react'
+import { X, Menu, Share2 } from 'lucide-react'
+import { supabase } from '../lib/supabase'
 
 
 /**
@@ -16,6 +17,31 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
   const location = useLocation()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+  const [liveStatus, setLiveStatus] = useState('connecting')
+  const [shareCopied, setShareCopied] = useState(false)
+
+  // Heartbeat channel — tracks Supabase connection for the live dot
+  useEffect(() => {
+    if (!tournament?.id) return
+    const ch = supabase
+      .channel(`pub-nav-hb-${tournament.id}`)
+      .subscribe(s => setLiveStatus(s === 'SUBSCRIBED' ? 'connected' : 'connecting'))
+    return () => { supabase.removeChannel(ch) }
+  }, [tournament?.id])
+
+  async function handleShare() {
+    const url = window.location.href
+    const title = document.title
+    if (navigator.share) {
+      try { await navigator.share({ title, url }) } catch {}
+    } else {
+      try {
+        await navigator.clipboard.writeText(url)
+        setShareCopied(true)
+        setTimeout(() => setShareCopied(false), 2000)
+      } catch {}
+    }
+  }
 
   // Build a division link that preserves the current tab
   function divisionPath(ag) {
@@ -207,11 +233,52 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   <NavLink to={`/${tournament.slug}/info`} end style={tourNavLink}>
                     {t('nav.info')}
                   </NavLink>
-                  {showRegister && (
-                    <NavLink to={`/t/${tournament.slug}/register`} end style={registerNavLink}>
-                      {t('nav.register')}
-                    </NavLink>
-                  )}
+
+                  {/* Right group: live indicator + share + register */}
+                  <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.375rem', flexShrink: 0 }}>
+                    {/* Live dot */}
+                    <span style={{
+                      display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                      fontSize: '0.65rem', fontFamily: 'var(--font-heading)', letterSpacing: '0.06em',
+                      color: liveStatus === 'connected' ? 'var(--color-live)' : 'rgba(136,146,164,0.4)',
+                    }}>
+                      <span style={{
+                        width: 7, height: 7, borderRadius: '50%', flexShrink: 0,
+                        background: liveStatus === 'connected' ? 'var(--color-live)' : 'rgba(136,146,164,0.25)',
+                        boxShadow: liveStatus === 'connected' ? '0 0 6px var(--color-live)' : 'none',
+                        animation: liveStatus === 'connected' ? 'live-dot-pulse 2s ease-in-out infinite' : 'none',
+                      }} />
+                      <span className="pub-nav-live-label">LIVE</span>
+                    </span>
+
+                    {/* Share button */}
+                    <button
+                      onClick={handleShare}
+                      title={shareCopied ? t('standings.shareCopied') : t('standings.share')}
+                      style={{
+                        background: 'none',
+                        border: `1px solid ${shareCopied ? 'var(--color-success)' : 'var(--color-border)'}`,
+                        color: shareCopied ? 'var(--color-success)' : 'var(--color-text-muted)',
+                        borderRadius: 'var(--radius-sm)',
+                        padding: '0.2rem 0.5rem',
+                        cursor: 'pointer',
+                        display: 'inline-flex', alignItems: 'center', gap: '0.3rem',
+                        fontSize: '0.72rem', fontFamily: 'var(--font-heading)',
+                        minHeight: '28px', transition: 'color var(--transition-fast), border-color var(--transition-fast)',
+                      }}
+                    >
+                      <Share2 size={13} />
+                      <span className="pub-nav-share-label">
+                        {shareCopied ? t('standings.shareCopied') : t('standings.share')}
+                      </span>
+                    </button>
+
+                    {showRegister && (
+                      <NavLink to={`/t/${tournament.slug}/register`} end style={registerNavLink}>
+                        {t('nav.register')}
+                      </NavLink>
+                    )}
+                  </div>
                 </>
               )
             })()}
@@ -416,6 +483,8 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         .pub-nav-logo { width: 175px; height: 30px; }
         .pub-nav-divisions-desktop { display: flex !important; }
         .pub-nav-divisions-mobile { display: none !important; }
+        .pub-nav-live-label { display: inline; }
+        .pub-nav-share-label { display: inline; }
         @media (max-width: 640px) {
           .pub-nav-desktop { display: none !important; }
           .pub-nav-hamburger { display: flex !important; }
@@ -424,6 +493,8 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           .pub-nav-logo { width: 130px; height: 22px; }
           .pub-nav-divisions-desktop { display: none !important; }
           .pub-nav-divisions-mobile { display: flex !important; }
+          .pub-nav-live-label { display: none !important; }
+          .pub-nav-share-label { display: none !important; }
         }
       `}</style>
     </>
@@ -474,7 +545,6 @@ const loginBtnStyle = {
 }
 
 const registerNavLink = ({ isActive }) => ({
-  marginLeft: 'auto',
   padding: '0.25rem 0.75rem',
   borderRadius: 'var(--radius-sm)',
   fontSize: '0.8rem',

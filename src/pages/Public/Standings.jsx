@@ -18,7 +18,7 @@ export default function Standings() {
   const [loadError, setLoadError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
   const [realtimeStatus, setRealtimeStatus] = useState('connecting')
-  const [copied, setCopied] = useState(false)
+
   const [searchParams, setSearchParams] = useSearchParams()
   const _rawAgeGroupId = searchParams.get('ageGroupId') || null
   const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
@@ -178,20 +178,6 @@ export default function Standings() {
     }, {})
   ).sort((a, b) => (a.pitchName ?? '').localeCompare(b.pitchName ?? ''))
 
-  async function handleShare() {
-    const url = window.location.href
-    const title = `${tournament.name} — ${ag.name}`
-    if (navigator.share) {
-      try { await navigator.share({ title, url }) } catch {}
-    } else {
-      try {
-        await navigator.clipboard.writeText(url)
-        setCopied(true)
-        setTimeout(() => setCopied(false), 2000)
-      } catch {}
-    }
-  }
-
   // Group-knockout: derive per-group data
   const groupFixtures = fixtures.filter(f => f.group_label)
   const groupLabels = [...new Set(groupFixtures.map(f => f.group_label))].sort()
@@ -291,13 +277,6 @@ export default function Standings() {
                   ? t('common.lastUpdated', { time: formatTime(lastUpdated) })
                   : t('standings.connecting')}
             </span>
-            <button
-              onClick={handleShare}
-              className="btn-secondary btn-sm"
-              style={{ cursor: 'pointer' }}
-            >
-              {copied ? t('standings.shareCopied') : t('standings.share')}
-            </button>
           </div>
         </div>
 
