@@ -284,8 +284,8 @@ export default function Print() {
       })
 
     const maxTeams = Math.max(...groups.map(g => g.teams.length), 0)
-    const cellW = maxTeams > 10 ? 32 : maxTeams > 7 ? 38 : 46
-    const tblFontSize = maxTeams > 10 ? '0.66rem' : maxTeams > 7 ? '0.74rem' : '0.82rem'
+    const cellW = maxTeams > 10 ? 40 : maxTeams > 7 ? 50 : 60
+    const tblFontSize = maxTeams > 10 ? '0.68rem' : maxTeams > 7 ? '0.76rem' : '0.84rem'
 
     return (
       <>
@@ -332,10 +332,10 @@ export default function Print() {
               <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: tblFontSize, tableLayout: 'fixed' }}>
                 <colgroup>
                   <col style={{ width: '26px' }} />
-                  <col />
+                  <col style={{ width: '120px' }} />
                   {group.teams.map((_, j) => <col key={j} style={{ width: cellW + 'px' }} />)}
                   <col style={{ width: cellW + 'px' }} />
-                  <col style={{ width: '30px' }} />
+                  <col style={{ width: cellW + 'px' }} />
                 </colgroup>
                 <thead>
                   <tr>
@@ -364,12 +364,8 @@ export default function Print() {
                           </td>
                         )
                       })}
-                      <td style={{ ...ctTd, textAlign: 'center', fontWeight: 700 }}>
-                        {group.ptsMap[team.id]?.pts ?? 0}
-                      </td>
-                      <td style={{ ...ctTd, textAlign: 'center', fontWeight: 700 }}>
-                        {group.ptsMap[team.id]?.pos ?? '—'}
-                      </td>
+                      <td style={ctTd} />
+                      <td style={ctTd} />
                     </tr>
                   ))}
                 </tbody>
@@ -696,6 +692,6 @@ const ctTh = {
 
 const ctTd = {
   border: '1px solid #aaa',
-  padding: '6px 3px',
+  padding: '10px 4px',
   color: '#000',
 }
