@@ -342,12 +342,25 @@ export default function Teams() {
             <div key={team.id} className="card">
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
                 <div>
-                  <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem' }}>{team.name}</strong>
-                  {team.club && (
-                    <span style={{ marginLeft: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{team.club}</span>
-                  )}
-                  {team.contact_email && (
-                    <span style={{ marginLeft: '0.75rem', color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{team.contact_email}</span>
+                  <div style={{ display: 'flex', alignItems: 'baseline', flexWrap: 'wrap', gap: '0 0.75rem' }}>
+                    <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.125rem' }}>{team.name}</strong>
+                    {team.club && (
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{team.club}</span>
+                    )}
+                    {team.contact_email && (
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem' }}>{team.contact_email}</span>
+                    )}
+                  </div>
+                  {(team.contact_name || team.contact_phone) && (
+                    <div style={{ marginTop: '0.2rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', gap: '0.5rem', alignItems: 'center' }}>
+                      {team.contact_name && <span>{team.contact_name}</span>}
+                      {team.contact_name && team.contact_phone && <span style={{ opacity: 0.4 }}>·</span>}
+                      {team.contact_phone && (
+                        <a href={`tel:${team.contact_phone}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>
+                          {team.contact_phone}
+                        </a>
+                      )}
+                    </div>
                   )}
                 </div>
                 <div style={{ display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap' }}>
