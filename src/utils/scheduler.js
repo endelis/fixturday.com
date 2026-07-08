@@ -13,11 +13,6 @@ function formatTime(mins) {
   return `${String(h).padStart(2, '0')}:${String(m).padStart(2, '0')}`;
 }
 
-/** Round up to the nearest 5-minute boundary */
-function roundUp5(mins) {
-  return Math.ceil(mins / 5) * 5;
-}
-
 /**
  * Format minutes-since-midnight as an ISO datetime string with local timezone offset.
  * e.g. date="2026-04-17", mins=540, tz=+03:00 → "2026-04-17T09:00:00+03:00"
@@ -184,7 +179,7 @@ export function generateSchedule({
       let advanced = false;
       for (const b of blocked) {
         if (current < b.endMins && current + gameDuration > b.startMins) {
-          current = applyLunch(roundUp5(b.endMins + PITCH_GAP));
+          current = applyLunch(b.endMins + PITCH_GAP);
           advanced = true;
           break;
         }
@@ -200,8 +195,8 @@ export function generateSchedule({
     const awayLastEnd = awayTeamId != null ? (teamLastEnd[awayTeamId] ?? null) : null;
 
     const teamEarliest = Math.max(
-      homeLastEnd !== null ? roundUp5(homeLastEnd + TEAM_REST) : firstMins,
-      awayLastEnd !== null ? roundUp5(awayLastEnd + TEAM_REST) : firstMins,
+      homeLastEnd !== null ? homeLastEnd + TEAM_REST : firstMins,
+      awayLastEnd !== null ? awayLastEnd + TEAM_REST : firstMins,
       firstMins
     );
 
@@ -209,7 +204,7 @@ export function generateSchedule({
     let bestKickoff = Infinity;
 
     for (let p = 0; p < resolvedPitchCount; p++) {
-      let candidate = advancePastBlocked(p, applyLunch(roundUp5(Math.max(pitchAvailable[p], teamEarliest))));
+      let candidate = advancePastBlocked(p, applyLunch(Math.max(pitchAvailable[p], teamEarliest)));
       if (strict && candidate + gameDuration > lastMins) continue;
       if (candidate < bestKickoff) { bestKickoff = candidate; bestPitch = p; }
     }
@@ -226,7 +221,7 @@ export function generateSchedule({
       kickoff: toISO(date, kickoff),
     });
     const endTime = kickoff + gameDuration;
-    pitchAvailable[pitch] = roundUp5(endTime + PITCH_GAP);
+    pitchAvailable[pitch] = endTime + PITCH_GAP;
     if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
     if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
     return endTime;
@@ -251,7 +246,7 @@ export function generateSchedule({
     let fallbackPitch = null, fallbackKickoff = Infinity, bestRest = null;
 
     for (let p = 0; p < resolvedPitchCount; p++) {
-      let candidate = advancePastBlocked(p, applyLunch(roundUp5(Math.max(pitchAvailable[p], firstMins))));
+      let candidate = advancePastBlocked(p, applyLunch(Math.max(pitchAvailable[p], firstMins)));
       if (candidate + gameDuration > lastMins) continue;
       const worstRest = Math.min(
         homeLastEnd !== null ? candidate - homeLastEnd : Infinity,
@@ -278,7 +273,7 @@ export function generateSchedule({
 
   // After PASS 1: reset every pitch to playoffStart so no pitch carries
   // a position from the group phase that would silently delay playoff tiers.
-  const playoffStart = roundUp5(lastGroupEnd + PITCH_GAP);
+  const playoffStart = lastGroupEnd + PITCH_GAP;
   for (let p = 0; p < resolvedPitchCount; p++) {
     pitchAvailable[p] = playoffStart;
   }
