@@ -253,7 +253,9 @@ export default function Schedule() {
             color: isCompleted && !homeWon ? 'var(--color-text-muted)' : 'var(--color-text)',
             fontStyle: !f.home_team_id ? 'italic' : 'normal',
           }}>
-            {homeName}
+            {f.home_team_id
+              ? <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>{homeName}</Link>
+              : homeName}
           </div>
 
           {/* Score */}
@@ -282,7 +284,9 @@ export default function Schedule() {
             color: isCompleted && !awayWon ? 'var(--color-text-muted)' : 'var(--color-text)',
             fontStyle: !f.away_team_id ? 'italic' : 'normal',
           }}>
-            {awayName}
+            {f.away_team_id
+              ? <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team_id}`} style={{ textDecoration: 'none', color: 'inherit' }}>{awayName}</Link>
+              : awayName}
           </div>
 
           {/* Status */}

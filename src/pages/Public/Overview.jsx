@@ -340,9 +340,9 @@ export default function TournamentOverviewPublic() {
             </div>
             {liveMatches.map(f => (
               <div key={f.id} style={matchRowStyle}>
-                <span style={teamNameStyle}>{f.home_team.name}</span>
+                <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{f.home_team.name}</Link>
                 <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1rem', color: 'var(--color-live)', flexShrink: 0 }}>{scoreStr(f.id)}</span>
-                <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+                <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{f.away_team.name}</Link>
               </div>
             ))}
           </div>
@@ -375,9 +375,9 @@ export default function TournamentOverviewPublic() {
               ) : (
                 latestResults.map(f => (
                   <div key={f.id} style={matchRowStyle}>
-                    <span style={teamNameStyle}>{f.home_team.name}</span>
+                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{f.home_team.name}</Link>
                     <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', color: 'var(--color-text)', flexShrink: 0 }}>{scoreStr(f.id)}</span>
-                    <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{f.away_team.name}</Link>
                   </div>
                 ))
               )}
@@ -400,7 +400,7 @@ export default function TournamentOverviewPublic() {
               ) : (
                 upcomingMatches.map(f => (
                   <div key={f.id} style={matchRowStyle}>
-                    <span style={teamNameStyle}>{f.home_team.name}</span>
+                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{f.home_team.name}</Link>
                     <span style={{ flexShrink: 0, textAlign: 'center', minWidth: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
                       <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
                         {f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : 'vs'}
@@ -411,7 +411,7 @@ export default function TournamentOverviewPublic() {
                         </span>
                       )}
                     </span>
-                    <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{f.away_team.name}</Link>
                     {f.pitch?.name && (
                       <span className="ovw-pitch-col" style={{ flexShrink: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)', textAlign: 'right', minWidth: '72px' }}>
                         {f.pitch.name}
@@ -453,7 +453,9 @@ export default function TournamentOverviewPublic() {
                         {rows.map((row, i) => (
                           <tr key={row.team.id} style={{ borderTop: '1px solid var(--color-border)' }}>
                             <td style={{ padding: '0.4rem 0.75rem', color: 'var(--color-text-muted)' }}>{i + 1}</td>
-                            <td style={{ padding: '0.4rem 0.5rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{row.team.name}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                              <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>{row.team.name}</Link>
+                            </td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
@@ -490,7 +492,9 @@ export default function TournamentOverviewPublic() {
                 {allStandings.map((row, i) => (
                   <tr key={row.team.id} style={{ borderTop: '1px solid var(--color-border)' }}>
                     <td style={{ padding: '0.4rem 0.75rem', color: 'var(--color-text-muted)' }}>{i + 1}</td>
-                    <td style={{ padding: '0.4rem 0.5rem' }}>{row.team.name}</td>
+                    <td style={{ padding: '0.4rem 0.5rem' }}>
+                      <Link to={`/t/${slug}/${ageGroupId}/teams/${row.team.id}`} style={{ color: 'var(--color-accent)', textDecoration: 'none' }}>{row.team.name}</Link>
+                    </td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
