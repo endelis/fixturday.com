@@ -112,12 +112,16 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
     const pitchIds = selectedPitches.length > 0 ? selectedPitches.map(p => p.id) : null
 
     const blockedSlots = allBookings
-      .filter(b => pitchIds?.includes(b.pitch_id) && b.kickoff_time?.slice(0, 10) === schedDate)
-      .map(b => ({
-        pitchId: b.pitch_id,
-        startMins: parseTimeMinutes(b.kickoff_time.slice(11, 16)),
-        endMins: parseTimeMinutes(b.kickoff_time.slice(11, 16)) + schedGameDuration,
-      }))
+      .filter(b => {
+        if (!b.kickoff_time) return false
+        const d = new Date(b.kickoff_time)
+        return pitchIds?.includes(b.pitch_id) && format(d, 'yyyy-MM-dd') === schedDate
+      })
+      .map(b => {
+        const d = new Date(b.kickoff_time)
+        const localMins = d.getHours() * 60 + d.getMinutes()
+        return { pitchId: b.pitch_id, startMins: localMins, endMins: localMins + schedGameDuration }
+      })
 
     const result = generateSchedule({
       fixtures: mapped,
@@ -193,9 +197,11 @@ export default function SchedulerModal({ open, onClose, fixtures, pitches, ageGr
   const skippedCount = schedResult ? fixtures.length - schedResult.schedule.length : 0
 
   // Cross-age-group pitch conflict detection
-  const crossGroupConflictCount = allBookings.filter(
-    b => selectedPitchIds.has(b.pitch_id) && b.kickoff_time?.slice(0, 10) === schedDate
-  ).length
+  const crossGroupConflictCount = allBookings.filter(b => {
+    if (!b.kickoff_time) return false
+    const d = new Date(b.kickoff_time)
+    return selectedPitchIds.has(b.pitch_id) && format(d, 'yyyy-MM-dd') === schedDate
+  }).length
 
   // Live duration estimate
   function parseTimeMinutes(str) {
