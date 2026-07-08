@@ -157,7 +157,7 @@ export default function Print() {
         const { data: fixtures } = await supabase
           .from('fixtures')
           .select(`
-            id, round, group, kickoff_time, status, home_team_id, away_team_id,
+            id, round, group_label, kickoff_time, status, home_team_id, away_team_id,
             home_team:teams!home_team_id(id, name),
             away_team:teams!away_team_id(id, name),
             pitch:pitches(name, venues(name)),
@@ -238,9 +238,9 @@ export default function Print() {
     // Build per-group fixture lists
     const groupFixtureMap = {}
     for (const f of allFixtures) {
-      if (!f.group) continue
-      if (!groupFixtureMap[f.group]) groupFixtureMap[f.group] = []
-      groupFixtureMap[f.group].push(f)
+      if (!f.group_label) continue
+      if (!groupFixtureMap[f.group_label]) groupFixtureMap[f.group_label] = []
+      groupFixtureMap[f.group_label].push(f)
     }
 
     const groups = Object.entries(groupFixtureMap)
@@ -395,10 +395,10 @@ export default function Print() {
 
     const groupMap = {}
     for (const f of (targetAgData?.fixtures ?? [])) {
-      if (!f.group) continue
-      if (!groupMap[f.group]) groupMap[f.group] = new Map()
-      if (f.home_team?.id) groupMap[f.group].set(f.home_team.id, f.home_team.name)
-      if (f.away_team?.id) groupMap[f.group].set(f.away_team.id, f.away_team.name)
+      if (!f.group_label) continue
+      if (!groupMap[f.group_label]) groupMap[f.group_label] = new Map()
+      if (f.home_team?.id) groupMap[f.group_label].set(f.home_team.id, f.home_team.name)
+      if (f.away_team?.id) groupMap[f.group_label].set(f.away_team.id, f.away_team.name)
     }
     const groups = Object.entries(groupMap)
       .sort(([a], [b]) => a.localeCompare(b))
