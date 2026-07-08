@@ -6,6 +6,7 @@ import { supabase } from '../../lib/supabase'
 import { useTournamentInfo } from '../../hooks/useTournamentInfo'
 import TournamentLogo from '../../components/TournamentLogo'
 import PublicNav from '../../components/PublicNav'
+import Footer from '../../components/Footer'
 import { useSEO } from '../../hooks/useSEO'
 
 export default function Info() {
@@ -177,6 +178,7 @@ export default function Info() {
         )}
 
       </div>
+      <Footer />
     </div>
   )
 }
