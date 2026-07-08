@@ -9,6 +9,25 @@ import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
 const BASE_URL = 'https://www.fixturday.com'
+const GAMES_PER_PAGE = 25
+const MIN_LAST_PAGE = 5
+
+function paginateFixtures(fixtures) {
+  if (fixtures.length === 0) return [[]]
+  const chunks = []
+  for (let i = 0; i < fixtures.length; i += GAMES_PER_PAGE) {
+    chunks.push(fixtures.slice(i, i + GAMES_PER_PAGE))
+  }
+  if (chunks.length > 1 && chunks[chunks.length - 1].length < MIN_LAST_PAGE) {
+    const last = chunks.pop()
+    const prev = chunks.pop()
+    const combined = [...prev, ...last]
+    const mid = Math.ceil(combined.length / 2)
+    chunks.push(combined.slice(0, mid))
+    chunks.push(combined.slice(mid))
+  }
+  return chunks
+}
 
 const PRINT_STYLES = `
   @page { size: A4 portrait; margin: 15mm; }
@@ -27,6 +46,11 @@ const PRINT_STYLES = `
     body.venue-print-mode .print-active .pitch-content { display: block !important; }
     /* Show pitch header inside any active print target */
     body.venue-print-mode .print-active .print-pitch-header { display: flex !important; }
+    /* Page break before continuation pages within a pitch */
+    body.venue-print-mode .print-active .print-page-break {
+      break-before: page !important;
+      page-break-before: always !important;
+    }
     /* Let pitch content flow naturally across pages */
     body.venue-print-mode .pitch-print-container {
       overflow: visible !important;
@@ -154,6 +178,7 @@ function FixtureRow({ fx }) {
 }
 
 function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, tournament, pitchUrl, qrDataUrl, t }) {
+  const pages = paginateFixtures(fixtures)
   return (
     <div
       data-print={`pitch-${pitch.id}`}
@@ -165,14 +190,7 @@ function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, tourname
         overflow: 'hidden',
       }}
     >
-      <PrintHeader
-        headerClass="print-pitch-header"
-        heading={pitch.name}
-        subheading={tournament?.name}
-        url={pitchUrl}
-        qrDataUrl={qrDataUrl}
-        t={t}
-      />
+      {/* Accordion toggle bar — screen only */}
       <div
         onClick={onToggle}
         style={{
@@ -199,17 +217,31 @@ function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, tourname
           </span>
         </div>
       </div>
+
+      {/* Content — screen: collapsible, print: always shown with one header per page */}
       <div className="pitch-content" style={{ display: expanded ? 'block' : 'none' }}>
         {fixtures.length === 0 ? (
           <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem', padding: '0.5rem 0.75rem' }}>
             {t('venue.noScheduledGames')}
           </p>
         ) : (
-          <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
-            <tbody>
-              {fixtures.map(fx => <FixtureRow key={fx.id} fx={fx} />)}
-            </tbody>
-          </table>
+          pages.map((pageFixtures, pageIndex) => (
+            <div key={pageIndex} className={pageIndex > 0 ? 'print-page-break' : ''}>
+              <PrintHeader
+                headerClass="print-pitch-header"
+                heading={pitch.name}
+                subheading={tournament?.name}
+                url={pitchUrl}
+                qrDataUrl={qrDataUrl}
+                t={t}
+              />
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                <tbody>
+                  {pageFixtures.map(fx => <FixtureRow key={fx.id} fx={fx} />)}
+                </tbody>
+              </table>
+            </div>
+          ))
         )}
       </div>
     </div>
