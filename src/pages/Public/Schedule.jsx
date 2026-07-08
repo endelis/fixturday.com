@@ -6,6 +6,7 @@ import { setWinner, getTargets } from '../../utils/catchServe'
 import { format } from 'date-fns'
 import { formatDate, formatTime } from '../../utils/dateFormat'
 import PublicNav from '../../components/PublicNav'
+import Footer from '../../components/Footer'
 import { useSEO } from '../../hooks/useSEO'
 
 export default function Schedule() {
@@ -570,6 +571,7 @@ export default function Schedule() {
           </div>
         ))}
       </div>
+      <Footer />
     </div>
   )
 }

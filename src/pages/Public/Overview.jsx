@@ -5,6 +5,7 @@ import { parseISO } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
+import Footer from '../../components/Footer'
 import { formatTime, formatDate } from '../../utils/dateFormat'
 import { useSEO } from '../../hooks/useSEO'
 
@@ -508,6 +509,7 @@ export default function TournamentOverviewPublic() {
         </div>
 
       </div>
+      <Footer />
     </div>
   )
 }

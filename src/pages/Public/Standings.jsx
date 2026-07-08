@@ -6,6 +6,7 @@ import { formatBeachScore } from '../../utils/beachVolleyball'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
+import Footer from '../../components/Footer'
 import ClassFilter from '../../components/ClassFilter'
 import { useSEO } from '../../hooks/useSEO'
 import DoubleEliminationBracket from '../../components/DoubleEliminationBracket'
@@ -613,6 +614,7 @@ export default function Standings() {
           </div>
         )}
       </div>
+      <Footer />
     </div>
   )
 }
