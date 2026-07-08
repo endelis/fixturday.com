@@ -36,7 +36,7 @@ export default function TournamentOverviewPublic() {
         supabase.from('teams').select('id, name').eq('age_group_id', ageGroupId).eq('status', 'confirmed'),
         supabase
           .from('fixtures')
-          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, kickoff_time, home_placeholder, away_placeholder, home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id)')
+          .select('id, round, home_team_id, away_team_id, status, group_label, round_name, kickoff_time, home_placeholder, away_placeholder, pitch:pitches(id,name), home_team:teams!home_team_id(id,name), away_team:teams!away_team_id(id,name), stages!inner(age_group_id)')
           .eq('stages.age_group_id', ageGroupId)
           .order('kickoff_time', { ascending: true, nullsFirst: false }),
       ])
@@ -310,7 +310,17 @@ export default function TournamentOverviewPublic() {
 
         {/* Latest results + Up next */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-          <style>{`@media (min-width: 640px) { .ovw-cols { grid-template-columns: 1fr 1fr !important; } }`}</style>
+          <style>{`
+            @media (min-width: 640px) {
+              .ovw-cols { grid-template-columns: 1fr 1fr !important; }
+              .ovw-pitch-mob { display: none !important; }
+              .ovw-pitch-col { display: inline !important; }
+            }
+            @media (max-width: 639px) {
+              .ovw-pitch-col { display: none !important; }
+              .ovw-pitch-mob { display: block !important; }
+            }
+          `}</style>
           <div className="ovw-cols" style={{ display: 'grid', gridTemplateColumns: '1fr', gap: '1rem' }}>
 
             {/* Latest results */}
@@ -351,10 +361,22 @@ export default function TournamentOverviewPublic() {
                 upcomingMatches.map(f => (
                   <div key={f.id} style={matchRowStyle}>
                     <span style={teamNameStyle}>{f.home_team.name}</span>
-                    <span style={{ flexShrink: 0, textAlign: 'center', color: 'var(--color-text-muted)', fontSize: '0.75rem', minWidth: '56px' }}>
-                      {f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : 'vs'}
+                    <span style={{ flexShrink: 0, textAlign: 'center', minWidth: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
+                        {f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : 'vs'}
+                      </span>
+                      {f.pitch?.name && (
+                        <span className="ovw-pitch-mob" style={{ fontSize: '0.62rem', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                          {f.pitch.name}
+                        </span>
+                      )}
                     </span>
                     <span style={{ ...teamNameStyle, textAlign: 'right' }}>{f.away_team.name}</span>
+                    {f.pitch?.name && (
+                      <span className="ovw-pitch-col" style={{ flexShrink: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)', textAlign: 'right', minWidth: '72px' }}>
+                        {f.pitch.name}
+                      </span>
+                    )}
                   </div>
                 ))
               )}
