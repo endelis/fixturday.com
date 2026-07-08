@@ -49,7 +49,7 @@ export default function TournamentList() {
     async function load() {
       const { data, error } = await supabase
         .from('tournaments')
-        .select('id, name, slug, sport, country, start_date, end_date, logo_url, venues(name), age_groups(id, name, registration_open)')
+        .select('id, name, slug, sport, country, start_date, end_date, logo_url, logo_path, venues(name), age_groups(id, name, registration_open)')
         .eq('is_active', true)
         .order('start_date', { ascending: false })
 
@@ -318,9 +318,13 @@ export default function TournamentList() {
                         overflow: 'hidden',
                         flexShrink: 0,
                       }}>
-                        {tournament.logo_url ? (
+                        {(tournament.logo_path || tournament.logo_url) ? (
                           <img
-                            src={tournament.logo_url}
+                            src={
+                              tournament.logo_path
+                                ? supabase.storage.from('tournament-logos').getPublicUrl(tournament.logo_path).data.publicUrl
+                                : tournament.logo_url
+                            }
                             alt={tournament.name}
                             style={{ width: '100%', height: '100%', objectFit: 'contain', padding: '6px' }}
                           />
