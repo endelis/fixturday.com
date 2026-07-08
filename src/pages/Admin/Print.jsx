@@ -96,15 +96,27 @@ const PRINT_STYLE = `
   }
 `
 
+const GROUP_SPLIT_PRINT_STYLE = `
+  @page { size: A4 portrait; margin: 15mm; }
+  @media print {
+    body * { visibility: hidden; }
+    .gs-wrap, .gs-wrap * { visibility: visible; }
+    .gs-wrap { position: absolute; top: 0; left: 0; width: 100%; }
+    .no-print { display: none !important; }
+  }
+`
+
 export default function Print() {
   const { id: tournamentId } = useParams()
   const [searchParams] = useSearchParams()
   const filterAgId = searchParams.get('agId') || null
+  const view = searchParams.get('view') || 'full'
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
   const [tournament, setTournament] = useState(null)
   const [ageGroupData, setAgeGroupData] = useState([])
   const [qrUrls, setQrUrls] = useState({})
+  const [tournamentQr, setTournamentQr] = useState(null)
   const [loading, setLoading] = useState(true)
   const dateLocale = useDateLocale()
   const printDate = format(new Date(), 'dd.MM.yyyy HH:mm', { locale: dateLocale })
@@ -119,6 +131,12 @@ export default function Print() {
 
       if (tErr || !tourney) { setLoading(false); return }
       setTournament(tourney)
+
+      if (view === 'group-split' && tourney.slug) {
+        const url = `https://www.fixturday.com/t/${tourney.slug}`
+        QRCode.toDataURL(url, { width: 200, margin: 1, color: { dark: '#000', light: '#fff' } })
+          .then(dataUrl => setTournamentQr(dataUrl))
+      }
 
       const { data: ageGroups, error: agErr } = await supabase
         .from('age_groups')
@@ -139,7 +157,7 @@ export default function Print() {
         const { data: fixtures } = await supabase
           .from('fixtures')
           .select(`
-            id, round, kickoff_time, status, home_team_id, away_team_id,
+            id, round, group, kickoff_time, status, home_team_id, away_team_id,
             home_team:teams!home_team_id(id, name),
             away_team:teams!away_team_id(id, name),
             pitch:pitches(name, venues(name)),
@@ -186,9 +204,10 @@ export default function Print() {
 
   useEffect(() => {
     if (!loading && tournament) {
-      setTimeout(() => window.print(), 500)
+      const ready = view !== 'group-split' || tournamentQr !== null
+      if (ready) setTimeout(() => window.print(), 500)
     }
-  }, [loading, tournament])
+  }, [loading, tournament, tournamentQr, view])
 
   if (authLoading || loading) {
     return (
@@ -206,6 +225,102 @@ export default function Print() {
     )
   }
 
+  // ── Group Split view ──────────────────────────────────────────────────────
+  if (view === 'group-split') {
+    const targetAgData = filterAgId
+      ? ageGroupData.find(({ ag }) => ag.id === filterAgId)
+      : ageGroupData[0]
+
+    const groupMap = {}
+    for (const f of (targetAgData?.fixtures ?? [])) {
+      if (!f.group) continue
+      if (!groupMap[f.group]) groupMap[f.group] = new Map()
+      if (f.home_team?.id) groupMap[f.group].set(f.home_team.id, f.home_team.name)
+      if (f.away_team?.id) groupMap[f.group].set(f.away_team.id, f.away_team.name)
+    }
+    const groups = Object.entries(groupMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, teamsMap]) => ({
+        label,
+        teams: [...teamsMap.entries()]
+          .map(([id, name]) => ({ id, name }))
+          .sort((a, b) => a.name.localeCompare(b.name)),
+      }))
+
+    const publicUrl = tournament.slug ? `https://www.fixturday.com/t/${tournament.slug}` : ''
+    const agName = targetAgData?.ag?.name ?? ''
+
+    return (
+      <>
+        <style>{GROUP_SPLIT_PRINT_STYLE}</style>
+        <div className="no-print" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 999 }}>
+          <button
+            onClick={() => window.print()}
+            style={{ background: '#f0a500', color: '#000', border: 'none', borderRadius: '6px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+          >
+            {t('print.printBtn')}
+          </button>
+        </div>
+
+        <div className="gs-wrap" style={{ fontFamily: "'Barlow', sans-serif", color: '#000', background: '#fff', padding: '0', minHeight: '100vh', display: 'flex', flexDirection: 'column' }}>
+          {/* Header */}
+          <div style={{ borderBottom: '3px solid #000', paddingBottom: '0.875rem', marginBottom: '1.5rem' }}>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '2.4rem', fontWeight: 700, lineHeight: 1.05, color: '#000' }}>
+              {tournament.name.toUpperCase()}
+            </div>
+            <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.4rem', fontWeight: 700, color: '#444', marginTop: '0.2rem' }}>
+              {agName.toUpperCase()}
+            </div>
+            <div style={{ fontFamily: "'Barlow', sans-serif", fontSize: '0.7rem', fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em', marginTop: '0.3rem' }}>
+              {t('print.groupSplit')}
+            </div>
+          </div>
+
+          {/* Groups grid */}
+          {groups.length > 0 ? (
+            <div style={{ display: 'flex', gap: '1rem', flex: 1, alignItems: 'flex-start', flexWrap: 'wrap' }}>
+              {groups.map(group => (
+                <div key={group.label} style={{ flex: 1, minWidth: '120px', border: '2px solid #000', borderRadius: '6px', overflow: 'hidden' }}>
+                  <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.15rem', fontWeight: 700, background: '#000', color: '#fff', padding: '0.45rem 0.75rem', letterSpacing: '0.04em' }}>
+                    {t('print.group')} {group.label}
+                  </div>
+                  <div>
+                    {group.teams.map((team, i) => (
+                      <div key={team.id} style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', padding: '0.4rem 0.75rem', borderBottom: i < group.teams.length - 1 ? '1px solid #eee' : 'none' }}>
+                        <span style={{ fontFamily: "'Barlow', sans-serif", fontSize: '0.72rem', color: '#aaa', minWidth: '1.1rem' }}>{i + 1}</span>
+                        <span style={{ fontFamily: "'Barlow', sans-serif", fontSize: '0.95rem', fontWeight: 600, color: '#000' }}>{team.name}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            <div style={{ color: '#888', fontFamily: "'Barlow', sans-serif", fontSize: '0.9rem', padding: '1rem 0' }}>
+              No groups found for this division.
+            </div>
+          )}
+
+          {/* Footer: follow online + QR */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderTop: '2px solid #000', paddingTop: '0.875rem', marginTop: '1.5rem' }}>
+            <div>
+              <div style={{ fontFamily: "'Barlow', sans-serif", fontSize: '0.65rem', fontWeight: 600, color: '#999', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.2rem' }}>
+                {t('print.followOnline')}
+              </div>
+              <div style={{ fontFamily: 'monospace', fontSize: '0.8rem', color: '#000', fontWeight: 700 }}>
+                {publicUrl.replace('https://', '')}
+              </div>
+            </div>
+            {tournamentQr && (
+              <img src={tournamentQr} alt="QR" width={72} height={72} style={{ display: 'block', flexShrink: 0 }} />
+            )}
+          </div>
+        </div>
+      </>
+    )
+  }
+
+  // ── Full schedule/standings view (default) ────────────────────────────────
   const venueName = Array.isArray(tournament.venues)
     ? tournament.venues[0]?.name
     : tournament.venues?.name

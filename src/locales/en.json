@@ -522,6 +522,7 @@
     "quickLinks": "Quick links",
     "guideLink": "Setup guide",
     "printLink": "Print",
+    "printGroupSplit": "Print Group Split",
     "setupGuideTitle": "Getting started",
     "setupGuideDesc": "Follow the guide to add teams, set up venues, and generate the fixture schedule.",
     "setupGuideBtn": "Open guide",
@@ -975,7 +976,10 @@
     "colPitch": "Pitch",
     "colHome": "Home",
     "colResult": "Result",
-    "colAway": "Away"
+    "colAway": "Away",
+    "groupSplit": "Group Split",
+    "group": "Group",
+    "followOnline": "Follow results online"
   },
   "bracket": {
     "winnersTitle": "Winners Bracket",

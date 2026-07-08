@@ -228,7 +228,7 @@ export default function TournamentOverview() {
                   {ag.name}
                 </Link>
                 <a
-                  href={`/admin/tournaments/${id}/print?agId=${ag.id}`}
+                  href={`/admin/tournaments/${id}/print?agId=${ag.id}&view=group-split`}
                   target="_blank"
                   rel="noreferrer"
                   style={{
@@ -240,7 +240,7 @@ export default function TournamentOverview() {
                     flexShrink: 0,
                   }}
                 >
-                  🖨 {t('workspace.printLink')}
+                  🖨 {t('workspace.printGroupSplit')}
                 </a>
               </div>
             ))}
