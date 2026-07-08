@@ -7,6 +7,16 @@ import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
+function formatRoundLabel(fx, t) {
+  const rn = fx.round_name
+  if (!rn) return fx.group_label ? `${fx.group_label} R${fx.round}` : `R${fx.round}`
+  if (rn === '3rd_place') return t('playoff.thirdPlace')
+  if (rn === 'Final' || rn === 'final' || rn === 'F') return t('playoff.final')
+  if (rn === 'SF' || rn === 'Semi-final') return t('playoff.semiFinal')
+  if (rn === 'QF' || rn === 'Quarter-final') return t('playoff.quarterFinal')
+  return rn
+}
+
 const PRINT_STYLES = `
   @media print {
     body.venue-print-mode * { visibility: hidden !important; }
@@ -30,14 +40,14 @@ function triggerPrint(key) {
   el.classList.remove('print-active')
 }
 
-function FixtureRow({ fx }) {
+function FixtureRow({ fx, t }) {
   const d = new Date(fx.kickoff_time)
   const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
   const dateStr = format(d, 'dd.MM')
   const division = fx.stage?.age_group?.name ?? ''
   const home = fx.home_team?.name ?? fx.home_placeholder ?? '—'
   const away = fx.away_team?.name ?? fx.away_placeholder ?? '—'
-  const label = fx.round_name ?? (fx.group_label ? `${fx.group_label} R${fx.round}` : `R${fx.round}`)
+  const label = formatRoundLabel(fx, t)
   return (
     <tr style={{ borderBottom: '1px solid var(--color-border)' }}>
       <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-accent)', fontWeight: 600, width: '3rem' }}>{timeStr}</td>
@@ -95,7 +105,7 @@ function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, t }) {
         ) : (
           <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
             <tbody>
-              {fixtures.map(fx => <FixtureRow key={fx.id} fx={fx} />)}
+              {fixtures.map(fx => <FixtureRow key={fx.id} fx={fx} t={t} />)}
             </tbody>
           </table>
         )}

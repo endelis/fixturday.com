@@ -166,11 +166,13 @@ function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffT
       })
     }
 
+    const isFinal = r === numRounds
     for (let i = 0; i < matchCount; i++) {
       fixtures.push({
         homeTeamId: null, awayTeamId: null, round: r, group: null,
         home_placeholder: `${prevRoundName}${2 * i + 1} Winner`,
         away_placeholder: `${prevRoundName}${2 * i + 2} Winner`,
+        round_name: isFinal ? 'Final' : null,
       })
     }
   }
