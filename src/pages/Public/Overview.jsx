@@ -84,7 +84,7 @@ export default function TournamentOverviewPublic() {
   // Progress
   const playableFixtures = fixtures.filter(f => f.home_team?.id && f.away_team?.id)
   const completedFixtures = playableFixtures.filter(f => f.status === 'completed')
-  const totalCount = playableFixtures.length
+  const totalCount = fixtures.length
   const doneCount = completedFixtures.length
   const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
 

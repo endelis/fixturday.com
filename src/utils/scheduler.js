@@ -236,13 +236,23 @@ export function generateSchedule({
 
   while (pending.length > 0) {
     // Scan all pending fixtures; pick the one with the earliest available kickoff.
-    let bestIdx = -1, bestSlot = null;
+    // Tie-break: when two fixtures share the same kickoff, prefer the one whose
+    // teams have been resting longer (max teamLastEnd is smallest) — this avoids
+    // stacking back-to-back games on the team that had an early-round bye.
+    let bestIdx = -1, bestSlot = null, bestFreshness = Infinity;
     for (let i = 0; i < pending.length; i++) {
       const f = pending[i];
       const slot = findSlot(f.homeTeamId, f.awayTeamId, true);
-      if (slot && (bestSlot === null || slot.kickoff < bestSlot.kickoff)) {
+      if (!slot) continue;
+      const freshness = Math.max(
+        f.homeTeamId ? (teamLastEnd[f.homeTeamId] ?? 0) : 0,
+        f.awayTeamId ? (teamLastEnd[f.awayTeamId] ?? 0) : 0
+      );
+      if (bestSlot === null || slot.kickoff < bestSlot.kickoff ||
+          (slot.kickoff === bestSlot.kickoff && freshness < bestFreshness)) {
         bestSlot = slot;
         bestIdx = i;
+        bestFreshness = freshness;
       }
     }
 
