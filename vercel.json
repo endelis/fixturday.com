@@ -9,7 +9,12 @@
     { "source": "/sikdatnu-politika",   "destination": "/cookie-policy", "permanent": true },
     { "source": "/datu-dzesana",        "destination": "/data-deletion", "permanent": true }
   ],
-  "rewrites": [{ "source": "/(.*)", "destination": "/index.html" }],
+  "rewrites": [
+    { "source": "/t/:slug/:agId/overview", "destination": "/api/shell?slug=:slug&agId=:agId&type=overview" },
+    { "source": "/t/:slug/:agId/fixtures", "destination": "/api/shell?slug=:slug&agId=:agId&type=schedule" },
+    { "source": "/t/:slug/:agId",          "destination": "/api/shell?slug=:slug&agId=:agId&type=standings" },
+    { "source": "/(.*)",                   "destination": "/index.html" }
+  ],
   "headers": [
     {
       "source": "/(.*)",
