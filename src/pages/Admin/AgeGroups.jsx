@@ -51,6 +51,8 @@ export default function AgeGroups() {
     setValue('auto_approve', ag.auto_approve ?? false)
     setValue('cs_set_target', String(ag.cs_set_target ?? 15))
     setValue('rugby_points_system', ag.rugby_points_system ?? '4_2_1')
+    setValue('game_duration_minutes', ag.game_duration_minutes ?? 20)
+    setValue('pitch_gap_minutes', ag.pitch_gap_minutes ?? 5)
 
     // Lock groups_count once any group stage game has a result
     let locked = false
@@ -116,6 +118,8 @@ export default function AgeGroups() {
       teams_advancing: teamsAdvancing,
       cs_set_target: Number(values.cs_set_target ?? 15),
       rugby_points_system: values.rugby_points_system ?? '4_2_1',
+      game_duration_minutes: Number(values.game_duration_minutes || 20),
+      pitch_gap_minutes: Number(values.pitch_gap_minutes || 5),
     }
 
     if (editingId) {
@@ -346,6 +350,14 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
         <div className="form-group">
           <label>{t('ageGroup.maxTeams')}</label>
           <input type="number" {...register('max_teams')} min="2" />
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.gameDuration')}</label>
+          <input type="number" {...register('game_duration_minutes')} min="1" max="120" />
+        </div>
+        <div className="form-group">
+          <label>{t('ageGroup.pitchGap')}</label>
+          <input type="number" {...register('pitch_gap_minutes')} min="0" max="60" />
         </div>
         {isCatchServe && (
           <div className="form-group">
