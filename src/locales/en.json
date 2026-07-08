@@ -358,6 +358,7 @@
     "fullOverview": "Full overview",
     "hideSchedule": "Hide schedule",
     "games": "games",
+    "scanSchedule": "Scan for live schedule",
     "printSchedule": "Print",
     "noScheduledGames": "No scheduled games"
   },

@@ -3,10 +3,12 @@ import { useParams, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
 import { format } from 'date-fns'
+import QRCode from 'qrcode'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
 
+const BASE_URL = 'https://www.fixturday.com'
 
 const PRINT_STYLES = `
   @media print {
@@ -14,12 +16,19 @@ const PRINT_STYLES = `
     body.venue-print-mode .print-active,
     body.venue-print-mode .print-active * { visibility: visible !important; }
     body.venue-print-mode .print-active {
-      position: absolute !important; left: 0; top: 0; width: 100%; padding: 1rem;
+      position: absolute !important; left: 0; top: 0; width: 100%;
+      padding: 1.5rem; background: white !important; color: black !important;
     }
     body.venue-print-mode .print-active .pitch-content { display: block !important; }
+    body.venue-print-mode [data-print].print-active > .print-panel-header { display: flex !important; }
+    body.venue-print-mode .pitch-print-container.print-active > .print-pitch-header { display: flex !important; }
     body.venue-print-mode .no-print { visibility: hidden !important; }
   }
 `
+
+async function makeQR(url) {
+  return QRCode.toDataURL(url, { width: 160, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+}
 
 function triggerPrint(key) {
   const el = document.querySelector(`[data-print="${key}"]`)
@@ -29,6 +38,46 @@ function triggerPrint(key) {
   window.print()
   document.body.classList.remove('venue-print-mode')
   el.classList.remove('print-active')
+}
+
+function PrintHeader({ headerClass, heading, subheading, url, qrDataUrl, t }) {
+  return (
+    <div
+      className={headerClass}
+      style={{
+        display: 'none',
+        justifyContent: 'space-between',
+        alignItems: 'flex-start',
+        marginBottom: '1.5rem',
+        paddingBottom: '1rem',
+        borderBottom: '3px solid #000',
+        gap: '1.5rem',
+      }}
+    >
+      <div style={{ flex: 1 }}>
+        <div style={{
+          fontSize: '2.4rem', fontWeight: 900, textTransform: 'uppercase',
+          letterSpacing: '-0.01em', lineHeight: 1.05, color: '#000',
+        }}>
+          {heading}
+        </div>
+        {subheading && (
+          <div style={{ fontSize: '1.1rem', color: '#444', marginTop: '0.4rem', fontWeight: 600 }}>
+            {subheading}
+          </div>
+        )}
+        <div style={{ marginTop: '0.9rem', fontSize: '0.78rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+          {t('venue.scanSchedule')}
+        </div>
+        <div style={{ fontSize: '0.8rem', color: '#000', fontFamily: 'monospace', marginTop: '0.15rem' }}>
+          {url}
+        </div>
+      </div>
+      {qrDataUrl && (
+        <img src={qrDataUrl} alt="QR" style={{ width: '96px', height: '96px', flexShrink: 0 }} />
+      )}
+    </div>
+  )
 }
 
 function FixtureRow({ fx }) {
@@ -52,16 +101,25 @@ function FixtureRow({ fx }) {
   )
 }
 
-function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, t }) {
+function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, tournament, pitchUrl, qrDataUrl, t }) {
   return (
     <div
       data-print={`pitch-${pitch.id}`}
+      className="pitch-print-container"
       style={{
         marginBottom: '0.5rem', border: '1px solid var(--color-border)',
         borderRadius: 'var(--radius-sm)', overflow: 'hidden',
         breakInside: 'avoid', pageBreakInside: 'avoid',
       }}
     >
+      <PrintHeader
+        headerClass="print-pitch-header"
+        heading={pitch.name}
+        subheading={tournament?.name}
+        url={pitchUrl}
+        qrDataUrl={qrDataUrl}
+        t={t}
+      />
       <div
         onClick={onToggle}
         style={{
@@ -105,9 +163,28 @@ function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, t }) {
   )
 }
 
-function SchedulePanel({ title, pitchGroups, scheduleByPitch, loading, pitchExpanded, togglePitch, printKey, onPrint, onClose, onPrintPitch, t }) {
+function pitchPublicUrl(pitchId, scheduleByPitch, slug) {
+  const fixtures = scheduleByPitch[pitchId] ?? []
+  const agIds = [...new Set(fixtures.map(fx => fx.stage?.age_group?.id).filter(Boolean))]
+  const base = `${BASE_URL}/t/${slug}`
+  return agIds.length === 1 ? `${base}/${agIds[0]}/schedule` : base
+}
+
+function SchedulePanel({
+  title, panelHeading, panelSubheading, panelUrl, panelQrDataUrl,
+  pitchGroups, scheduleByPitch, loading, pitchExpanded, togglePitch,
+  printKey, onPrint, onClose, onPrintPitch, tournament, qrCodes, t,
+}) {
   return (
     <div className="card" data-print={printKey} style={{ marginBottom: '1rem' }}>
+      <PrintHeader
+        headerClass="print-panel-header"
+        heading={panelHeading}
+        subheading={panelSubheading}
+        url={panelUrl}
+        qrDataUrl={panelQrDataUrl}
+        t={t}
+      />
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <span style={{
           fontFamily: 'var(--font-heading)', fontSize: '1rem',
@@ -140,17 +217,23 @@ function SchedulePanel({ title, pitchGroups, scheduleByPitch, loading, pitchExpa
                 {venueLabel}
               </div>
             )}
-            {pitches.map(pitch => (
-              <PitchAccordion
-                key={pitch.id}
-                pitch={pitch}
-                fixtures={scheduleByPitch[pitch.id] ?? []}
-                expanded={!!pitchExpanded[pitch.id]}
-                onToggle={() => togglePitch(pitch.id)}
-                onPrint={() => onPrintPitch(pitch.id)}
-                t={t}
-              />
-            ))}
+            {pitches.map(pitch => {
+              const url = tournament ? pitchPublicUrl(pitch.id, scheduleByPitch, tournament.slug) : ''
+              return (
+                <PitchAccordion
+                  key={pitch.id}
+                  pitch={pitch}
+                  fixtures={scheduleByPitch[pitch.id] ?? []}
+                  expanded={!!pitchExpanded[pitch.id]}
+                  onToggle={() => togglePitch(pitch.id)}
+                  onPrint={() => onPrintPitch(pitch.id)}
+                  tournament={tournament}
+                  pitchUrl={url}
+                  qrDataUrl={qrCodes[`pitch-${pitch.id}`]}
+                  t={t}
+                />
+              )
+            })}
           </div>
         ))
       )}
@@ -162,6 +245,7 @@ export default function Venues() {
   const { id: tournamentId } = useParams()
   const { t } = useTranslation()
   const { user, loading: authLoading } = useAuth()
+  const [tournament, setTournament] = useState(null)
   const [venues, setVenues] = useState([])
   const [loading, setLoading] = useState(true)
   const [showVenueForm, setShowVenueForm] = useState(false)
@@ -171,17 +255,19 @@ export default function Venues() {
   const [showFullOverview, setShowFullOverview] = useState(false)
   const [scheduleByPitch, setScheduleByPitch] = useState({})
   const [scheduleLoading, setScheduleLoading] = useState({})
+  const [qrCodes, setQrCodes] = useState({})
   const loadedPitchIds = useRef(new Set())
+  const qrGeneratedRef = useRef(new Set())
   const venueForm = useForm()
   const pitchForm = useForm()
 
   async function load() {
-    const { data: v, error: vErr } = await supabase
-      .from('venues')
-      .select('*, pitches(*)')
-      .eq('tournament_id', tournamentId)
-      .order('name')
-    if (vErr) { toast(t('common.error'), 'error'); setLoading(false); return }
+    const [{ data: tour, error: tErr }, { data: v, error: vErr }] = await Promise.all([
+      supabase.from('tournaments').select('id, name, slug').eq('id', tournamentId).single(),
+      supabase.from('venues').select('*, pitches(*)').eq('tournament_id', tournamentId).order('name'),
+    ])
+    if (tErr || vErr) { toast(t('common.error'), 'error'); setLoading(false); return }
+    setTournament(tour)
     setVenues(v ?? [])
     setLoading(false)
   }
@@ -191,13 +277,40 @@ export default function Venues() {
     load()
   }, [tournamentId, authLoading, user])
 
+  // Generate QR codes for venue/overview panels when tournament loads
+  useEffect(() => {
+    if (!tournament?.slug) return
+    const base = `${BASE_URL}/t/${tournament.slug}`
+    function gen(key, url) {
+      if (qrGeneratedRef.current.has(key)) return
+      qrGeneratedRef.current.add(key)
+      makeQR(url).then(dataUrl => setQrCodes(prev => ({ ...prev, [key]: dataUrl })))
+    }
+    gen('overview', base)
+    venues.forEach(v => gen(`venue-${v.id}`, base))
+  }, [tournament, venues])
+
+  // Generate QR codes for pitches as fixture data loads
+  useEffect(() => {
+    if (!tournament?.slug) return
+    const base = `${BASE_URL}/t/${tournament.slug}`
+    Object.keys(scheduleByPitch).forEach(pitchId => {
+      const key = `pitch-${pitchId}`
+      if (qrGeneratedRef.current.has(key)) return
+      qrGeneratedRef.current.add(key)
+      const agIds = [...new Set((scheduleByPitch[pitchId] ?? []).map(fx => fx.stage?.age_group?.id).filter(Boolean))]
+      const url = agIds.length === 1 ? `${base}/${agIds[0]}/schedule` : base
+      makeQR(url).then(dataUrl => setQrCodes(prev => ({ ...prev, [key]: dataUrl })))
+    })
+  }, [scheduleByPitch, tournament])
+
   async function fetchSchedule(pitchIds, loadingKey) {
     const missing = pitchIds.filter(id => !loadedPitchIds.current.has(id))
     if (missing.length === 0) return
     setScheduleLoading(prev => ({ ...prev, [loadingKey]: true }))
     const { data: fx, error } = await supabase
       .from('fixtures')
-      .select('id, kickoff_time, round, round_name, group_label, home_placeholder, away_placeholder, pitch_id, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), stage:stages(type, age_group:age_groups(name))')
+      .select('id, kickoff_time, round, round_name, group_label, home_placeholder, away_placeholder, pitch_id, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), stage:stages(type, age_group:age_groups(id, name))')
       .in('pitch_id', missing)
       .not('kickoff_time', 'is', null)
       .order('kickoff_time')
@@ -279,6 +392,8 @@ export default function Venues() {
   if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
+  const tournamentUrl = tournament ? `${BASE_URL}/t/${tournament.slug}` : ''
+
   return (
     <div>
       <style>{PRINT_STYLES}</style>
@@ -329,6 +444,10 @@ export default function Venues() {
         {showFullOverview && (
           <SchedulePanel
             title={t('venue.fullOverview')}
+            panelHeading={tournament?.name ?? ''}
+            panelSubheading={t('venue.fullOverview')}
+            panelUrl={tournamentUrl}
+            panelQrDataUrl={qrCodes['overview']}
             pitchGroups={venues.map(v => ({ venueLabel: v.name, pitches: v.pitches ?? [] }))}
             scheduleByPitch={scheduleByPitch}
             loading={!!scheduleLoading['overview']}
@@ -338,6 +457,8 @@ export default function Venues() {
             onPrint={() => triggerPrint('overview')}
             onClose={() => setShowFullOverview(false)}
             onPrintPitch={printPitch}
+            tournament={tournament}
+            qrCodes={qrCodes}
             t={t}
           />
         )}
@@ -431,6 +552,10 @@ export default function Venues() {
             {venueScheduleOpen[venue.id] && (
               <SchedulePanel
                 title={`${venue.name} — ${t('venue.pitchSchedule')}`}
+                panelHeading={tournament?.name ?? ''}
+                panelSubheading={venue.name}
+                panelUrl={tournamentUrl}
+                panelQrDataUrl={qrCodes[`venue-${venue.id}`]}
                 pitchGroups={[{ venueLabel: null, pitches: venue.pitches ?? [] }]}
                 scheduleByPitch={scheduleByPitch}
                 loading={!!scheduleLoading[venue.id]}
@@ -440,6 +565,8 @@ export default function Venues() {
                 onPrint={() => triggerPrint(`venue-${venue.id}`)}
                 onClose={() => setVenueScheduleOpen(prev => ({ ...prev, [venue.id]: false }))}
                 onPrintPitch={printPitch}
+                tournament={tournament}
+                qrCodes={qrCodes}
                 t={t}
               />
             )}
