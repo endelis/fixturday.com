@@ -26,7 +26,7 @@ export default function TournamentOverviewPublic() {
     async function load() {
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
-        .select('*, tournaments(id, name, slug, sport, location, start_date, end_date, sponsors_label, sponsors)')
+        .select('*, tournaments(id, name, slug, sport, location, start_date, end_date)')
         .eq('id', ageGroupId)
         .single()
       if (agErr || !ag) { setLoadError('not_found'); setLoading(false); return }
@@ -46,7 +46,15 @@ export default function TournamentOverviewPublic() {
         ? await supabase.from('fixture_results').select('fixture_id, home_goals, away_goals, sport_data').in('fixture_id', fixtureIds)
         : { data: [] }
 
-      setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [] })
+      // Sponsors — separate query so a missing DB migration doesn't break the page
+      const { data: sponsorRow, error: sponsorErr } = await supabase
+        .from('tournaments')
+        .select('sponsors_label, sponsors')
+        .eq('id', ag.tournaments.id)
+        .single()
+      const sponsorData = sponsorErr ? {} : (sponsorRow ?? {})
+
+      setData({ ag, siblings: siblings ?? [], teams: teams ?? [], fixtures: fixtures ?? [], results: results ?? [], sponsorData })
       setLoading(false)
     }
     load()
@@ -63,7 +71,7 @@ export default function TournamentOverviewPublic() {
   if (loadError === 'not_found') return <Navigate to={`/t/${slug}`} replace />
   if (!data?.ag) return <Navigate to={`/t/${slug}`} replace />
 
-  const { ag, siblings, teams, fixtures, results } = data
+  const { ag, siblings, teams, fixtures, results, sponsorData } = data
   const tournament = ag.tournaments
   const sport = tournament.sport ?? 'football'
   const sportOpts = { rugbyPointsSystem: ag.rugby_points_system ?? '4_2_1', csSetTarget: ag.cs_set_target ?? 15 }
@@ -245,15 +253,15 @@ export default function TournamentOverviewPublic() {
         </div>
 
         {/* Sponsors */}
-        {tournament.sponsors?.length > 0 && (
+        {sponsorData.sponsors?.length > 0 && (
           <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
-            {tournament.sponsors_label && (
+            {sponsorData.sponsors_label && (
               <div style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
-                {tournament.sponsors_label}
+                {sponsorData.sponsors_label}
               </div>
             )}
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem', justifyContent: 'center', alignItems: 'center', maxWidth: '720px', margin: '0 auto' }}>
-              {tournament.sponsors.map((s, i) => {
+              {sponsorData.sponsors.map((s, i) => {
                 const logoUrl = supabase.storage.from('tournament-logos').getPublicUrl(s.logo_path).data.publicUrl
                 const inner = (
                   <div style={{ background: 'rgba(255,255,255,0.97)', borderRadius: '8px', padding: '0.5rem 1rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem', minWidth: '80px', maxWidth: '160px', transition: 'opacity 0.15s' }}>
