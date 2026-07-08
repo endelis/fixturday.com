@@ -154,7 +154,7 @@ export default function Fixtures() {
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('fixture.title')} — {ageGroup?.name}</h1>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
             {fixtures.length === 0 && (
-              <button className="btn-primary" onClick={generateFixtures} disabled={generating}>
+              <button className="btn-primary" onClick={() => generateFixtures()} disabled={generating}>
                 {generating ? t('fixture.generating') : `⚡ ${t('fixture.generate')}`}
               </button>
             )}
