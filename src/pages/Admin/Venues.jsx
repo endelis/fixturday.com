@@ -11,33 +11,57 @@ import { toast } from '../../components/Toast'
 const BASE_URL = 'https://www.fixturday.com'
 
 const PRINT_STYLES = `
+  @page { size: A4 portrait; margin: 15mm; }
+
   @media print {
     body.venue-print-mode * { visibility: hidden !important; }
     body.venue-print-mode .print-active,
     body.venue-print-mode .print-active * { visibility: visible !important; }
     body.venue-print-mode .print-active {
-      position: absolute !important; left: 0; top: 0; width: 100%;
-      padding: 1.5rem; background: white !important; color: black !important;
+      position: absolute !important;
+      left: 0; top: 0;
+      width: 100%;
+      background: white !important;
     }
+    /* Show collapsed pitch content */
     body.venue-print-mode .print-active .pitch-content { display: block !important; }
-    body.venue-print-mode [data-print].print-active > .print-panel-header { display: flex !important; }
-    body.venue-print-mode .pitch-print-container.print-active > .print-pitch-header { display: flex !important; }
+    /* Show pitch header inside any active print target */
+    body.venue-print-mode .print-active .print-pitch-header { display: flex !important; }
+    /* Let pitch content flow naturally across pages */
+    body.venue-print-mode .pitch-print-container {
+      overflow: visible !important;
+      break-inside: auto !important;
+      page-break-inside: auto !important;
+      border: none !important;
+      border-radius: 0 !important;
+    }
+    /* Fixture rows stay together */
+    body.venue-print-mode .print-active tr { break-inside: avoid; page-break-inside: avoid; }
+    /* Hide all UI chrome */
     body.venue-print-mode .no-print { visibility: hidden !important; }
   }
 `
 
 async function makeQR(url) {
-  return QRCode.toDataURL(url, { width: 160, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
+  return QRCode.toDataURL(url, { width: 180, margin: 1, color: { dark: '#000000', light: '#ffffff' } })
 }
 
 function triggerPrint(key) {
   const el = document.querySelector(`[data-print="${key}"]`)
   if (!el) return
+
+  // Set page breaks between pitches (except the first)
+  const pitches = [...el.querySelectorAll('.pitch-print-container')]
+  pitches.forEach((p, i) => {
+    if (i > 0) { p.style.pageBreakBefore = 'always'; p.style.breakBefore = 'page' }
+  })
+
   el.classList.add('print-active')
   document.body.classList.add('venue-print-mode')
   window.print()
   document.body.classList.remove('venue-print-mode')
   el.classList.remove('print-active')
+  pitches.forEach(p => { p.style.pageBreakBefore = ''; p.style.breakBefore = '' })
 }
 
 function PrintHeader({ headerClass, heading, subheading, url, qrDataUrl, t }) {
@@ -48,33 +72,61 @@ function PrintHeader({ headerClass, heading, subheading, url, qrDataUrl, t }) {
         display: 'none',
         justifyContent: 'space-between',
         alignItems: 'flex-start',
-        marginBottom: '1.5rem',
-        paddingBottom: '1rem',
+        marginBottom: '1.25rem',
+        paddingBottom: '0.875rem',
         borderBottom: '3px solid #000',
-        gap: '1.5rem',
+        gap: '1.25rem',
+        background: 'white',
       }}
     >
-      <div style={{ flex: 1 }}>
+      <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{
-          fontSize: '2.4rem', fontWeight: 900, textTransform: 'uppercase',
-          letterSpacing: '-0.01em', lineHeight: 1.05, color: '#000',
+          fontFamily: "'Barlow Condensed', sans-serif",
+          fontSize: '2.2rem',
+          fontWeight: 900,
+          lineHeight: 1.05,
+          color: '#000',
+          wordBreak: 'break-word',
         }}>
-          {heading}
+          {heading.toUpperCase()}
         </div>
         {subheading && (
-          <div style={{ fontSize: '1.1rem', color: '#444', marginTop: '0.4rem', fontWeight: 600 }}>
+          <div style={{
+            fontFamily: "'Inter', sans-serif",
+            fontSize: '1rem',
+            color: '#333',
+            marginTop: '0.35rem',
+            fontWeight: 600,
+          }}>
             {subheading}
           </div>
         )}
-        <div style={{ marginTop: '0.9rem', fontSize: '0.78rem', color: '#666', textTransform: 'uppercase', letterSpacing: '0.05em' }}>
+        <div style={{
+          fontFamily: "'Inter', sans-serif",
+          marginTop: '0.85rem',
+          fontSize: '0.7rem',
+          color: '#777',
+          textTransform: 'uppercase',
+          letterSpacing: '0.06em',
+        }}>
           {t('venue.scanSchedule')}
         </div>
-        <div style={{ fontSize: '0.8rem', color: '#000', fontFamily: 'monospace', marginTop: '0.15rem' }}>
+        <div style={{
+          fontFamily: 'monospace',
+          fontSize: '0.75rem',
+          color: '#000',
+          marginTop: '0.1rem',
+          wordBreak: 'break-all',
+        }}>
           {url}
         </div>
       </div>
       {qrDataUrl && (
-        <img src={qrDataUrl} alt="QR" style={{ width: '96px', height: '96px', flexShrink: 0 }} />
+        <img
+          src={qrDataUrl}
+          alt="QR"
+          style={{ width: '88px', height: '88px', flexShrink: 0, display: 'block' }}
+        />
       )}
     </div>
   )
@@ -107,9 +159,10 @@ function PitchAccordion({ pitch, fixtures, expanded, onToggle, onPrint, tourname
       data-print={`pitch-${pitch.id}`}
       className="pitch-print-container"
       style={{
-        marginBottom: '0.5rem', border: '1px solid var(--color-border)',
-        borderRadius: 'var(--radius-sm)', overflow: 'hidden',
-        breakInside: 'avoid', pageBreakInside: 'avoid',
+        marginBottom: '0.5rem',
+        border: '1px solid var(--color-border)',
+        borderRadius: 'var(--radius-sm)',
+        overflow: 'hidden',
       }}
     >
       <PrintHeader
@@ -171,20 +224,11 @@ function pitchPublicUrl(pitchId, scheduleByPitch, slug) {
 }
 
 function SchedulePanel({
-  title, panelHeading, panelSubheading, panelUrl, panelQrDataUrl,
-  pitchGroups, scheduleByPitch, loading, pitchExpanded, togglePitch,
+  title, pitchGroups, scheduleByPitch, loading, pitchExpanded, togglePitch,
   printKey, onPrint, onClose, onPrintPitch, tournament, qrCodes, t,
 }) {
   return (
     <div className="card" data-print={printKey} style={{ marginBottom: '1rem' }}>
-      <PrintHeader
-        headerClass="print-panel-header"
-        heading={panelHeading}
-        subheading={panelSubheading}
-        url={panelUrl}
-        qrDataUrl={panelQrDataUrl}
-        t={t}
-      />
       <div className="no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
         <span style={{
           fontFamily: 'var(--font-heading)', fontSize: '1rem',
@@ -208,7 +252,7 @@ function SchedulePanel({
         pitchGroups.map(({ venueLabel, pitches }) => (
           <div key={venueLabel ?? '__default'}>
             {venueLabel && (
-              <div style={{
+              <div className="no-print" style={{
                 fontFamily: 'var(--font-heading)', fontSize: '0.8rem', textTransform: 'uppercase',
                 letterSpacing: '0.08em', color: 'var(--color-accent)',
                 marginTop: '1rem', marginBottom: '0.5rem',
@@ -277,7 +321,6 @@ export default function Venues() {
     load()
   }, [tournamentId, authLoading, user])
 
-  // Generate QR codes for venue/overview panels when tournament loads
   useEffect(() => {
     if (!tournament?.slug) return
     const base = `${BASE_URL}/t/${tournament.slug}`
@@ -290,7 +333,6 @@ export default function Venues() {
     venues.forEach(v => gen(`venue-${v.id}`, base))
   }, [tournament, venues])
 
-  // Generate QR codes for pitches as fixture data loads
   useEffect(() => {
     if (!tournament?.slug) return
     const base = `${BASE_URL}/t/${tournament.slug}`
@@ -392,8 +434,6 @@ export default function Venues() {
   if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
 
-  const tournamentUrl = tournament ? `${BASE_URL}/t/${tournament.slug}` : ''
-
   return (
     <div>
       <style>{PRINT_STYLES}</style>
@@ -444,10 +484,6 @@ export default function Venues() {
         {showFullOverview && (
           <SchedulePanel
             title={t('venue.fullOverview')}
-            panelHeading={tournament?.name ?? ''}
-            panelSubheading={t('venue.fullOverview')}
-            panelUrl={tournamentUrl}
-            panelQrDataUrl={qrCodes['overview']}
             pitchGroups={venues.map(v => ({ venueLabel: v.name, pitches: v.pitches ?? [] }))}
             scheduleByPitch={scheduleByPitch}
             loading={!!scheduleLoading['overview']}
@@ -552,10 +588,6 @@ export default function Venues() {
             {venueScheduleOpen[venue.id] && (
               <SchedulePanel
                 title={`${venue.name} — ${t('venue.pitchSchedule')}`}
-                panelHeading={tournament?.name ?? ''}
-                panelSubheading={venue.name}
-                panelUrl={tournamentUrl}
-                panelQrDataUrl={qrCodes[`venue-${venue.id}`]}
                 pitchGroups={[{ venueLabel: null, pitches: venue.pitches ?? [] }]}
                 scheduleByPitch={scheduleByPitch}
                 loading={!!scheduleLoading[venue.id]}
