@@ -138,6 +138,17 @@ export default function Schedule() {
 
   const filteredIds = new Set(filteredFixtures.map(f => f.id))
 
+  // First incomplete timeslot after at least one result is posted = "in progress" slot
+  const inProgressSlot = (() => {
+    if (!fixtures.some(f => f.status === 'completed')) return null
+    const pending = [...new Set(
+      fixtures
+        .filter(f => f.status !== 'completed' && f.status !== 'live' && f.kickoff_time)
+        .map(f => f.kickoff_time.slice(0, 16))
+    )].sort()
+    return pending[0] ?? null
+  })()
+
   const filterTabs = [
     { key: 'all',      label: t('schedule.filterAll'),      count: fixtures.length },
     { key: 'live',     label: t('schedule.filterLive'),     count: liveCount },
@@ -167,6 +178,8 @@ export default function Schedule() {
     const homeWon = result && displayHome > displayAway
     const awayWon = result && displayAway > displayHome
     const showEst = isBvb && !isCompleted && !isLive && !!time
+    const isCurrentSlot = !isCompleted && !isLive && !!inProgressSlot &&
+      f.kickoff_time?.slice(0, 16) === inProgressSlot
 
     const homeName = f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder_label ?? '?')
     const awayName = f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder_label ?? '?')
@@ -186,7 +199,8 @@ export default function Schedule() {
     return (
       <div style={{
         borderBottom: '1px solid rgba(255,255,255,0.05)',
-        borderLeft: `3px solid ${isLive ? 'var(--color-live)' : 'transparent'}`,
+        borderLeft: `3px solid ${isLive ? 'var(--color-live)' : isCurrentSlot ? 'var(--color-accent)' : 'transparent'}`,
+        background: isCurrentSlot ? 'rgba(240,165,0,0.04)' : undefined,
       }}>
         <div style={{
           display: 'flex',
@@ -218,12 +232,10 @@ export default function Schedule() {
               {time ?? '—'}
             </div>
             {courtName && (
-              <div style={{
+              <div className="sch-pitch-inline" style={{
                 fontSize: '0.58rem',
                 color: 'rgba(148,163,184,0.4)',
                 marginTop: 2,
-                overflow: 'hidden',
-                textOverflow: 'ellipsis',
                 whiteSpace: 'nowrap',
               }}>
                 {courtName}
@@ -232,15 +244,12 @@ export default function Schedule() {
           </div>
 
           {/* Home team */}
-          <div style={{
+          <div className="sch-team" style={{
             flex: 1,
             textAlign: 'right',
             fontSize: '0.9rem',
             fontWeight: homeWon ? 700 : 400,
             color: isCompleted && !homeWon ? 'var(--color-text-muted)' : 'var(--color-text)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
             fontStyle: !f.home_team_id ? 'italic' : 'normal',
           }}>
             {homeName}
@@ -265,14 +274,11 @@ export default function Schedule() {
           </div>
 
           {/* Away team */}
-          <div style={{
+          <div className="sch-team" style={{
             flex: 1,
             fontSize: '0.9rem',
             fontWeight: awayWon ? 700 : 400,
             color: isCompleted && !awayWon ? 'var(--color-text-muted)' : 'var(--color-text)',
-            overflow: 'hidden',
-            textOverflow: 'ellipsis',
-            whiteSpace: 'nowrap',
             fontStyle: !f.away_team_id ? 'italic' : 'normal',
           }}>
             {awayName}
@@ -290,11 +296,25 @@ export default function Schedule() {
               ? 'var(--color-live)'
               : isCompleted
                 ? 'var(--color-success)'
-                : 'transparent',
+                : isCurrentSlot
+                  ? 'var(--color-accent)'
+                  : 'transparent',
           }}>
-            {isLive ? 'LIVE' : isCompleted ? 'FT' : ''}
+            {isLive ? 'LIVE' : isCompleted ? 'FT' : isCurrentSlot ? '▶' : ''}
           </div>
         </div>
+
+        {/* Mobile pitch sub-row */}
+        {courtName && (
+          <div className="sch-pitch-row" style={{
+            padding: '0 0.75rem 0.35rem calc(0.75rem + 56px + 0.625rem)',
+            fontSize: '0.65rem',
+            color: 'rgba(148,163,184,0.5)',
+            letterSpacing: '0.03em',
+          }}>
+            {courtName}
+          </div>
+        )}
 
         {/* BV set detail sub-line */}
         {setDetail && (
@@ -407,24 +427,29 @@ export default function Schedule() {
 
   return (
     <div>
+      <style>{`
+        .sch-team { word-break: break-word; }
+        .sch-pitch-inline { display: none; }
+        .sch-pitch-row { display: block; }
+        @media (min-width: 640px) {
+          .sch-team { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .sch-pitch-inline { display: block; }
+          .sch-pitch-row { display: none; }
+        }
+      `}</style>
       <PublicNav tournament={ag?.tournaments} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
       <div className="container" style={{ paddingTop: '1.75rem', paddingBottom: '3rem' }}>
 
         {/* Page header */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <div>
-            <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.25rem, 4vw, 1.875rem)', margin: 0 }}>
-              {ag?.tournaments?.name} — {ag?.name} {t('schedule.title')}
-            </h1>
-            {lastUpdated && (
-              <p style={{ margin: '0.2rem 0 0', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
-                {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
-              </p>
-            )}
-          </div>
-          <Link to={`/t/${slug}/${ageGroupId}`} className="btn-secondary btn-sm" style={{ flexShrink: 0 }}>
-            {t('schedule.backToStandings')}
-          </Link>
+        <div style={{ marginBottom: '1.25rem' }}>
+          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.25rem, 4vw, 1.875rem)', margin: 0 }}>
+            {ag?.tournaments?.name} — {ag?.name} {t('schedule.title')}
+          </h1>
+          {lastUpdated && (
+            <p style={{ margin: '0.2rem 0 0', fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+              {t('common.lastUpdated', { time: formatTime(lastUpdated) })}
+            </p>
+          )}
         </div>
 
         {/* Registration banner */}
