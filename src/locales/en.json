@@ -240,6 +240,8 @@
     "vs": "vs",
     "score": "Score",
     "generate": "Generate fixtures",
+    "regenerate": "Regenerate",
+    "confirmRegenerate": "This will delete all existing fixtures and regenerate them based on the current format. Continue?",
     "schedule": "Schedule fixtures",
     "schedulerTitle": "Fixture scheduling",
     "schedDate": "Date",

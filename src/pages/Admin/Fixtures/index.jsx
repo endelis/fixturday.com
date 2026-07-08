@@ -53,7 +53,18 @@ export default function Fixtures() {
   useEffect(() => { load() }, [ageGroupId])
   useEffect(() => { if (schedulerOpen) load() }, [schedulerOpen])
 
-  async function generateFixtures() {
+  async function regenerateFixtures() {
+    if (teams.length < 2) { toast(t('fixture.needMoreTeams'), 'warning'); return }
+    if (!confirm(t('fixture.confirmRegenerate'))) return
+    setGenerating(true)
+    const { error: delError } = await supabase.from('stages').delete().eq('age_group_id', ageGroupId)
+    if (delError) { toast(t('common.error'), 'error'); setGenerating(false); return }
+    setStages([])
+    setFixtures([])
+    await generateFixtures(0)
+  }
+
+  async function generateFixtures(stageOffset = stages.length) {
     if (teams.length < 2) { toast(t('fixture.needMoreTeams'), 'warning'); return }
     setGenerating(true)
 
@@ -64,7 +75,7 @@ export default function Fixtures() {
       const teamsAdvancing = ageGroup.teams_advancing ?? 2
       const bracketSeeding = ageGroup.bracket_seeding ?? 'cross'
 
-      const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stages.length + 1 }).select().single()
+      const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stageOffset + 1 }).select().single()
       if (gsError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing, null, bracketSeeding)
@@ -72,7 +83,7 @@ export default function Fixtures() {
       const { error: gfError } = await supabase.from('fixtures').insert(groupRows)
       if (gfError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
-      const { data: knockoutStage, error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageKnockout'), type: 'knockout', sequence: stages.length + 2 }).select().single()
+      const { data: knockoutStage, error: ksError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageKnockout'), type: 'knockout', sequence: stageOffset + 2 }).select().single()
       if (ksError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
       if (knockoutFixtures.length > 0) {
@@ -98,7 +109,7 @@ export default function Fixtures() {
     const stageConfig = ageGroup.format === 'knockout'
       ? { name: t('fixture.stageKnockout'), type: 'knockout' }
       : { name: t('fixture.stageRoundRobin'), type: 'round_robin' }
-    const { data: stage, error: stageError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, ...stageConfig, sequence: stages.length + 1 }).select().single()
+    const { data: stage, error: stageError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, ...stageConfig, sequence: stageOffset + 1 }).select().single()
     if (stageError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
     let rounds
@@ -148,7 +159,10 @@ export default function Fixtures() {
               </button>
             )}
             {fixtures.length > 0 && (
-              <button className="btn-primary" onClick={openScheduler}>{t('fixture.schedule')}</button>
+              <>
+                <button className="btn-secondary" onClick={regenerateFixtures} disabled={generating}>{t('fixture.regenerate')}</button>
+                <button className="btn-primary" onClick={openScheduler}>{t('fixture.schedule')}</button>
+              </>
             )}
           </div>
         </div>
