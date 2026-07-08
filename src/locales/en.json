@@ -106,8 +106,6 @@
     "name": "Name",
     "format": "Format",
     "maxTeams": "Max teams",
-    "gameDuration": "Game duration (min)",
-    "pitchGap": "Gap between games (min)",
     "registrationOpen": "Registration open",
     "autoApprove": "Auto-approve registrations",
     "regOpen": "Reg. open",
@@ -126,7 +124,6 @@
     "savedAndCleared": "Settings saved. Go to Fixtures to regenerate.",
     "confirmedCount": "confirmed",
     "pendingCount": "pending",
-    "minutes": "min.",
     "formats": {
       "round_robin": "Round robin",
       "knockout": "Knockout",
