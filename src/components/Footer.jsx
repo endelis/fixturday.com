@@ -82,29 +82,41 @@ export default function Footer() {
           ))}
         </div>
 
-        {/* Row 2 — Support link */}
+        {/* Row 2 — Free + Support */}
         <div style={{
-          textAlign: 'center',
-          paddingBottom: '1.5rem',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: '0.875rem',
+          padding: '1rem 1.25rem',
           marginBottom: '1.5rem',
-          borderBottom: '1px solid var(--color-border)',
+          borderRadius: '8px',
+          border: '1px solid rgba(240,165,0,0.12)',
+          background: 'rgba(240,165,0,0.04)',
         }}>
+          <p style={{ margin: 0, fontSize: '0.8125rem', color: 'var(--color-text-muted)', lineHeight: 1.5 }}>
+            <span style={{ color: 'var(--color-accent)', fontWeight: 600, marginRight: '0.35rem' }}>✓ Free.</span>
+            {t('footer.freeTagline')}
+          </p>
           <a
             href="https://www.buymeacoffee.com/endelis"
             target="_blank"
             rel="noopener noreferrer"
             style={coffeeLink}
             onMouseEnter={e => {
+              e.currentTarget.style.background = 'rgba(240,165,0,0.15)'
+              e.currentTarget.style.borderColor = 'rgba(240,165,0,0.5)'
               e.currentTarget.style.color = 'var(--color-accent)'
-              e.currentTarget.style.borderColor = 'rgba(240,165,0,0.4)'
             }}
             onMouseLeave={e => {
+              e.currentTarget.style.background = 'transparent'
+              e.currentTarget.style.borderColor = 'rgba(240,165,0,0.25)'
               e.currentTarget.style.color = 'var(--color-text-muted)'
-              e.currentTarget.style.borderColor = 'var(--color-border)'
             }}
           >
             <Coffee size={14} />
-            {t('footer.coffee')}
+            {t('footer.coffeeBtn')}
           </a>
         </div>
 
@@ -160,11 +172,15 @@ const coffeeLink = {
   gap: '0.4rem',
   color: 'var(--color-text-muted)',
   fontSize: '0.8125rem',
+  fontWeight: 500,
   textDecoration: 'none',
   padding: '0.4rem 1rem',
-  border: '1px solid var(--color-border)',
+  border: '1px solid rgba(240,165,0,0.25)',
   borderRadius: '999px',
-  transition: 'color var(--transition-fast), border-color var(--transition-fast)',
+  background: 'transparent',
+  whiteSpace: 'nowrap',
+  flexShrink: 0,
+  transition: 'color var(--transition-fast), border-color var(--transition-fast), background var(--transition-fast)',
 }
 
 const legalLink = {
