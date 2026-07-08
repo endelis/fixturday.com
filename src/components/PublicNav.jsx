@@ -470,7 +470,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
           .pub-nav-hamburger { display: flex !important; }
         }
         @media (max-width: 767px) {
-          .pub-nav-logo { width: 130px; height: 22px; }
+          .pub-nav-logo { width: 160px; height: 27px; }
           .pub-nav-divisions-desktop { display: none !important; }
           .pub-nav-divisions-mobile { display: flex !important; }
           .pub-nav-live-label { display: none !important; }
