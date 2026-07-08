@@ -40,10 +40,12 @@ export default function TournamentEdit() {
   const fileInputRef = useRef(null)
   const [sponsors, setSponsors] = useState([])
   const [sponsorsLabel, setSponsorsLabel] = useState('')
+  const [localEdits, setLocalEdits] = useState({})
+  const [newEntry, setNewEntry] = useState({ name: '', website: '' })
   const [sponsorUploading, setSponsorUploading] = useState(false)
-  const [newSponsorName, setNewSponsorName] = useState('')
-  const [newSponsorWebsite, setNewSponsorWebsite] = useState('')
+  const [changingLogoFor, setChangingLogoFor] = useState(null)
   const sponsorFileRef = useRef(null)
+  const logoChangeRef = useRef(null)
   const { register, handleSubmit, reset, watch, formState: { errors, isSubmitting } } = useForm()
 
   const isActive = watch('is_active')
@@ -123,7 +125,54 @@ export default function TournamentEdit() {
     toast(t('tournament.attachmentDeleted'))
   }
 
-  async function handleSponsorUpload(e) {
+  function editField(index, field, value) {
+    setLocalEdits(prev => ({ ...prev, [index]: { ...(prev[index] ?? {}), [field]: value } }))
+  }
+
+  function editVal(index, field, fallback) {
+    return localEdits[index]?.[field] ?? fallback
+  }
+
+  function hasChanges(index) {
+    const e = localEdits[index]
+    if (!e) return false
+    const s = sponsors[index]
+    return (e.name !== undefined && e.name !== (s.name ?? '')) ||
+           (e.website !== undefined && e.website !== (s.website ?? ''))
+  }
+
+  async function saveEdits(index) {
+    const s = sponsors[index]
+    const updated = { ...s, ...(localEdits[index] ?? {}) }
+    const next = sponsors.map((sp, i) => i === index ? updated : sp)
+    const { error } = await supabase.from('tournaments').update({ sponsors: next }).eq('id', id)
+    if (error) { toast(t('common.error'), 'error'); return }
+    setSponsors(next)
+    setLocalEdits(prev => { const n = { ...prev }; delete n[index]; return n })
+    toast(t('common.saved'))
+  }
+
+  async function handleLogoChange(e) {
+    const file = e.target.files?.[0]
+    if (!file || changingLogoFor === null) return
+    if (file.size > 2 * 1024 * 1024) { toast(t('tournament.attachmentTooLarge'), 'error'); e.target.value = ''; return }
+    const ext = file.name.split('.').pop().toLowerCase()
+    const path = `${id}/sponsor-${crypto.randomUUID()}.${ext}`
+    const { error: upErr } = await supabase.storage.from('tournament-logos').upload(path, file)
+    if (upErr) { toast(t('tournament.sponsorUploadError'), 'error'); e.target.value = ''; return }
+    const s = sponsors[changingLogoFor]
+    const updated = { ...s, ...(localEdits[changingLogoFor] ?? {}), logo_path: path }
+    const next = sponsors.map((sp, i) => i === changingLogoFor ? updated : sp)
+    const { error } = await supabase.from('tournaments').update({ sponsors: next }).eq('id', id)
+    if (error) { toast(t('common.error'), 'error'); return }
+    setSponsors(next)
+    setLocalEdits(prev => { const n = { ...prev }; delete n[changingLogoFor]; return n })
+    setChangingLogoFor(null)
+    e.target.value = ''
+    toast(t('common.saved'))
+  }
+
+  async function handleNewSponsorUpload(e) {
     const file = e.target.files?.[0]
     if (!file) return
     if (file.size > 2 * 1024 * 1024) { toast(t('tournament.attachmentTooLarge'), 'error'); e.target.value = ''; return }
@@ -132,12 +181,11 @@ export default function TournamentEdit() {
     const path = `${id}/sponsor-${crypto.randomUUID()}.${ext}`
     const { error: upErr } = await supabase.storage.from('tournament-logos').upload(path, file)
     if (upErr) { toast(t('tournament.sponsorUploadError'), 'error'); setSponsorUploading(false); e.target.value = ''; return }
-    const newSponsors = [...sponsors, { logo_path: path, name: newSponsorName.trim(), website: newSponsorWebsite.trim() }]
-    const { error } = await supabase.from('tournaments').update({ sponsors: newSponsors }).eq('id', id)
+    const next = [...sponsors, { logo_path: path, name: newEntry.name.trim(), website: newEntry.website.trim() }]
+    const { error } = await supabase.from('tournaments').update({ sponsors: next }).eq('id', id)
     if (error) { toast(t('common.error'), 'error'); setSponsorUploading(false); return }
-    setSponsors(newSponsors)
-    setNewSponsorName('')
-    setNewSponsorWebsite('')
+    setSponsors(next)
+    setNewEntry({ name: '', website: '' })
     setSponsorUploading(false)
     e.target.value = ''
     toast(t('common.saved'))
@@ -146,10 +194,15 @@ export default function TournamentEdit() {
   async function handleSponsorDelete(index) {
     const s = sponsors[index]
     await supabase.storage.from('tournament-logos').remove([s.logo_path])
-    const newSponsors = sponsors.filter((_, i) => i !== index)
-    const { error } = await supabase.from('tournaments').update({ sponsors: newSponsors }).eq('id', id)
+    const next = sponsors.filter((_, i) => i !== index)
+    const { error } = await supabase.from('tournaments').update({ sponsors: next }).eq('id', id)
     if (error) { toast(t('common.error'), 'error'); return }
-    setSponsors(newSponsors)
+    setSponsors(next)
+    setLocalEdits(prev => {
+      const n = {}
+      Object.entries(prev).forEach(([k, v]) => { const ki = parseInt(k); if (ki !== index) n[ki > index ? ki - 1 : ki] = v })
+      return n
+    })
     toast(t('tournament.sponsorDeleted'))
   }
 
@@ -376,9 +429,7 @@ export default function TournamentEdit() {
               {t('tournament.sponsors')}
             </h3>
             {sponsors.length > 0 && (
-              <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-                {sponsors.length} added
-              </span>
+              <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>{sponsors.length} added</span>
             )}
           </div>
 
@@ -388,94 +439,106 @@ export default function TournamentEdit() {
               <label style={{ marginBottom: '0.3rem', display: 'block', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
                 {t('tournament.sponsorsLabel')}
               </label>
-              <input
-                value={sponsorsLabel}
-                onChange={e => setSponsorsLabel(e.target.value)}
-                placeholder={t('tournament.sponsorsLabelPlaceholder')}
-              />
+              <input value={sponsorsLabel} onChange={e => setSponsorsLabel(e.target.value)} placeholder={t('tournament.sponsorsLabelPlaceholder')} />
             </div>
             <button type="button" className="btn-secondary btn-sm" onClick={saveSponsorLabel} style={{ flexShrink: 0 }}>
               {t('common.save')}
             </button>
           </div>
 
-          {/* Existing sponsor logos */}
-          {sponsors.length > 0 && (
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.75rem', marginBottom: '1.25rem' }}>
-              {sponsors.map((s, i) => (
-                <div key={i} className="card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.4rem', padding: '0.75rem', minWidth: '90px', maxWidth: '160px' }}>
-                  <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '6px', padding: '0.375rem 0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%' }}>
-                    <img
-                      src={supabase.storage.from('tournament-logos').getPublicUrl(s.logo_path).data.publicUrl}
-                      alt={s.name || 'Sponsor'}
-                      style={{ maxHeight: '44px', maxWidth: '110px', objectFit: 'contain', display: 'block' }}
+          {/* Hidden input for changing logo of existing sponsor */}
+          <input ref={logoChangeRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleLogoChange} />
+
+          {/* Existing sponsors — each fully editable */}
+          <div style={{ display: 'grid', gap: '0.625rem', marginBottom: sponsors.length > 0 ? '1rem' : 0 }}>
+            {sponsors.map((s, i) => {
+              const logoUrl = supabase.storage.from('tournament-logos').getPublicUrl(s.logo_path).data.publicUrl
+              const changed = hasChanges(i)
+              return (
+                <div key={i} className="card" style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-start', padding: '0.875rem 1rem', flexWrap: 'wrap' }}>
+                  {/* Logo + change button */}
+                  <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+                    <div style={{ background: 'rgba(255,255,255,0.95)', borderRadius: '6px', padding: '0.3rem 0.5rem', width: '80px', height: '52px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <img src={logoUrl} alt={s.name || 'Sponsor'} style={{ maxHeight: '44px', maxWidth: '72px', objectFit: 'contain', display: 'block' }} />
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => { setChangingLogoFor(i); logoChangeRef.current?.click() }}
+                      style={{ fontSize: '0.68rem', color: 'var(--color-text-muted)', background: 'none', border: '1px solid rgba(255,255,255,0.12)', borderRadius: '4px', cursor: 'pointer', padding: '0.15rem 0.4rem', lineHeight: 1.4 }}
+                    >
+                      Change
+                    </button>
+                  </div>
+
+                  {/* Editable fields */}
+                  <div style={{ flex: 1, minWidth: '180px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
+                    <input
+                      value={editVal(i, 'name', s.name ?? '')}
+                      onChange={e => editField(i, 'name', e.target.value)}
+                      placeholder={t('tournament.sponsorNamePlaceholder')}
+                    />
+                    <input
+                      value={editVal(i, 'website', s.website ?? '')}
+                      onChange={e => editField(i, 'website', e.target.value)}
+                      placeholder="https://example.com"
+                      type="url"
                     />
                   </div>
-                  {s.name && (
-                    <div style={{ fontSize: '0.72rem', textAlign: 'center', color: 'var(--color-text-muted)', lineHeight: 1.2 }}>
-                      {s.name}
-                    </div>
-                  )}
-                  {s.website && (
-                    <a href={s.website} target="_blank" rel="noreferrer" style={{ fontSize: '0.68rem', color: 'var(--color-accent)', textDecoration: 'none', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '130px' }}>
-                      ↗ {s.website.replace(/^https?:\/\//, '')}
-                    </a>
-                  )}
-                  <button
-                    type="button"
-                    onClick={() => handleSponsorDelete(i)}
-                    style={{ color: 'var(--color-danger)', background: 'none', border: '1px solid var(--color-danger)', borderRadius: '4px', cursor: 'pointer', fontSize: '0.72rem', padding: '0.15rem 0.45rem', lineHeight: 1.4 }}
-                  >
-                    {t('common.delete')}
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
 
-          {/* Add new sponsor */}
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem', marginBottom: '0.75rem' }}>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ marginBottom: '0.3rem', display: 'block', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                {t('tournament.sponsorName')}
-              </label>
+                  {/* Actions */}
+                  <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexShrink: 0 }}>
+                    {changed && (
+                      <button type="button" className="btn-primary btn-sm" onClick={() => saveEdits(i)}>
+                        {t('common.save')}
+                      </button>
+                    )}
+                    <button
+                      type="button"
+                      onClick={() => handleSponsorDelete(i)}
+                      style={{ color: 'var(--color-danger)', background: 'none', border: '1px solid rgba(231,76,60,0.4)', borderRadius: '5px', cursor: 'pointer', fontSize: '0.78rem', padding: '0.3rem 0.6rem', lineHeight: 1.4 }}
+                    >
+                      {t('common.delete')}
+                    </button>
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          {/* New sponsor row — always shown */}
+          <div className="card" style={{ display: 'flex', gap: '0.875rem', alignItems: 'flex-start', padding: '0.875rem 1rem', flexWrap: 'wrap', border: '1px dashed rgba(255,255,255,0.15)', background: 'transparent' }}>
+            {/* Upload area */}
+            <div style={{ flexShrink: 0, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.35rem' }}>
+              <button
+                type="button"
+                onClick={() => sponsorFileRef.current?.click()}
+                disabled={sponsorUploading}
+                style={{ width: '80px', height: '52px', background: 'rgba(255,255,255,0.06)', border: '1px dashed rgba(255,255,255,0.2)', borderRadius: '6px', cursor: sponsorUploading ? 'not-allowed' : 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: '0.2rem', opacity: sponsorUploading ? 0.6 : 1 }}
+              >
+                <span style={{ fontSize: '1.1rem' }}>🖼</span>
+                <span style={{ fontSize: '0.58rem', color: 'var(--color-text-muted)', lineHeight: 1.2, textAlign: 'center' }}>{sponsorUploading ? '…' : 'Upload'}</span>
+              </button>
+            </div>
+
+            {/* Fields */}
+            <div style={{ flex: 1, minWidth: '180px', display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.5rem' }}>
               <input
-                value={newSponsorName}
-                onChange={e => setNewSponsorName(e.target.value)}
+                value={newEntry.name}
+                onChange={e => setNewEntry(prev => ({ ...prev, name: e.target.value }))}
                 placeholder={t('tournament.sponsorNamePlaceholder')}
               />
-            </div>
-            <div className="form-group" style={{ margin: 0 }}>
-              <label style={{ marginBottom: '0.3rem', display: 'block', fontSize: '0.82rem', color: 'var(--color-text-muted)' }}>
-                {t('tournament.sponsorWebsite')}
-              </label>
               <input
-                value={newSponsorWebsite}
-                onChange={e => setNewSponsorWebsite(e.target.value)}
+                value={newEntry.website}
+                onChange={e => setNewEntry(prev => ({ ...prev, website: e.target.value }))}
                 placeholder="https://example.com"
                 type="url"
               />
             </div>
+
+            <input ref={sponsorFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleNewSponsorUpload} />
           </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
-            <input ref={sponsorFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSponsorUpload} />
-            <button
-              type="button"
-              onClick={() => sponsorFileRef.current?.click()}
-              disabled={sponsorUploading}
-              style={{
-                display: 'inline-flex', alignItems: 'center', gap: '0.5rem',
-                border: '1px solid var(--color-accent)', color: 'var(--color-accent)',
-                background: 'none', borderRadius: '6px', padding: '0.5rem 1rem',
-                cursor: sponsorUploading ? 'not-allowed' : 'pointer',
-                fontSize: '0.875rem', fontWeight: 500, opacity: sponsorUploading ? 0.6 : 1,
-              }}
-            >
-              🖼 {sponsorUploading ? t('tournament.sponsorUploading') : t('tournament.addSponsor')}
-            </button>
-            <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
-              Fill in name / website (optional), then pick a logo file. Repeat for each sponsor.
-            </span>
+          <div style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', marginTop: '0.5rem' }}>
+            Fill in name / website, then click the logo area to upload. A new row appears after each is added.
           </div>
         </div>
 
