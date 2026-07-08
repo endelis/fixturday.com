@@ -352,7 +352,10 @@
     "deleted": "Venue deleted",
     "pitchAdded": "Pitch added",
     "pitchDeleted": "Pitch deleted",
-    "confirmDeleteVenue": "Delete venue and all its pitches?"
+    "confirmDeleteVenue": "Delete venue and all its pitches?",
+    "scheduleByPitch": "Schedule by pitch",
+    "printSchedule": "Print",
+    "noScheduledGames": "No scheduled games"
   },
   "auth": {
     "email": "Email",

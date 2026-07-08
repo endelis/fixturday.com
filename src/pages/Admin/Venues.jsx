@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react'
 import { useParams, Link, Navigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { useTranslation } from 'react-i18next'
+import { format } from 'date-fns'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
@@ -15,6 +16,9 @@ export default function Venues() {
   const [loading, setLoading] = useState(true)
   const [showVenueForm, setShowVenueForm] = useState(false)
   const [pitchForms, setPitchForms] = useState({})
+  const [showSchedule, setShowSchedule] = useState(false)
+  const [scheduleByPitch, setScheduleByPitch] = useState({})
+  const [scheduleLoading, setScheduleLoading] = useState(false)
   const venueForm = useForm()
   const pitchForm = useForm()
 
@@ -68,6 +72,27 @@ export default function Venues() {
     load()
   }
 
+  async function openSchedule() {
+    setScheduleLoading(true)
+    setShowSchedule(true)
+    const allPitchIds = venues.flatMap(v => (v.pitches ?? []).map(p => p.id))
+    if (allPitchIds.length === 0) { setScheduleLoading(false); return }
+    const { data: fx, error: fxErr } = await supabase
+      .from('fixtures')
+      .select('id, kickoff_time, round, round_name, group_label, home_placeholder, away_placeholder, pitch_id, home_team:teams!home_team_id(name), away_team:teams!away_team_id(name), stage:stages(type, age_group:age_groups(name))')
+      .in('pitch_id', allPitchIds)
+      .not('kickoff_time', 'is', null)
+      .order('kickoff_time')
+    if (fxErr) { toast(t('common.error'), 'error'); setScheduleLoading(false); return }
+    const grouped = {}
+    for (const f of fx ?? []) {
+      if (!grouped[f.pitch_id]) grouped[f.pitch_id] = []
+      grouped[f.pitch_id].push(f)
+    }
+    setScheduleByPitch(grouped)
+    setScheduleLoading(false)
+  }
+
   if (authLoading) return <div className="loading">{t('common.loading')}</div>
   if (!user) return <Navigate to="/admin" replace />
   if (loading) return <div className="loading">{t('common.loading')}</div>
@@ -77,11 +102,16 @@ export default function Venues() {
       <div className="container" style={{ paddingTop: '2rem' }}>
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('venue.title')}</h1>
-          {!showVenueForm && (
-            <button className="btn-primary" onClick={() => setShowVenueForm(true)}>
-              + {t('venue.new')}
+          <div style={{ display: 'flex', gap: '0.5rem' }}>
+            <button className="btn-secondary" onClick={showSchedule ? () => setShowSchedule(false) : openSchedule}>
+              {showSchedule ? t('common.close') : t('venue.scheduleByPitch')}
             </button>
-          )}
+            {!showVenueForm && (
+              <button className="btn-primary" onClick={() => setShowVenueForm(true)}>
+                + {t('venue.new')}
+              </button>
+            )}
+          </div>
         </div>
 
         {showVenueForm && (
@@ -115,6 +145,69 @@ export default function Venues() {
 
         {venues.length === 0 && !showVenueForm && (
           <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
+        )}
+
+        {showSchedule && (
+          <div className="pitch-schedule-panel" style={{ marginBottom: '2rem' }}>
+            <style>{`
+              @media print {
+                body * { visibility: hidden; }
+                .pitch-schedule-panel, .pitch-schedule-panel * { visibility: visible; }
+                .pitch-schedule-panel { position: absolute; left: 0; top: 0; width: 100%; padding: 1rem; }
+                .pitch-schedule-no-print { display: none !important; }
+              }
+            `}</style>
+            <div className="pitch-schedule-no-print" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem' }}>
+              <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                {t('venue.scheduleByPitch')}
+              </span>
+              <button className="btn-secondary btn-sm" onClick={() => window.print()}>
+                🖨 {t('venue.printSchedule')}
+              </button>
+            </div>
+            {scheduleLoading ? (
+              <div style={{ color: 'var(--color-text-muted)', padding: '1rem 0' }}>{t('common.loading')}</div>
+            ) : (
+              venues.flatMap(v => v.pitches ?? []).map(pitch => (
+                <div key={pitch.id} style={{ marginBottom: '1.5rem', breakInside: 'avoid', pageBreakInside: 'avoid' }}>
+                  <div style={{
+                    fontFamily: 'var(--font-heading)', fontSize: '1.1rem', fontWeight: 700,
+                    borderBottom: '2px solid var(--color-accent)', paddingBottom: '0.25rem', marginBottom: '0.5rem',
+                  }}>
+                    {pitch.name}
+                  </div>
+                  {(scheduleByPitch[pitch.id] ?? []).length === 0 ? (
+                    <p style={{ color: 'var(--color-text-muted)', fontSize: '0.875rem' }}>{t('venue.noScheduledGames')}</p>
+                  ) : (
+                    <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.875rem' }}>
+                      <tbody>
+                        {(scheduleByPitch[pitch.id] ?? []).map(fx => {
+                          const d = new Date(fx.kickoff_time)
+                          const timeStr = `${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`
+                          const dateStr = format(d, 'dd.MM')
+                          const division = fx.stage?.age_group?.name ?? ''
+                          const home = fx.home_team?.name ?? fx.home_placeholder ?? '—'
+                          const away = fx.away_team?.name ?? fx.away_placeholder ?? '—'
+                          const label = fx.round_name ?? (fx.group_label ? `${fx.group_label} R${fx.round}` : `R${fx.round}`)
+                          return (
+                            <tr key={fx.id} style={{ borderBottom: '1px solid var(--color-border)' }}>
+                              <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-accent)', fontWeight: 600, width: '3rem' }}>{timeStr}</td>
+                              <td style={{ padding: '0.35rem 0.5rem', whiteSpace: 'nowrap', color: 'var(--color-text-muted)', width: '3.5rem' }}>{dateStr}</td>
+                              <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', width: '4rem', fontSize: '0.78rem' }}>{division}</td>
+                              <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', width: '5rem', fontSize: '0.78rem' }}>{label}</td>
+                              <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{home}</td>
+                              <td style={{ padding: '0.35rem 0.5rem', color: 'var(--color-text-muted)', textAlign: 'center', width: '1.5rem' }}>vs</td>
+                              <td style={{ padding: '0.35rem 0.5rem', fontWeight: 500 }}>{away}</td>
+                            </tr>
+                          )
+                        })}
+                      </tbody>
+                    </table>
+                  )}
+                </div>
+              ))
+            )}
+          </div>
         )}
 
         {venues.map(venue => (
