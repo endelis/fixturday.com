@@ -26,7 +26,7 @@ export default function TournamentOverviewPublic() {
     async function load() {
       const { data: ag, error: agErr } = await supabase
         .from('age_groups')
-        .select('*, tournaments(id, name, slug, sport, location, start_date, end_date)')
+        .select('*, tournaments(id, name, slug, sport, location, start_date, end_date, sponsors_label, sponsors)')
         .eq('id', ageGroupId)
         .single()
       if (agErr || !ag) { setLoadError('not_found'); setLoading(false); return }
@@ -243,6 +243,30 @@ export default function TournamentOverviewPublic() {
             )}
           </div>
         </div>
+
+        {/* Sponsors */}
+        {tournament.sponsors?.length > 0 && (
+          <div style={{ marginBottom: '1.5rem', textAlign: 'center' }}>
+            {tournament.sponsors_label && (
+              <div style={{ fontSize: '0.68rem', fontWeight: 600, color: 'var(--color-text-muted)', textTransform: 'uppercase', letterSpacing: '0.1em', marginBottom: '0.75rem' }}>
+                {tournament.sponsors_label}
+              </div>
+            )}
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.875rem', justifyContent: 'center', alignItems: 'center' }}>
+              {tournament.sponsors.map((s, i) => {
+                const logoUrl = supabase.storage.from('tournament-logos').getPublicUrl(s.logo_path).data.publicUrl
+                return (
+                  <div key={i} style={{ background: 'rgba(255,255,255,0.97)', borderRadius: '8px', padding: '0.5rem 0.875rem', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                    <img src={logoUrl} alt={s.name || 'Sponsor'} style={{ height: '48px', maxWidth: '130px', objectFit: 'contain', display: 'block' }} />
+                    {s.name && (
+                      <div style={{ fontSize: '0.62rem', color: '#333', fontWeight: 600, marginTop: '0.1rem' }}>{s.name}</div>
+                    )}
+                  </div>
+                )
+              })}
+            </div>
+          </div>
+        )}
 
         {/* Final standings (when tournament is over) */}
         {tournamentFinished && finalPodium.length > 0 && (
