@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { Link, NavLink } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { X, Menu } from 'lucide-react'
 
@@ -13,8 +13,18 @@ import { X, Menu } from 'lucide-react'
  */
 export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId, showRegister = true }) {
   const { t } = useTranslation()
+  const location = useLocation()
   const [open, setOpen] = useState(false)
   const [scrolled, setScrolled] = useState(false)
+
+  // Build a division link that preserves the current tab
+  function divisionPath(ag) {
+    const path = location.pathname
+    const base = `/t/${tournament?.slug}/${ag.id}`
+    if (path.endsWith('/overview')) return `${base}/overview`
+    if (path.endsWith('/fixtures')) return `${base}/fixtures`
+    return base  // standings (default) or anything else
+  }
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 8)
@@ -88,7 +98,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                     return (
                       <Link
                         key={ag.id}
-                        to={`/t/${tournament.slug}/${ag.id}`}
+                        to={divisionPath(ag)}
                         style={{
                           padding: '0.3rem 0.75rem',
                           borderRadius: 'var(--radius-sm)',
@@ -225,7 +235,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               return (
                 <Link
                   key={ag.id}
-                  to={`/t/${tournament.slug}/${ag.id}`}
+                  to={divisionPath(ag)}
                   style={{
                     padding: '0.35rem 0.875rem',
                     borderRadius: 'var(--radius-sm)',
