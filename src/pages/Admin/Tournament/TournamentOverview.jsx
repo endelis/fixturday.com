@@ -228,7 +228,7 @@ export default function TournamentOverview() {
                   {ag.name}
                 </Link>
                 <a
-                  href={`/admin/tournaments/${id}/print?agId=${ag.id}&view=group-split`}
+                  href={`/admin/tournaments/${id}/print?agId=${ag.id}&view=cross-table`}
                   target="_blank"
                   rel="noreferrer"
                   style={{

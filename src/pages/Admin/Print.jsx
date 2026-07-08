@@ -225,6 +225,168 @@ export default function Print() {
     )
   }
 
+  // ── Cross Table (Backup group play) view ─────────────────────────────────
+  if (view === 'cross-table') {
+    const targetAgData = filterAgId
+      ? ageGroupData.find(({ ag }) => ag.id === filterAgId)
+      : ageGroupData[0]
+
+    const agName = targetAgData?.ag?.name ?? ''
+    const allFixtures = targetAgData?.fixtures ?? []
+    const publicUrl = tournament.slug ? `https://www.fixturday.com/t/${tournament.slug}` : ''
+
+    // Build per-group fixture lists
+    const groupFixtureMap = {}
+    for (const f of allFixtures) {
+      if (!f.group) continue
+      if (!groupFixtureMap[f.group]) groupFixtureMap[f.group] = []
+      groupFixtureMap[f.group].push(f)
+    }
+
+    const groups = Object.entries(groupFixtureMap)
+      .sort(([a], [b]) => a.localeCompare(b))
+      .map(([label, fxs]) => {
+        // Collect unique teams
+        const teamMap = new Map()
+        for (const f of fxs) {
+          if (f.home_team?.id) teamMap.set(f.home_team.id, f.home_team)
+          if (f.away_team?.id) teamMap.set(f.away_team.id, f.away_team)
+        }
+        const teams = [...teamMap.values()]
+
+        // Per-group standings
+        const gResults = fxs.flatMap(f => {
+          const r = f.fixture_results?.[0]
+          return r ? [{ fixture_id: f.id, home_goals: r.home_goals, away_goals: r.away_goals }] : []
+        })
+        const gStandings = calculateStandings(teams, fxs, gResults)
+
+        // Teams ordered by current standing position
+        const orderedTeams = gStandings.length > 0
+          ? gStandings.map(row => row.team)
+          : [...teams].sort((a, b) => a.name.localeCompare(b.name))
+
+        // Result lookup: `homeId:awayId` → score from row-team's POV
+        const resultMap = {}
+        for (const f of fxs) {
+          const r = f.fixture_results?.[0]
+          if (!r || !f.home_team_id || !f.away_team_id) continue
+          resultMap[`${f.home_team_id}:${f.away_team_id}`] = { h: r.home_goals, a: r.away_goals }
+          resultMap[`${f.away_team_id}:${f.home_team_id}`] = { h: r.away_goals, a: r.home_goals }
+        }
+
+        // Points/position per team
+        const ptsMap = Object.fromEntries(
+          gStandings.map((row, i) => [row.team.id, { pts: row.points, pos: i + 1 }])
+        )
+
+        return { label, teams: orderedTeams, resultMap, ptsMap }
+      })
+
+    const maxTeams = Math.max(...groups.map(g => g.teams.length), 0)
+    const cellW = maxTeams > 10 ? 32 : maxTeams > 7 ? 38 : 46
+    const tblFontSize = maxTeams > 10 ? '0.66rem' : maxTeams > 7 ? '0.74rem' : '0.82rem'
+
+    return (
+      <>
+        <style>{`
+          @page { size: A4 landscape; margin: 10mm 14mm; }
+          @media print {
+            body * { visibility: hidden; }
+            .ct-root, .ct-root * { visibility: visible; }
+            .ct-root { position: absolute; top: 0; left: 0; width: 100%; }
+            .no-print { display: none !important; }
+            .ct-group { page-break-after: always; }
+            .ct-group:last-child { page-break-after: auto; }
+          }
+        `}</style>
+
+        <div className="no-print" style={{ position: 'fixed', top: '1rem', right: '1rem', zIndex: 999 }}>
+          <button
+            onClick={() => window.print()}
+            style={{ background: '#f0a500', color: '#000', border: 'none', borderRadius: '6px', padding: '0.5rem 1rem', fontWeight: 700, fontSize: '0.9rem', cursor: 'pointer' }}
+          >
+            {t('print.printBtn')}
+          </button>
+        </div>
+
+        <div className="ct-root" style={{ fontFamily: 'Arial, Helvetica, sans-serif', color: '#000', background: '#fff' }}>
+          {groups.length === 0 && (
+            <div style={{ padding: '2rem', color: '#888', fontFamily: 'Arial, sans-serif' }}>
+              No groups found. Generate group stage fixtures first.
+            </div>
+          )}
+          {groups.map(group => (
+            <div key={group.label} className="ct-group" style={{ padding: '8mm 0' }}>
+              {/* Page header */}
+              <div style={{ borderBottom: '3px solid #000', paddingBottom: '5px', marginBottom: '12px' }}>
+                <div style={{ fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.15 }}>
+                  {tournament.name.toUpperCase()} — {agName.toUpperCase()}
+                </div>
+                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#444', marginTop: '2px' }}>
+                  {t('print.group')} {group.label}
+                </div>
+              </div>
+
+              {/* Cross table */}
+              <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: tblFontSize, tableLayout: 'fixed' }}>
+                <colgroup>
+                  <col style={{ width: '26px' }} />
+                  <col />
+                  {group.teams.map((_, j) => <col key={j} style={{ width: cellW + 'px' }} />)}
+                  <col style={{ width: cellW + 'px' }} />
+                  <col style={{ width: '30px' }} />
+                </colgroup>
+                <thead>
+                  <tr>
+                    <th style={ctTh}>#</th>
+                    <th style={{ ...ctTh, textAlign: 'left' }}>{t('standings.team')}</th>
+                    {group.teams.map((_, j) => <th key={j} style={ctTh}>{j + 1}</th>)}
+                    <th style={ctTh}>{t('standings.points')}</th>
+                    <th style={ctTh}>Pos</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {group.teams.map((team, i) => (
+                    <tr key={team.id}>
+                      <td style={{ ...ctTd, textAlign: 'center', fontWeight: 700 }}>{i + 1}</td>
+                      <td style={{ ...ctTd, fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {team.name}
+                      </td>
+                      {group.teams.map((opp, j) => {
+                        if (i === j) return (
+                          <td key={opp.id} style={{ ...ctTd, background: '#aaa', WebkitPrintColorAdjust: 'exact', printColorAdjust: 'exact' }} />
+                        )
+                        const r = group.resultMap[`${team.id}:${opp.id}`]
+                        return (
+                          <td key={opp.id} style={{ ...ctTd, textAlign: 'center', fontWeight: r ? 700 : 400, color: r ? '#000' : '#bbb' }}>
+                            {r ? `${r.h}:${r.a}` : '–'}
+                          </td>
+                        )
+                      })}
+                      <td style={{ ...ctTd, textAlign: 'center', fontWeight: 700 }}>
+                        {group.ptsMap[team.id]?.pts ?? 0}
+                      </td>
+                      <td style={{ ...ctTd, textAlign: 'center', fontWeight: 700 }}>
+                        {group.ptsMap[team.id]?.pos ?? '—'}
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+
+              {/* Page footer */}
+              <div style={{ display: 'flex', justifyContent: 'space-between', borderTop: '1px solid #ccc', paddingTop: '5px', marginTop: '10px', fontSize: '0.65rem', color: '#999' }}>
+                <span>fixturday.com{publicUrl ? ` — ${publicUrl.replace('https://', '')}` : ''}</span>
+                <span>{printDate}</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </>
+    )
+  }
+
   // ── Group Split view ──────────────────────────────────────────────────────
   if (view === 'group-split') {
     const targetAgData = filterAgId
@@ -519,5 +681,21 @@ const thStyle = {
 const tdStyle = {
   border: '1px solid #ccc',
   padding: '3px 5px',
+  color: '#000',
+}
+
+const ctTh = {
+  border: '1px solid #000',
+  padding: '4px 3px',
+  background: '#e0e0e0',
+  fontWeight: 700,
+  textAlign: 'center',
+  WebkitPrintColorAdjust: 'exact',
+  printColorAdjust: 'exact',
+}
+
+const ctTd = {
+  border: '1px solid #aaa',
+  padding: '6px 3px',
   color: '#000',
 }
