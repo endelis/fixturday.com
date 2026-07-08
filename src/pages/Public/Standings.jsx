@@ -17,7 +17,6 @@ export default function Standings() {
   const [loading, setLoading] = useState(true)
   const [loadError, setLoadError] = useState(null)
   const [lastUpdated, setLastUpdated] = useState(null)
-  const [realtimeStatus, setRealtimeStatus] = useState('connecting')
 
   const [searchParams, setSearchParams] = useSearchParams()
   const _rawAgeGroupId = searchParams.get('ageGroupId') || null
@@ -109,9 +108,7 @@ export default function Standings() {
     const channel = supabase
       .channel(`standings-${ageGroupId}`)
       .on('postgres_changes', { event: '*', schema: 'public', table: 'fixture_results' }, () => load())
-      .subscribe(status => {
-        setRealtimeStatus(status === 'SUBSCRIBED' ? 'connected' : 'disconnected')
-      })
+      .subscribe()
 
     const poll = setInterval(load, 30000)
 
@@ -256,29 +253,9 @@ export default function Standings() {
             📍 {tournament.location}
           </p>
         )}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.5rem' }}>
-          <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: 0 }}>{tournament.name} — {ag.name} {t('standings.title')}</h1>
-          <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
-            <span style={{
-              display: 'inline-flex', alignItems: 'center', gap: '0.35rem',
-              fontSize: '0.72rem', fontFamily: 'var(--font-heading)', fontWeight: 600,
-              color: realtimeStatus === 'connected' ? 'var(--color-live)' : 'var(--color-text-muted)',
-              letterSpacing: '0.05em', textTransform: 'uppercase',
-            }}>
-              <span style={{
-                width: '7px', height: '7px', borderRadius: '50%', flexShrink: 0,
-                background: realtimeStatus === 'connected' ? 'var(--color-live)' : 'var(--color-text-muted)',
-                boxShadow: realtimeStatus === 'connected' ? '0 0 8px var(--color-live)' : 'none',
-                animation: realtimeStatus === 'connected' ? 'live-dot-pulse 2s ease-in-out infinite' : 'none',
-              }} />
-              {realtimeStatus === 'connected'
-                ? t('standings.live')
-                : lastUpdated
-                  ? t('common.lastUpdated', { time: formatTime(lastUpdated) })
-                  : t('standings.connecting')}
-            </span>
-          </div>
-        </div>
+        <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: '0 0 1.25rem' }}>
+          {tournament.name} — {ag.name} {t('standings.title')}
+        </h1>
 
         {isRegOpen && (
           <Link
