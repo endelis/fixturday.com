@@ -45,7 +45,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
         >
           {/* Logo */}
           <Link to="/" style={{ display: 'flex', alignItems: 'center', flexShrink: 0, textDecoration: 'none' }}>
-            <img src="/logo-horizontal.svg" alt="Fixturday" width="175" height="30" style={{ height: '30px', width: '175px', display: 'block' }} />
+            <img src="/logo-horizontal.svg" alt="Fixturday" className="pub-nav-logo" style={{ display: 'block' }} />
           </Link>
 
           {tournament ? (
@@ -71,7 +71,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               </Link>
 
               {ageGroups.length > 1 && (
-                <div style={{
+                <div className="pub-nav-divisions-desktop" style={{
                   display: 'flex',
                   gap: '0.35rem',
                   flexWrap: 'nowrap',
@@ -205,6 +205,50 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                 </>
               )
             })()}
+          </div>
+        )}
+
+        {/* Mobile-only division selector — shown below sub-nav on small screens */}
+        {tournament && ageGroups.length > 1 && (
+          <div className="pub-nav-divisions-mobile container" style={{
+            gap: '0.5rem',
+            paddingTop: '0.5rem',
+            paddingBottom: '0.5rem',
+            borderTop: '1px solid var(--color-border)',
+            overflowX: 'auto',
+            WebkitOverflowScrolling: 'touch',
+            scrollbarWidth: 'none',
+            msOverflowStyle: 'none',
+          }}>
+            {ageGroups.map(ag => {
+              const isActive = activeAgeGroupId === ag.id
+              return (
+                <Link
+                  key={ag.id}
+                  to={`/t/${tournament.slug}/${ag.id}`}
+                  style={{
+                    padding: '0.35rem 0.875rem',
+                    borderRadius: 'var(--radius-sm)',
+                    fontSize: '0.8rem',
+                    fontFamily: 'var(--font-heading)',
+                    fontWeight: 600,
+                    letterSpacing: '0.03em',
+                    textDecoration: 'none',
+                    display: 'inline-flex',
+                    alignItems: 'center',
+                    whiteSpace: 'nowrap',
+                    minHeight: '34px',
+                    background: isActive ? 'var(--color-accent)' : 'transparent',
+                    color: isActive ? '#0a0f1e' : 'var(--color-text-muted)',
+                    border: `1px solid ${isActive ? 'var(--color-accent)' : 'var(--color-border)'}`,
+                    transition: 'all var(--transition-fast)',
+                    flexShrink: 0,
+                  }}
+                >
+                  {ag.name}
+                </Link>
+              )
+            })}
           </div>
         )}
       </nav>
@@ -359,9 +403,17 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
 
       <style>{`
         .pub-nav-hamburger { display: none !important; }
+        .pub-nav-logo { width: 175px; height: 30px; }
+        .pub-nav-divisions-desktop { display: flex !important; }
+        .pub-nav-divisions-mobile { display: none !important; }
         @media (max-width: 640px) {
           .pub-nav-desktop { display: none !important; }
           .pub-nav-hamburger { display: flex !important; }
+        }
+        @media (max-width: 767px) {
+          .pub-nav-logo { width: 130px; height: 22px; }
+          .pub-nav-divisions-desktop { display: none !important; }
+          .pub-nav-divisions-mobile { display: flex !important; }
         }
       `}</style>
     </>
