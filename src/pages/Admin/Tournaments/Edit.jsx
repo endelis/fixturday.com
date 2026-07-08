@@ -129,7 +129,7 @@ export default function TournamentEdit() {
     if (file.size > 2 * 1024 * 1024) { toast(t('tournament.attachmentTooLarge'), 'error'); e.target.value = ''; return }
     setSponsorUploading(true)
     const ext = file.name.split('.').pop().toLowerCase()
-    const path = `sponsors/${id}/${Date.now()}.${ext}`
+    const path = `${id}/sponsor-${crypto.randomUUID()}.${ext}`
     const { error: upErr } = await supabase.storage.from('tournament-logos').upload(path, file)
     if (upErr) { toast(t('tournament.sponsorUploadError'), 'error'); setSponsorUploading(false); e.target.value = ''; return }
     const newSponsors = [...sponsors, { logo_path: path, name: newSponsorName.trim(), website: newSponsorWebsite.trim() }]
@@ -371,9 +371,16 @@ export default function TournamentEdit() {
 
         {/* Sponsors — saved immediately, outside main form */}
         <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
-          <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', marginBottom: '1rem' }}>
-            {t('tournament.sponsors')}
-          </h3>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: '0.75rem', marginBottom: '1rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', margin: 0 }}>
+              {t('tournament.sponsors')}
+            </h3>
+            {sponsors.length > 0 && (
+              <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+                {sponsors.length} added
+              </span>
+            )}
+          </div>
 
           {/* Section heading label */}
           <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.25rem', alignItems: 'flex-end' }}>
@@ -450,7 +457,7 @@ export default function TournamentEdit() {
               />
             </div>
           </div>
-          <div>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem', flexWrap: 'wrap' }}>
             <input ref={sponsorFileRef} type="file" accept="image/*" style={{ display: 'none' }} onChange={handleSponsorUpload} />
             <button
               type="button"
@@ -466,6 +473,9 @@ export default function TournamentEdit() {
             >
               🖼 {sponsorUploading ? t('tournament.sponsorUploading') : t('tournament.addSponsor')}
             </button>
+            <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+              Fill in name / website (optional), then pick a logo file. Repeat for each sponsor.
+            </span>
           </div>
         </div>
 
