@@ -182,8 +182,8 @@ export default function Schedule() {
     const isCurrentSlot = !isCompleted && !isLive && !!inProgressSlot &&
       f.kickoff_time?.slice(0, 16) === inProgressSlot
 
-    const homeName = f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder_label ?? '?')
-    const awayName = f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder_label ?? '?')
+    const homeName = f.home_team_id ? (f.home_team?.name ?? '?') : (f.home_placeholder ?? f.home_placeholder_label ?? '?')
+    const awayName = f.away_team_id ? (f.away_team?.name ?? '?') : (f.away_placeholder ?? f.away_placeholder_label ?? '?')
     const courtName = f.pitch?.name ?? null
     const time = f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : null
 
