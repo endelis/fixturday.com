@@ -386,6 +386,7 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
             <div className="form-group">
               <label>{t('ageGroup.groupsCount')}</label>
               <select {...register('groups_count')}>
+                <option value="1">1</option>
                 <option value="2">2</option>
                 <option value="3">3</option>
                 <option value="4">4</option>
