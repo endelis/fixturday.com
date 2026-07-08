@@ -154,15 +154,29 @@ export default function Standings() {
   const tournamentFinished = tournamentEndDate && now > tournamentEndDate
   const isRegOpen = ag.registration_open && !isFull && !cutoffReached && !hasResults && !tournamentFinished
 
-  const nextFixture = fixtures
-    .filter(f => f.status !== 'completed' && f.home_team?.id && f.away_team?.id)
-    .filter(f => !f.kickoff_time || new Date(f.kickoff_time) >= now)
-    .sort((a, b) => {
-      if (!a.kickoff_time && !b.kickoff_time) return (a.round ?? 0) - (b.round ?? 0)
-      if (!a.kickoff_time) return 1
-      if (!b.kickoff_time) return -1
-      return new Date(a.kickoff_time) - new Date(b.kickoff_time)
-    })[0] ?? null
+  // Per-pitch "on deck" banners
+  const sortedUpcoming = fixtures
+    .filter(f => f.status !== 'completed' && f.home_team?.id && f.away_team?.id && f.kickoff_time)
+    .sort((a, b) => new Date(a.kickoff_time) - new Date(b.kickoff_time))
+
+  const nextSlotTime = (() => {
+    const slots = [...new Set(sortedUpcoming.map(f => f.kickoff_time.slice(0, 16)))].sort()
+    if (hasResults) return slots[0] ?? null          // in-progress: first incomplete slot
+    return slots[0] ?? null                          // pre-tournament: first upcoming slot
+  })()
+
+  const nextSlotMatches = nextSlotTime
+    ? sortedUpcoming.filter(f => f.kickoff_time.slice(0, 16) === nextSlotTime)
+    : []
+
+  const pitchEntries = Object.values(
+    nextSlotMatches.reduce((acc, f) => {
+      const key = f.pitch?.name ?? '__none__'
+      if (!acc[key]) acc[key] = { pitchName: f.pitch?.name ?? null, matches: [] }
+      acc[key].matches.push(f)
+      return acc
+    }, {})
+  ).sort((a, b) => (a.pitchName ?? '').localeCompare(b.pitchName ?? ''))
 
   async function handleShare() {
     const url = window.location.href
@@ -277,9 +291,6 @@ export default function Standings() {
                   ? t('common.lastUpdated', { time: formatTime(lastUpdated) })
                   : t('standings.connecting')}
             </span>
-            <Link to={`/t/${slug}/${ageGroupId}/fixtures`} className="btn-secondary btn-sm">
-              {t('standings.scheduleLink')}
-            </Link>
             <button
               onClick={handleShare}
               className="btn-secondary btn-sm"
@@ -330,28 +341,58 @@ export default function Standings() {
           />
         </div>
 
-        {nextFixture && (
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
-            background: 'rgba(240,165,0,0.07)', border: '1px solid rgba(240,165,0,0.18)',
-            borderRadius: '8px', padding: '0.7rem 1rem', marginBottom: '1.25rem',
-          }}>
-            <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
-              {t('standings.nextMatch')}
-            </span>
-            <span style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', minWidth: 0 }}>
-              <strong>{nextFixture.home_team.name}</strong>
-              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('fixture.vs')}</span>
-              <strong>{nextFixture.away_team.name}</strong>
-            </span>
-            {(nextFixture.kickoff_time || nextFixture.pitch?.name) && (
-              <span style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', flexShrink: 0 }}>
-                {nextFixture.kickoff_time && formatTime(new Date(nextFixture.kickoff_time))}
-                {nextFixture.kickoff_time && nextFixture.pitch?.name && ' · '}
-                {nextFixture.pitch?.name}
+        {pitchEntries.length > 0 && (
+          pitchEntries.every(e => !e.pitchName) ? (
+            // No pitch assignments — show single next match (fallback)
+            <div style={{
+              display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap',
+              background: 'rgba(240,165,0,0.07)', border: '1px solid rgba(240,165,0,0.18)',
+              borderRadius: '8px', padding: '0.7rem 1rem', marginBottom: '1.25rem',
+            }}>
+              <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em', flexShrink: 0 }}>
+                {t('standings.nextMatch')}
               </span>
-            )}
-          </div>
+              <span style={{ flex: 1, display: 'flex', gap: '0.5rem', alignItems: 'center', flexWrap: 'wrap', minWidth: 0 }}>
+                <strong>{pitchEntries[0].matches[0].home_team.name}</strong>
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.85rem' }}>{t('fixture.vs')}</span>
+                <strong>{pitchEntries[0].matches[0].away_team.name}</strong>
+              </span>
+              {nextSlotTime && (
+                <span style={{ color: 'var(--color-text-muted)', fontSize: '0.82rem', flexShrink: 0 }}>
+                  {formatTime(new Date(nextSlotTime + ':00'))}
+                </span>
+              )}
+            </div>
+          ) : (
+            // Per-pitch banners
+            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', marginBottom: '1.25rem' }}>
+              {pitchEntries.map(({ pitchName, matches }) => (
+                <div key={pitchName ?? '__none__'} style={{
+                  background: 'rgba(240,165,0,0.07)', border: '1px solid rgba(240,165,0,0.18)',
+                  borderRadius: '10px', padding: '0.65rem 1rem',
+                }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.4rem' }}>
+                    <span style={{ fontSize: '0.68rem', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', textTransform: 'uppercase', letterSpacing: '0.08em' }}>
+                      {pitchName}
+                    </span>
+                    <span style={{ fontSize: '0.72rem', color: 'var(--color-text-muted)' }}>
+                      {formatTime(new Date(matches[0].kickoff_time))}
+                    </span>
+                  </div>
+                  {matches.map((f, i) => (
+                    <div key={f.id} style={{
+                      display: 'flex', alignItems: 'center', gap: '0.5rem',
+                      fontSize: '0.88rem', marginTop: i > 0 ? '0.35rem' : 0,
+                    }}>
+                      <span style={{ flex: 1, textAlign: 'right', fontWeight: 600 }}>{f.home_team.name}</span>
+                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.78rem', flexShrink: 0 }}>vs</span>
+                      <span style={{ flex: 1, fontWeight: 600 }}>{f.away_team.name}</span>
+                    </div>
+                  ))}
+                </div>
+              ))}
+            </div>
+          )
         )}
 
         {isSetBased && ag.format !== 'double_elimination' && (
