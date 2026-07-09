@@ -108,9 +108,14 @@ export default function TournamentOverviewPublic() {
       return new Date(b.kickoff_time) - new Date(a.kickoff_time)
     })
     .slice(0, 5)
-  const upcomingMatches = playableFixtures
-    .filter(f => f.status !== 'completed' && f.status !== 'live')
+  const upcomingMatches = fixtures
+    .filter(f => f.status !== 'completed' && f.status !== 'live' && f.status !== 'postponed')
     .filter(f => !f.kickoff_time || new Date(f.kickoff_time) >= now)
+    .filter(f => {
+      if (f.group_label) return !!(f.home_team?.id && f.away_team?.id)
+      if (f.home_placeholder || f.away_placeholder) return true  // playoff with placeholders — always show
+      return !!(f.home_team?.id && f.away_team?.id)
+    })
     .slice(0, 5)
 
   // Group standings
@@ -424,27 +429,36 @@ export default function TournamentOverviewPublic() {
                   {doneCount === totalCount && totalCount > 0 ? t('overview.allDone') : t('overview.noUpcoming')}
                 </div>
               ) : (
-                upcomingMatches.map(f => (
-                  <div key={f.id} style={matchRowStyle}>
-                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{f.home_team.name}</Link>
-                    <span style={{ flexShrink: 0, textAlign: 'center', minWidth: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
-                      <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
-                        {f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : 'vs'}
+                upcomingMatches.map(f => {
+                  const homeName = f.home_team?.name || f.home_placeholder || '?'
+                  const awayName = f.away_team?.name || f.away_placeholder || '?'
+                  const phStyle = { ...teamNameStyle, color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.8rem' }
+                  return (
+                    <div key={f.id} style={matchRowStyle}>
+                      {f.home_team?.id
+                        ? <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{homeName}</Link>
+                        : <span style={phStyle}>{homeName}</span>}
+                      <span style={{ flexShrink: 0, textAlign: 'center', minWidth: '56px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '1px' }}>
+                        <span style={{ color: 'var(--color-text-muted)', fontSize: '0.75rem' }}>
+                          {f.kickoff_time ? formatTime(new Date(f.kickoff_time)) : 'vs'}
+                        </span>
+                        {f.pitch?.name && (
+                          <span className="ovw-pitch-mob" style={{ fontSize: '0.62rem', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                            {f.pitch.name}
+                          </span>
+                        )}
                       </span>
+                      {f.away_team?.id
+                        ? <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{awayName}</Link>
+                        : <span style={{ ...phStyle, textAlign: 'right' }}>{awayName}</span>}
                       {f.pitch?.name && (
-                        <span className="ovw-pitch-mob" style={{ fontSize: '0.62rem', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', letterSpacing: '0.04em', textTransform: 'uppercase' }}>
+                        <span className="ovw-pitch-col" style={{ flexShrink: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)', textAlign: 'right', minWidth: '72px' }}>
                           {f.pitch.name}
                         </span>
                       )}
-                    </span>
-                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{f.away_team.name}</Link>
-                    {f.pitch?.name && (
-                      <span className="ovw-pitch-col" style={{ flexShrink: 0, fontSize: '0.72rem', color: 'var(--color-text-muted)', textAlign: 'right', minWidth: '72px' }}>
-                        {f.pitch.name}
-                      </span>
-                    )}
-                  </div>
-                ))
+                    </div>
+                  )
+                })
               )}
             </div>
           </div>
