@@ -850,7 +850,20 @@ export default function Matchday() {
             {/* Playoff fixtures not on today's date — always visible when teams are assigned */}
             {(() => {
               const shownIds = new Set(filtered.map(f => f.id))
-              const extraPlayoff = playoffFixtures.filter(f => !shownIds.has(f.id))
+              const extraPlayoff = playoffFixtures.filter(f => {
+                if (shownIds.has(f.id)) return false
+                const ag = f.stages?.age_groups?.name
+                if (filterGroup !== 'all' && ag !== filterGroup) return false
+                if (filterStatus === 'completed') {
+                  const hasResult = !!f.fixture_results?.[0]
+                  return hasResult || f.status === 'completed'
+                }
+                if (filterStatus === 'pending') {
+                  const hasResult = !!f.fixture_results?.[0]
+                  return !hasResult && f.status !== 'completed' && f.status !== 'postponed'
+                }
+                return true
+              })
               if (!extraPlayoff.length) return null
               const byAgPlayoff = extraPlayoff.reduce((acc, f) => {
                 const key = f.stages?.age_groups?.name ?? '—'
