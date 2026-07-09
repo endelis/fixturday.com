@@ -192,6 +192,61 @@ export default function TournamentOverviewPublic() {
     }
   }
 
+  // Extended ranking: remaining KO participants beyond finalPodium top 3
+  let extendedRanking = []
+  if (shouldComputePodium && hasKnockout) {
+    const allKO = fixtures.filter(f => !f.group_label)
+    const is3rdEx = f =>
+      f.round_name === '3rd_place' || f.round_name === '3rd Place' || f.round_name === '3rd place' ||
+      (f.home_placeholder ?? '').toLowerCase().includes('loser') ||
+      (f.away_placeholder ?? '').toLowerCase().includes('loser')
+    const thirdFxEx = allKO.find(is3rdEx)
+    const mainKO = allKO.filter(f => !is3rdEx(f))
+    const finalFxEx = mainKO.find(f => f.round_name === 'Final' || f.round_name === 'final') ??
+      [...mainKO].sort((a, b) => (b.round ?? 0) - (a.round ?? 0))[0]
+
+    const placedIds = new Set(finalPodium.filter(p => p.team).map(p => p.team.id))
+
+    // 4th: loser of 3rd place match
+    if (thirdFxEx?.status === 'completed') {
+      const r = resultMap[thirdFxEx.id]
+      if (r) {
+        const loser = r.home_goals > r.away_goals ? thirdFxEx.away_team : thirdFxEx.home_team
+        if (loser && !placedIds.has(loser.id)) {
+          extendedRanking.push({ startPos: 4, endPos: 4, teams: [loser] })
+          placedIds.add(loser.id)
+        }
+      }
+    }
+
+    // Count slots and losers per round (excluding Final and 3rd place fixture)
+    const countPerRound = {}
+    const losersPerRound = {}
+    for (const f of mainKO) {
+      if (f.id === finalFxEx?.id) continue
+      const rd = f.round ?? 0
+      countPerRound[rd] = (countPerRound[rd] ?? 0) + 1
+      if (f.status !== 'completed') continue
+      const r = resultMap[f.id]
+      if (!r) continue
+      const loserTeam = r.home_goals > r.away_goals ? f.away_team : f.home_team
+      if (!loserTeam || placedIds.has(loserTeam.id)) continue
+      ;(losersPerRound[rd] = losersPerRound[rd] ?? []).push(loserTeam)
+    }
+
+    // Sort rounds descending (highest round # = closest to Final = best position)
+    const sortedRounds = Object.keys(countPerRound).map(Number).sort((a, b) => b - a)
+    let nextPos = placedIds.size + 1
+    for (const rd of sortedRounds) {
+      const count = countPerRound[rd]
+      const teams = losersPerRound[rd] ?? []
+      const startPos = nextPos
+      const endPos = nextPos + count - 1
+      nextPos = endPos + 1
+      if (teams.length > 0) extendedRanking.push({ startPos, endPos, teams })
+    }
+  }
+
   const scoreStr = (fixtureId) => {
     const r = resultMap[fixtureId]
     return r ? `${r.home_goals} – ${r.away_goals}` : '– – –'
@@ -337,6 +392,24 @@ export default function TournamentOverviewPublic() {
               <Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>
                 {t('overview.fullStandingsLink')} →
               </Link>
+              {extendedRanking.length > 0 && (
+                <div style={{ borderTop: '1px solid rgba(255,255,255,0.06)', paddingTop: '0.875rem', marginTop: '0.75rem' }}>
+                  {extendedRanking.map((band, i) => (
+                    <div key={i} style={{ display: 'flex', alignItems: 'baseline', gap: '0.5rem', marginBottom: '0.35rem', flexWrap: 'wrap', justifyContent: 'center' }}>
+                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.75rem', color: 'var(--color-text-muted)', minWidth: '2.5rem', flexShrink: 0, textAlign: 'right' }}>
+                        {band.startPos === band.endPos ? `${band.startPos}.` : `${band.startPos}–${band.endPos}.`}
+                      </span>
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        {band.teams.map(team => (
+                          <Link key={team.id} to={`/t/${slug}/${ageGroupId}/teams/${team.id}`} style={{ fontSize: '0.85rem', color: 'var(--color-text)', textDecoration: 'none' }}>
+                            {team.name}
+                          </Link>
+                        ))}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
           )
         })()}
