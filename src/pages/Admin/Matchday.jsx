@@ -168,6 +168,9 @@ export default function Matchday() {
   // Beach volleyball set scores: { [fixtureId]: [{home,away},{home,away},{home,away}] }
   const [sets, setSets] = useState({})
 
+  // Tracks which fixture score inputs the user has actually edited this session
+  const [dirty, setDirty] = useState(new Set())
+
   // Events state: { [fixtureId]: [event, ...] }
   const [events, setEvents] = useState({})
   // Team players cache: { [teamId]: [player, ...] }
@@ -213,6 +216,7 @@ export default function Matchday() {
     }))
 
     setFixtures(allFxWithResults)
+    setDirty(new Set())
 
     const tId = allFxWithResults[0]?.stages?.age_groups?.tournaments?.id ?? null
     setTournamentId(tId)
@@ -491,6 +495,7 @@ export default function Matchday() {
 
         // Football — guard against unknown sports falling through
         if (fSport !== 'football') return null
+        if (!hasExisting && !dirty.has(f.id)) return null
         const score = scores[f.id] ?? { home: 0, away: 0 }
         const { error: resErr } = hasExisting
           ? await supabase
@@ -621,6 +626,10 @@ export default function Matchday() {
 
   const backLink = tournamentId ? `/admin/tournaments/${tournamentId}/overview` : '/admin/dashboard'
 
+  function markDirty(id) {
+    setDirty(p => { const s = new Set(p); s.add(id); return s })
+  }
+
   function renderFixture(f) {
     const score = scores[f.id] ?? { home: 0, away: 0 }
     const isPostponed = f.status === 'postponed'
@@ -662,12 +671,12 @@ export default function Matchday() {
             <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.home_team?.name}</span>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
               <input type="number" min="0" max="99" value={score.home} disabled={isPostponed}
-                onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } }))}
+                onChange={e => { setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } })); markDirty(f.id) }}
                 style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
               />
               <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
               <input type="number" min="0" max="99" value={score.away} disabled={isPostponed}
-                onChange={e => setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } }))}
+                onChange={e => { setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } })); markDirty(f.id) }}
                 style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
               />
             </div>
