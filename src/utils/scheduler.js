@@ -116,6 +116,7 @@ export function generateSchedule({
 
   const resolvedPitchCount = pitchIds ? pitchIds.length : pitchCount;
   const pitchAvailable = Array.from({ length: resolvedPitchCount }, () => firstMins);
+  const pitchGameCount = Array.from({ length: resolvedPitchCount }, () => 0);
   const teamLastEnd = {};
   const schedule = [];
 
@@ -206,7 +207,10 @@ export function generateSchedule({
     for (let p = 0; p < resolvedPitchCount; p++) {
       let candidate = advancePastBlocked(p, applyLunch(Math.max(pitchAvailable[p], teamEarliest)));
       if (strict && candidate + gameDuration > lastMins) continue;
-      if (candidate < bestKickoff) { bestKickoff = candidate; bestPitch = p; }
+      const better = bestPitch === null ||
+        candidate < bestKickoff ||
+        (candidate === bestKickoff && pitchGameCount[p] < pitchGameCount[bestPitch]);
+      if (better) { bestKickoff = candidate; bestPitch = p; }
     }
 
     return bestPitch !== null ? { pitch: bestPitch, kickoff: bestKickoff } : null;
@@ -222,6 +226,7 @@ export function generateSchedule({
     });
     const endTime = kickoff + gameDuration;
     pitchAvailable[pitch] = endTime + PITCH_GAP;
+    pitchGameCount[pitch]++;
     if (homeTeamId != null) teamLastEnd[homeTeamId] = endTime;
     if (awayTeamId != null) teamLastEnd[awayTeamId] = endTime;
     return endTime;
@@ -277,7 +282,9 @@ export function generateSchedule({
         homeLastEnd !== null ? candidate - homeLastEnd : Infinity,
         awayLastEnd !== null ? candidate - awayLastEnd : Infinity
       );
-      if (fallbackPitch === null || worstRest > bestRest || (worstRest === bestRest && candidate < fallbackKickoff)) {
+      if (fallbackPitch === null || worstRest > bestRest ||
+          (worstRest === bestRest && candidate < fallbackKickoff) ||
+          (worstRest === bestRest && candidate === fallbackKickoff && pitchGameCount[p] < pitchGameCount[fallbackPitch])) {
         fallbackPitch = p; fallbackKickoff = candidate; bestRest = worstRest;
       }
     }
