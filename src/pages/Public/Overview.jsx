@@ -101,7 +101,7 @@ export default function TournamentOverviewPublic() {
 
   // Live, upcoming, latest results
   const liveMatches = playableFixtures.filter(f => f.status === 'live')
-  const latestResults = [...completedFixtures]
+  const latestResults = [...fixtures.filter(f => f.status === 'completed')]
     .sort((a, b) => {
       if (!a.kickoff_time && !b.kickoff_time) return 0
       if (!a.kickoff_time) return 1; if (!b.kickoff_time) return -1
@@ -110,10 +110,12 @@ export default function TournamentOverviewPublic() {
     .slice(0, 5)
   const upcomingMatches = fixtures
     .filter(f => f.status !== 'completed' && f.status !== 'live' && f.status !== 'postponed')
-    .filter(f => !f.kickoff_time || new Date(f.kickoff_time) >= now)
     .filter(f => {
+      // Unresolved playoff slots: always show regardless of kickoff time
+      if (!f.group_label && (f.home_placeholder || f.away_placeholder)) return true
+      // Group / fully-resolved fixtures: only show if kickoff hasn't passed
+      if (f.kickoff_time && new Date(f.kickoff_time) < now) return false
       if (f.group_label) return !!(f.home_team?.id && f.away_team?.id)
-      if (f.home_placeholder || f.away_placeholder) return true  // playoff with placeholders — always show
       return !!(f.home_team?.id && f.away_team?.id)
     })
     .slice(0, 5)
@@ -477,13 +479,20 @@ export default function TournamentOverviewPublic() {
                   {t('overview.noResultsYet')}
                 </div>
               ) : (
-                latestResults.map(f => (
-                  <div key={f.id} style={matchRowStyle}>
-                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{f.home_team.name}</Link>
-                    <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', color: 'var(--color-text)', flexShrink: 0 }}>{scoreStr(f.id)}</span>
-                    <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{f.away_team.name}</Link>
-                  </div>
-                ))
+                latestResults.map(f => {
+                  const phStyle = { color: 'var(--color-text-muted)', fontStyle: 'italic', fontSize: '0.8rem' }
+                  return (
+                    <div key={f.id} style={matchRowStyle}>
+                      {f.home_team?.id
+                        ? <Link to={`/t/${slug}/${ageGroupId}/teams/${f.home_team.id}`} style={{ ...teamNameStyle, textDecoration: 'none', color: 'inherit' }}>{f.home_team.name}</Link>
+                        : <span style={{ ...teamNameStyle, ...phStyle }}>{f.home_placeholder || '?'}</span>}
+                      <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.95rem', color: 'var(--color-text)', flexShrink: 0 }}>{scoreStr(f.id)}</span>
+                      {f.away_team?.id
+                        ? <Link to={`/t/${slug}/${ageGroupId}/teams/${f.away_team.id}`} style={{ ...teamNameStyle, textAlign: 'right', textDecoration: 'none', color: 'inherit' }}>{f.away_team.name}</Link>
+                        : <span style={{ ...teamNameStyle, textAlign: 'right', ...phStyle }}>{f.away_placeholder || '?'}</span>}
+                    </div>
+                  )
+                })
               )}
               {doneCount > 5 && (
                 <Link to={`/t/${slug}/${ageGroupId}/fixtures`} style={{ display: 'block', padding: '0.5rem 0.75rem', fontSize: '0.78rem', color: 'var(--color-accent)', textDecoration: 'none', borderTop: '1px solid var(--color-border)' }}>
