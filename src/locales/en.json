@@ -505,7 +505,11 @@
     "deleteError": "Error deleting tournament",
     "teamsLabel": "teams",
     "fixturesLabel": "fixtures",
-    "pending": "pending"
+    "pending": "pending",
+    "duplicate": "Duplicate",
+    "duplicating": "Duplicating...",
+    "duplicateSuccess": "Tournament duplicated",
+    "duplicateError": "Error duplicating tournament"
   },
   "workspace": {
     "navOverview": "Overview",

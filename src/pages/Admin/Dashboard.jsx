@@ -6,7 +6,7 @@ import { formatDate } from '../../utils/dateFormat'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
-import { Trophy, Users, Layers, Printer, Coffee, Plus, ChevronRight } from 'lucide-react'
+import { Trophy, Users, Layers, Printer, Coffee, Plus, ChevronRight, Copy } from 'lucide-react'
 
 export default function Dashboard() {
   const { user, isSuperAdmin, signOut } = useAuth()
@@ -14,6 +14,7 @@ export default function Dashboard() {
   const { t } = useTranslation()
   const [tournaments, setTournaments] = useState([])
   const [loading, setLoading] = useState(true)
+  const [duplicating, setDuplicating] = useState({})
 
   useEffect(() => {
     if (!user) return
@@ -55,6 +56,92 @@ export default function Dashboard() {
       toast(t('common.saved'))
     } catch {
       toast(t('dashboard.deleteError'), 'error')
+    }
+  }
+
+  async function handleDuplicate(e, tourney) {
+    e.stopPropagation()
+    setDuplicating(prev => ({ ...prev, [tourney.id]: true }))
+    try {
+      // Fetch age groups, venues+pitches, confirmed teams
+      const [{ data: agData, error: agErr }, { data: venueData, error: venErr }] = await Promise.all([
+        supabase.from('age_groups').select('*').eq('tournament_id', tourney.id),
+        supabase.from('venues').select('*, pitches(*)').eq('tournament_id', tourney.id),
+      ])
+      if (agErr) throw agErr
+      if (venErr) throw venErr
+
+      const agIds = (agData ?? []).map(ag => ag.id)
+      let teamRows = []
+      if (agIds.length) {
+        const { data: tms, error: tmErr } = await supabase
+          .from('teams').select('*').in('age_group_id', agIds).eq('status', 'confirmed')
+        if (tmErr) throw tmErr
+        teamRows = tms ?? []
+      }
+
+      // Find a unique slug: original-copy, original-copy-2, ...
+      const baseSlug = tourney.slug
+      const { data: existing } = await supabase.from('tournaments').select('slug').like('slug', `${baseSlug}-copy%`)
+      const taken = new Set((existing ?? []).map(r => r.slug))
+      let newSlug = `${baseSlug}-copy`
+      if (taken.has(newSlug)) {
+        let n = 2
+        while (taken.has(`${baseSlug}-copy-${n}`)) n++
+        newSlug = `${baseSlug}-copy-${n}`
+      }
+
+      // Insert new tournament
+      const { id: _id, created_at: _ca, age_groups: _ag, ...tournamentFields } = tourney
+      const { data: newTourney, error: tErr } = await supabase
+        .from('tournaments')
+        .insert({ ...tournamentFields, name: `${tourney.name} - copy`, slug: newSlug, is_active: false, owner_id: user.id })
+        .select('id').single()
+      if (tErr) throw tErr
+
+      // Insert age groups (build old→new id map)
+      const agIdMap = {}
+      for (const ag of (agData ?? [])) {
+        const { id: _aid, tournament_id: _tid, created_at: _aca, ...agRest } = ag
+        const { data: newAg, error: agInsErr } = await supabase
+          .from('age_groups')
+          .insert({ ...agRest, tournament_id: newTourney.id, registration_open: false })
+          .select('id').single()
+        if (agInsErr) throw agInsErr
+        agIdMap[ag.id] = newAg.id
+      }
+
+      // Insert venues + pitches
+      for (const venue of (venueData ?? [])) {
+        const { id: _vid, tournament_id: _vtid, created_at: _vca, pitches, ...venueRest } = venue
+        const { data: newVenue, error: vInsErr } = await supabase
+          .from('venues').insert({ ...venueRest, tournament_id: newTourney.id }).select('id').single()
+        if (vInsErr) throw vInsErr
+        for (const pitch of (pitches ?? [])) {
+          const { id: _pid, venue_id: _pvid, created_at: _pca, ...pitchRest } = pitch
+          const { error: pInsErr } = await supabase.from('pitches').insert({ ...pitchRest, venue_id: newVenue.id })
+          if (pInsErr) throw pInsErr
+        }
+      }
+
+      // Insert confirmed teams (skip logo_path — tied to original)
+      if (teamRows.length) {
+        const rows = teamRows.map(({ id: _tid, age_group_id, created_at: _tca, logo_path: _lp, ...rest }) => ({
+          ...rest,
+          age_group_id: agIdMap[age_group_id],
+          status: 'confirmed',
+        }))
+        const { error: tmInsErr } = await supabase.from('teams').insert(rows)
+        if (tmInsErr) throw tmInsErr
+      }
+
+      toast(t('dashboard.duplicateSuccess'))
+      navigate(`/admin/tournaments/${newTourney.id}/overview`)
+    } catch (err) {
+      console.error(err)
+      toast(t('dashboard.duplicateError'), 'error')
+    } finally {
+      setDuplicating(prev => ({ ...prev, [tourney.id]: false }))
     }
   }
 
@@ -203,6 +290,15 @@ export default function Dashboard() {
                         >
                           <Printer size={13} />
                           {t('dashboard.print')}
+                        </button>
+                        <button
+                          className="btn-secondary btn-sm"
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                          disabled={!!duplicating[tourney.id]}
+                          onClick={e => handleDuplicate(e, tourney)}
+                        >
+                          <Copy size={13} />
+                          {duplicating[tourney.id] ? t('dashboard.duplicating') : t('dashboard.duplicate')}
                         </button>
                         <button
                           className="btn-sm"
