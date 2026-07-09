@@ -6,9 +6,9 @@
  *
  * Sorting order (descending priority):
  *   1. Points
- *   2. Goal difference (GF − GA)
- *   3. Goals for (GF)
- *   4. Head-to-head result between tied teams (points in direct encounters)
+ *   2. Head-to-head result between tied teams (winner of direct encounter)
+ *   3. Goal difference (GF − GA)
+ *   4. Goals for (GF)
  *   5. Team name (alphabetical, ascending) — final deterministic tiebreaker
  */
 
@@ -39,7 +39,7 @@
  *   gd:     number,
  *   points: number
  * }>}
- *   Standings rows sorted by: points → GD → GF → head-to-head → name.
+ *   Standings rows sorted by: points → head-to-head → GD → GF → name.
  *
  * Edge cases:
  *   - Empty teams array → returns []
@@ -137,15 +137,15 @@ export function calculateStandings(teams, fixtures, results, sport = 'football',
     // 1. Points
     if (b.points !== a.points) return b.points - a.points;
 
-    // 2. Goal difference
-    if (b.gd !== a.gd) return b.gd - a.gd;
-
-    // 3. Goals for
-    if (b.gf !== a.gf) return b.gf - a.gf;
-
-    // 4. Head-to-head: compare points earned in direct encounters only.
+    // 2. Head-to-head: winner of the direct encounter advances.
     const h2hDiff = headToHeadPoints(a.team.id, b.team.id, completedFixtures, resultMap);
     if (h2hDiff !== 0) return h2hDiff; // positive = a is better
+
+    // 3. Goal difference
+    if (b.gd !== a.gd) return b.gd - a.gd;
+
+    // 4. Goals for
+    if (b.gf !== a.gf) return b.gf - a.gf;
 
     // 5. Alphabetical name (ascending)
     return a.team.name.localeCompare(b.team.name);
