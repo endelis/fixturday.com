@@ -96,6 +96,8 @@ export default function TournamentOverviewPublic() {
   const totalCount = fixtures.length
   const doneCount = completedFixtures.length
   const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
+  const allMatchesPlayed = totalCount > 0 && doneCount === totalCount
+  const shouldComputePodium = !!(tournamentFinished || allMatchesPlayed)
 
   // Live, upcoming, latest results
   const liveMatches = playableFixtures.filter(f => f.status === 'live')
@@ -129,8 +131,9 @@ export default function TournamentOverviewPublic() {
   const knockoutFixtures = fixtures.filter(f => !f.group_label && f.home_team?.id && f.away_team?.id)
   const hasKnockout = knockoutFixtures.length > 0
 
-  let finalPodium = [] // [{pos, team, medal}]
-  if (tournamentFinished) {
+  const MEDALS = ['🥇', '🥈', '🥉']
+  let finalPodium = [] // [{pos, team|null, medal}]
+  if (shouldComputePodium) {
     if (hasKnockout) {
       const is3rdPlace = f =>
         f.round_name === '3rd_place' || f.round_name === '3rd Place' || f.round_name === '3rd place' ||
@@ -153,7 +156,6 @@ export default function TournamentOverviewPublic() {
         if (r) {
           const homeWon = r.home_goals > r.away_goals
           finalPodium.push({ pos: 3, team: homeWon ? thirdFx.home_team : thirdFx.away_team, medal: '🥉' })
-          finalPodium.push({ pos: 4, team: homeWon ? thirdFx.away_team : thirdFx.home_team, medal: '4th' })
         }
       } else if (finalPodium.length === 2) {
         // No 3rd place match — find semi-final losers as joint 3rd
@@ -167,18 +169,20 @@ export default function TournamentOverviewPublic() {
             return [homeWon ? f.away_team : f.home_team]
           })
           .filter(Boolean)
-        semiLosers.forEach((team, i) => {
-          finalPodium.push({ pos: 3, team, medal: i === 0 ? '🥉' : '🥉' })
-        })
+        if (semiLosers[0]) finalPodium.push({ pos: 3, team: semiLosers[0], medal: '🥉' })
+      }
+      // Always pad to exactly 3 slots so 3rd shows as empty when not yet decided
+      while (finalPodium.length < 3) {
+        const pos = finalPodium.length + 1
+        finalPodium.push({ pos, team: null, medal: MEDALS[pos - 1] })
       }
     } else if (allStandings.length > 0) {
-      // Round-robin only: top 5
-      const medals = ['🥇', '🥈', '🥉', '4th', '5th']
-      finalPodium = allStandings.slice(0, 5).map((row, i) => ({
+      // Round-robin only: top 3, pad with null slots for missing positions
+      finalPodium = [0, 1, 2].map(i => ({
         pos: i + 1,
-        team: row.team,
-        medal: medals[i] ?? `${i + 1}th`,
-        points: row.points,
+        team: allStandings[i]?.team ?? null,
+        medal: MEDALS[i],
+        points: allStandings[i]?.points,
       }))
     }
   }
@@ -284,31 +288,53 @@ export default function TournamentOverviewPublic() {
           </div>
         )}
 
-        {/* Final standings (when tournament is over) */}
-        {tournamentFinished && finalPodium.length > 0 && (
-          <div
-            className="card"
-            style={{ marginBottom: '1.75rem', background: 'linear-gradient(135deg, rgba(240,165,0,0.07) 0%, rgba(240,165,0,0.02) 100%)', borderColor: 'rgba(240,165,0,0.22)' }}
-          >
-            <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.875rem' }}>
-              {t('overview.finalStandings')}
+        {/* Final podium — shown when all matches played or end date passed */}
+        {shouldComputePodium && finalPodium.some(p => p.team) && (() => {
+          const platH   = ['5rem', '3.5rem', '2.25rem']
+          const platC   = [
+            { bg: 'rgba(240,165,0,0.18)',   border: 'rgba(240,165,0,0.55)',   txt: '#f0a500' },
+            { bg: 'rgba(180,180,200,0.12)', border: 'rgba(180,180,200,0.4)',  txt: '#a8a8c0' },
+            { bg: 'rgba(160,100,50,0.12)',  border: 'rgba(160,100,50,0.38)', txt: '#b07840' },
+          ]
+          return (
+            <div className="card" style={{ marginBottom: '1.75rem', background: 'linear-gradient(135deg, rgba(240,165,0,0.06) 0%, rgba(240,165,0,0.01) 100%)', borderColor: 'rgba(240,165,0,0.22)', textAlign: 'center' }}>
+              <div style={{ fontFamily: 'var(--font-heading)', fontSize: '0.72rem', letterSpacing: '0.1em', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '1.5rem' }}>
+                {t('overview.finalStandings')}
+              </div>
+              {/* 2nd | 1st | 3rd */}
+              <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'center', gap: '0.5rem', marginBottom: '1rem' }}>
+                {[1, 0, 2].map(idx => {
+                  const entry = finalPodium[idx]
+                  if (!entry) return null
+                  const c = platC[idx]
+                  const isFirst = idx === 0
+                  return (
+                    <div key={entry.pos} style={{ flex: '1 1 0', maxWidth: '150px', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '0.2rem' }}>
+                      <span style={{ fontSize: isFirst ? '2rem' : '1.5rem', lineHeight: 1, display: 'block', marginBottom: '0.3rem' }}>{entry.medal}</span>
+                      <div style={{
+                        fontSize: isFirst ? '0.88rem' : '0.78rem', fontWeight: isFirst ? 700 : 500,
+                        color: entry.team ? 'var(--color-text)' : 'var(--color-text-muted)',
+                        lineHeight: 1.3, minHeight: '2.4rem',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center',
+                        padding: '0 0.25rem',
+                      }}>
+                        {entry.team
+                          ? <Link to={`/t/${slug}/${ageGroupId}/teams/${entry.team.id}`} style={{ textDecoration: 'none', color: 'inherit' }}>{entry.team.name}</Link>
+                          : <span style={{ opacity: 0.35, fontSize: '1.25rem' }}>—</span>}
+                      </div>
+                      <div style={{ width: '100%', height: platH[idx], background: c.bg, border: `1px solid ${c.border}`, borderRadius: '6px 6px 0 0', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', fontWeight: 700, color: c.txt }}>{entry.pos}</span>
+                      </div>
+                    </div>
+                  )
+                })}
+              </div>
+              <Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>
+                {t('overview.fullStandingsLink')} →
+              </Link>
             </div>
-            <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem', marginBottom: '0.75rem' }}>
-              {finalPodium.map((entry, i) => (
-                <div key={`${entry.team?.id}-${i}`} style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: i < 3 ? '1rem' : '0.9rem', fontWeight: i === 0 ? 700 : 400 }}>
-                  <span style={{ minWidth: '1.75rem', fontSize: i < 3 ? '1.1rem' : '0.85rem', color: i >= 3 ? 'var(--color-text-muted)' : undefined }}>{entry.medal}</span>
-                  <span>{entry.team?.name}</span>
-                  {entry.points != null && (
-                    <span style={{ marginLeft: 'auto', color: 'var(--color-accent)', fontFamily: 'var(--font-heading)', fontSize: '0.85rem' }}>{entry.points} pts</span>
-                  )}
-                </div>
-              ))}
-            </div>
-            <Link to={`/t/${slug}/${ageGroupId}`} style={{ color: 'var(--color-accent)', fontSize: '0.82rem', textDecoration: 'none', fontWeight: 500 }}>
-              {t('overview.fullStandingsLink')} →
-            </Link>
-          </div>
-        )}
+          )
+        })()}
 
         {/* Progress bar */}
         {totalCount > 0 && (
