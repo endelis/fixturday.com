@@ -687,22 +687,24 @@ export default function Matchday() {
             t={t}
           />
         ) : (
-          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-            <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.home_team?.name}</span>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
-              <input type="number" min="0" max="99" value={score.home} disabled={isPostponed}
-                onChange={e => { setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } })); markDirty(f.id) }}
-                style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
-              />
-              <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
-              <input type="number" min="0" max="99" value={score.away} disabled={isPostponed}
-                onChange={e => { setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } })); markDirty(f.id) }}
-                style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
-              />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <span style={{ flex: 1, textAlign: 'right', fontFamily: 'var(--font-heading)', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.home_team?.name ?? f.home_placeholder}</span>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem', flexShrink: 0 }}>
+                <input type="number" min="0" max="99" value={score.home} disabled={isPostponed}
+                  onChange={e => { setScores(p => ({ ...p, [f.id]: { ...p[f.id], home: Number(e.target.value) } })); markDirty(f.id) }}
+                  style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
+                />
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-text-muted)' }}>:</span>
+                <input type="number" min="0" max="99" value={score.away} disabled={isPostponed}
+                  onChange={e => { setScores(p => ({ ...p, [f.id]: { ...p[f.id], away: Number(e.target.value) } })); markDirty(f.id) }}
+                  style={{ width: '3.5rem', textAlign: 'center', fontSize: '1.5rem', fontFamily: 'var(--font-heading)', padding: '0.5rem 0.25rem', minHeight: '44px', background: 'var(--color-surface)', border: '2px solid var(--color-accent)', color: 'var(--color-text)', borderRadius: '6px' }}
+                />
+              </div>
+              <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1rem', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.away_team?.name ?? f.away_placeholder}</span>
             </div>
-            <span style={{ flex: 1, fontFamily: 'var(--font-heading)', fontSize: '1.1rem', minWidth: '5rem' }}>{f.away_team?.name}</span>
             {!isPostponed && (
-              <button className="btn-primary" style={{ flexShrink: 0, minWidth: '6rem' }} onClick={() => saveScore(f)} disabled={saving[f.id]}>
+              <button className="btn-primary" style={{ width: '100%' }} onClick={() => saveScore(f)} disabled={saving[f.id]}>
                 {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
               </button>
             )}
@@ -725,24 +727,24 @@ export default function Matchday() {
               </div>
             )}
             <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap', alignItems: 'center' }}>
-              <select value={ef.teamId ?? ''} onChange={e => { setEF(f.id, { teamId: e.target.value, playerId: '' }); loadTeamPlayers(e.target.value) }} style={{ ...inputSx, fontSize: '0.8rem' }}>
+              <select value={ef.teamId ?? ''} onChange={e => { setEF(f.id, { teamId: e.target.value, playerId: '' }); loadTeamPlayers(e.target.value) }} style={{ ...inputSx, fontSize: '0.8rem', flex: '1 1 8rem', minWidth: 0 }}>
                 <option value="">{t('matchday.eventTeam')}</option>
                 {f.home_team && <option value={f.home_team.id}>{f.home_team.name}</option>}
                 {f.away_team && <option value={f.away_team.id}>{f.away_team.name}</option>}
               </select>
-              <select value={ef.playerId ?? ''} onChange={e => setEF(f.id, { playerId: e.target.value })} style={{ ...inputSx, fontSize: '0.8rem' }} disabled={!ef.teamId}>
+              <select value={ef.playerId ?? ''} onChange={e => setEF(f.id, { playerId: e.target.value })} style={{ ...inputSx, fontSize: '0.8rem', flex: '2 1 10rem', minWidth: 0 }} disabled={!ef.teamId}>
                 <option value="">{t('matchday.eventPlayer')}</option>
                 {selectedTeamPlayers.map(p => <option key={p.id} value={p.id}>{p.number ? `#${p.number} ` : ''}{p.name}</option>)}
               </select>
-              <select value={ef.eventType ?? ''} onChange={e => setEF(f.id, { eventType: e.target.value })} style={{ ...inputSx, fontSize: '0.8rem' }}>
+              <select value={ef.eventType ?? ''} onChange={e => setEF(f.id, { eventType: e.target.value })} style={{ ...inputSx, fontSize: '0.8rem', flex: '1 1 7rem', minWidth: 0 }}>
                 <option value="">—</option>
                 <option value="goal">{t('matchday.eventGoal')}</option>
                 <option value="own_goal">{t('matchday.eventOwnGoal')}</option>
                 <option value="yellow_card">{t('matchday.eventYellow')}</option>
                 <option value="red_card">{t('matchday.eventRed')}</option>
               </select>
-              <input type="number" min="1" max="120" placeholder={t('matchday.eventMinute')} value={ef.minute ?? ''} onChange={e => setEF(f.id, { minute: e.target.value })} style={{ ...inputSx, width: '4.5rem', fontSize: '0.8rem' }} />
-              <button className="btn-primary btn-sm" disabled={!ef.teamId || !ef.eventType || addingEvent[f.id]} onClick={() => addEvent(f)}>
+              <input type="number" min="1" max="120" placeholder={t('matchday.eventMinute')} value={ef.minute ?? ''} onChange={e => setEF(f.id, { minute: e.target.value })} style={{ ...inputSx, width: '4.5rem', fontSize: '0.8rem', flexShrink: 0 }} />
+              <button className="btn-primary btn-sm" style={{ flex: '1 1 auto' }} disabled={!ef.teamId || !ef.eventType || addingEvent[f.id]} onClick={() => addEvent(f)}>
                 + {t('matchday.addEvent')}
               </button>
             </div>
