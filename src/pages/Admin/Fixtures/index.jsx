@@ -117,7 +117,7 @@ export default function Fixtures() {
       const knockoutRounds = generateKnockout(teams)
       rounds = knockoutRounds.flatMap(r => r.fixtures.map(f => ({ ...f, round_name: r.name })))
     } else {
-      rounds = generateRoundRobin(teams).flat()
+      rounds = generateRoundRobin(teams, ageGroup.rr_circles ?? 1).flat()
     }
     const fixtureRows = rounds.filter(f => f.home?.id && f.away?.id).map(f => ({ stage_id: stage.id, home_team_id: f.home.id, away_team_id: f.away.id, round: f.round, round_name: f.round_name ?? null, status: 'scheduled' }))
     const { error: fxError } = await supabase.from('fixtures').insert(fixtureRows)

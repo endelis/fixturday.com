@@ -51,6 +51,7 @@ export default function AgeGroups() {
     setValue('auto_approve', ag.auto_approve ?? false)
     setValue('cs_set_target', String(ag.cs_set_target ?? 15))
     setValue('rugby_points_system', ag.rugby_points_system ?? '4_2_1')
+    setValue('rr_circles', String(ag.rr_circles ?? 1))
 
     // Lock groups_count once any group stage game has a result
     let locked = false
@@ -116,6 +117,7 @@ export default function AgeGroups() {
       teams_advancing: teamsAdvancing,
       cs_set_target: Number(values.cs_set_target ?? 15),
       rugby_points_system: values.rugby_points_system ?? '4_2_1',
+      rr_circles: values.format === 'round_robin' ? Number(values.rr_circles ?? 1) : null,
     }
 
     if (editingId) {
@@ -338,6 +340,15 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
             {t('ageGroup.formatsGuide')}
           </a>
         </div>
+        {watchedFormat === 'round_robin' && (
+          <div className="form-group">
+            <label>{t('ageGroup.rrCircles')}</label>
+            <select {...register('rr_circles')}>
+              <option value="1">{t('ageGroup.rrCircles1')}</option>
+              <option value="2">{t('ageGroup.rrCircles2')}</option>
+            </select>
+          </div>
+        )}
         <div className="form-group">
           <label>{t('ageGroup.maxTeams')}</label>
           <input type="number" {...register('max_teams')} min="2" />

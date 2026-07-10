@@ -167,7 +167,10 @@
     "rugbyPointsOptions": {
       "4_2_1": "4 / 2 / 1 / 0 — international (W=4, D=2, L=1)",
       "3_1":   "3 / 1 / 0 — simplified (W=3, L=1, no draws)"
-    }
+    },
+    "rrCircles": "Circles",
+    "rrCircles1": "1 — play each team once",
+    "rrCircles2": "2 — play each team twice (double round-robin)"
   },
   "team": {
     "title": "Teams",

@@ -29,10 +29,15 @@ const BYE = { id: null, name: 'BYE' };
  *   Total rounds  : n - 1 for even n, n for odd n  (n = padded team count)
  *   Fixtures/round: n / 2
  *
+ * @param {number} [circles=1] - Number of full circles to generate.
+ *   1 = single round-robin (each pair meets once).
+ *   2 = double round-robin (each pair meets twice; home/away reversed in the
+ *   second pass). Round numbers continue sequentially across circles.
+ *
  * Edge cases:
  *   - Empty array or fewer than 2 teams → returns []
  */
-export function generateRoundRobin(teams) {
+export function generateRoundRobin(teams, circles = 1) {
   if (!teams || teams.length < 2) return [];
 
   // Work on a copy; pad to even length with BYE if necessary.
@@ -73,6 +78,15 @@ export function generateRoundRobin(teams) {
 
     // Rotate: move last element of rotating to the front.
     rotating = [rotating[rotating.length - 1], ...rotating.slice(0, rotating.length - 1)];
+  }
+
+  // Circle 2: same matchups with home/away swapped; rounds continue numbering.
+  if (circles >= 2) {
+    for (let r = 0; r < totalRounds; r++) {
+      rounds.push(
+        rounds[r].map(f => ({ home: f.away, away: f.home, round: totalRounds + r + 1 }))
+      );
+    }
   }
 
   return rounds;
