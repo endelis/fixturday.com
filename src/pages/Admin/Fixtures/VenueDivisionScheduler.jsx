@@ -108,7 +108,14 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
     }
   }
 
-  function runPreview() {
+  function shuffleArr(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+      const j = Math.floor(Math.random() * (i + 1));
+      [arr[i], arr[j]] = [arr[j], arr[i]]
+    }
+  }
+
+  function runPreview(shuffle = false) {
     if (!isValid(parse(schedDateDisplay, 'dd/MM/yyyy', new Date()))) {
       toast(t('tournament.invalidDate'), 'error'); return
     }
@@ -141,6 +148,7 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
           })
         }
       }
+      if (shuffle) shuffleArr(allMapped)
 
       const result = generateSchedule({
         fixtures: allMapped,
@@ -191,6 +199,7 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
         away_placeholder: f.away_placeholder ?? null,
         round: f.round ?? null,
       }))
+      if (shuffle) shuffleArr(mapped)
 
       const result = generateSchedule({
         fixtures: mapped,
@@ -449,9 +458,12 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
         ))}
 
         {preview?.groups?.length > 0 && (
-          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
+          <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem', flexWrap: 'wrap' }}>
             <button className="btn-primary" onClick={confirmSchedule} disabled={saving}>
               {saving ? t('common.saving') : t('fixture.schedConfirm')}
+            </button>
+            <button className="btn-secondary" onClick={() => runPreview(true)}>
+              {t('fixture.schedRegenerate')}
             </button>
             <button className="btn-secondary" onClick={() => setPreview(null)}>{t('common.cancel')}</button>
           </div>
