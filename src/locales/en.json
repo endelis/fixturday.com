@@ -369,7 +369,15 @@
     "games": "games",
     "scanSchedule": "Scan for live schedule",
     "printSchedule": "Print",
-    "noScheduledGames": "No scheduled games"
+    "noScheduledGames": "No scheduled games",
+    "scheduleDivisions": "Schedule divisions"
+  },
+  "venueSched": {
+    "title": "Schedule divisions",
+    "selectDivisions": "Select divisions to schedule",
+    "noFixtures": "No fixtures found for this tournament",
+    "noDivisionsSelected": "Select at least one division",
+    "pitchAssign": "Pitches"
   },
   "auth": {
     "email": "Email",

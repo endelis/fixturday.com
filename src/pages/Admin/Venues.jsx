@@ -7,6 +7,7 @@ import QRCode from 'qrcode'
 import { useAuth } from '../../hooks/useAuth'
 import { supabase } from '../../lib/supabase'
 import { toast } from '../../components/Toast'
+import VenueDivisionScheduler from './Fixtures/VenueDivisionScheduler'
 
 const BASE_URL = 'https://www.fixturday.com'
 const GAMES_PER_PAGE = 25
@@ -324,6 +325,7 @@ export default function Venues() {
   const [showVenueForm, setShowVenueForm] = useState(false)
   const [pitchForms, setPitchForms] = useState({})
   const [venueScheduleOpen, setVenueScheduleOpen] = useState({})
+  const [divSchedulerVenue, setDivSchedulerVenue] = useState(null)
   const [pitchExpanded, setPitchExpanded] = useState({})
   const [showFullOverview, setShowFullOverview] = useState(false)
   const [scheduleByPitch, setScheduleByPitch] = useState({})
@@ -530,6 +532,20 @@ export default function Venues() {
           <p style={{ color: 'var(--color-text-muted)' }}>{t('common.noData')}</p>
         )}
 
+        {divSchedulerVenue && (
+          <VenueDivisionScheduler
+            open={!!divSchedulerVenue}
+            onClose={() => setDivSchedulerVenue(null)}
+            tournamentId={tournamentId}
+            venue={divSchedulerVenue}
+            pitches={divSchedulerVenue.pitches ?? []}
+            onSaved={() => {
+              loadedPitchIds.current.clear()
+              setScheduleByPitch({})
+            }}
+          />
+        )}
+
         {venues.map(venue => (
           <div key={venue.id}>
             <div
@@ -604,7 +620,10 @@ export default function Venues() {
               </div>
 
               {(venue.pitches ?? []).length > 0 && (
-                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end' }}>
+                <div style={{ marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--color-border)', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                  <button className="btn-secondary btn-sm" onClick={() => setDivSchedulerVenue(venue)}>
+                    {t('venue.scheduleDivisions')}
+                  </button>
                   <button className="btn-secondary btn-sm" onClick={() => toggleVenueSchedule(venue)}>
                     {venueScheduleOpen[venue.id] ? t('venue.hideSchedule') : t('venue.pitchSchedule')}
                   </button>
