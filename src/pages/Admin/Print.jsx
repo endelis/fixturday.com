@@ -235,12 +235,13 @@ export default function Print() {
     const allFixtures = targetAgData?.fixtures ?? []
     const publicUrl = tournament.slug ? `https://www.fixturday.com/t/${tournament.slug}` : ''
 
-    // Build per-group fixture lists
+    // Build per-group fixture lists; plain round-robin has no group_label → single pool ''
     const groupFixtureMap = {}
     for (const f of allFixtures) {
-      if (!f.group_label) continue
-      if (!groupFixtureMap[f.group_label]) groupFixtureMap[f.group_label] = []
-      groupFixtureMap[f.group_label].push(f)
+      if (f.home_placeholder || f.away_placeholder) continue // skip unresolved playoff slots
+      const label = f.group_label ?? ''
+      if (!groupFixtureMap[label]) groupFixtureMap[label] = []
+      groupFixtureMap[label].push(f)
     }
 
     const groups = Object.entries(groupFixtureMap)
@@ -323,9 +324,11 @@ export default function Print() {
                 <div style={{ fontSize: '1.1rem', fontWeight: 700, lineHeight: 1.15 }}>
                   {tournament.name.toUpperCase()} — {agName.toUpperCase()}
                 </div>
-                <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#444', marginTop: '2px' }}>
-                  {t('print.group')} {group.label}
-                </div>
+                {group.label && (
+                  <div style={{ fontSize: '0.92rem', fontWeight: 700, color: '#444', marginTop: '2px' }}>
+                    {t('print.group')} {group.label}
+                  </div>
+                )}
               </div>
 
               {/* Cross table */}
@@ -391,10 +394,11 @@ export default function Print() {
 
     const groupMap = {}
     for (const f of (targetAgData?.fixtures ?? [])) {
-      if (!f.group_label) continue
-      if (!groupMap[f.group_label]) groupMap[f.group_label] = new Map()
-      if (f.home_team?.id) groupMap[f.group_label].set(f.home_team.id, f.home_team.name)
-      if (f.away_team?.id) groupMap[f.group_label].set(f.away_team.id, f.away_team.name)
+      if (f.home_placeholder || f.away_placeholder) continue // skip unresolved playoff slots
+      const label = f.group_label ?? ''
+      if (!groupMap[label]) groupMap[label] = new Map()
+      if (f.home_team?.id) groupMap[label].set(f.home_team.id, f.home_team.name)
+      if (f.away_team?.id) groupMap[label].set(f.away_team.id, f.away_team.name)
     }
     const groups = Object.entries(groupMap)
       .sort(([a], [b]) => a.localeCompare(b))
@@ -440,7 +444,7 @@ export default function Print() {
               {groups.map(group => (
                 <div key={group.label} style={{ flex: 1, minWidth: '120px', border: '2px solid #000', borderRadius: '6px', overflow: 'hidden' }}>
                   <div style={{ fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.15rem', fontWeight: 700, background: '#000', color: '#fff', padding: '0.45rem 0.75rem', letterSpacing: '0.04em' }}>
-                    {t('print.group')} {group.label}
+                    {group.label ? `${t('print.group')} ${group.label}` : agName}
                   </div>
                   <div>
                     {group.teams.map((team, i) => (
