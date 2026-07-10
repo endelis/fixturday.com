@@ -15,10 +15,12 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
   const [schedLunchEnabled, setSchedLunchEnabled] = useState(false)
   const [schedLunchStart, setSchedLunchStart] = useState('')
   const [schedLunchEnd, setSchedLunchEnd] = useState('')
+  const [mixMode, setMixMode] = useState(false)
 
   const [divisions, setDivisions] = useState([])
   const [divConfig, setDivConfig] = useState({})
   const [loading, setLoading] = useState(false)
+  // preview shape: { mode: 'sequential'|'mix', maxDuration?: number, groups: [{agId, agName, items, warnings}] }
   const [preview, setPreview] = useState(null)
   const [saving, setSaving] = useState(false)
 
@@ -27,6 +29,7 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
     let cancelled = false
     setLoading(true)
     setPreview(null)
+    setMixMode(false)
     ;(async () => {
       const [{ data: ags, error: agsErr }, { data: tour, error: tourErr }] = await Promise.all([
         supabase
@@ -73,6 +76,7 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
           included: false,
           gameDuration: d.ag.game_duration_minutes ?? 20,
           pitchIds: new Set(allPitchIds),
+          firstGameTime: '',
         }
       }
       setDivConfig(cfg)
@@ -95,6 +99,15 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
     setPreview(null)
   }
 
+  function buildPreviewItem(item, pitchLookup, fx) {
+    return {
+      ...item,
+      home: fx?.home_team?.name ?? fx?.home_placeholder ?? '?',
+      away: fx?.away_team?.name ?? fx?.away_placeholder ?? '?',
+      pitchLabel: pitchLookup[item.pitchId] ?? '?',
+    }
+  }
+
   function runPreview() {
     if (!isValid(parse(schedDateDisplay, 'dd/MM/yyyy', new Date()))) {
       toast(t('tournament.invalidDate'), 'error'); return
@@ -104,8 +117,63 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
       toast(t('venueSched.noDivisionsSelected'), 'error'); return
     }
 
+    const pitchLookup = Object.fromEntries(pitches.map(p => [p.id, p.name]))
+    const lunchStart = schedLunchEnabled ? (schedLunchStart || null) : null
+    const lunchEnd = schedLunchEnabled ? (schedLunchEnd || null) : null
+
+    if (mixMode) {
+      const allSelectedPitchIds = [...new Set(included.flatMap(d => [...divConfig[d.ag.id].pitchIds]))]
+      if (allSelectedPitchIds.length === 0) return
+      const maxDuration = Math.max(...included.map(d => divConfig[d.ag.id].gameDuration))
+
+      const fixtureToAg = {}
+      const allMapped = []
+      for (const { ag, fixtures } of included) {
+        for (const f of fixtures) {
+          fixtureToAg[f.id] = { agId: ag.id, agName: ag.name, fixture: f }
+          allMapped.push({
+            id: f.id,
+            homeTeamId: f.home_team_id,
+            awayTeamId: f.away_team_id,
+            home_placeholder: f.home_placeholder ?? null,
+            away_placeholder: f.away_placeholder ?? null,
+            round: f.round ?? null,
+          })
+        }
+      }
+
+      const result = generateSchedule({
+        fixtures: allMapped,
+        pitchCount: allSelectedPitchIds.length,
+        pitchIds: allSelectedPitchIds,
+        gameDuration: maxDuration,
+        firstGameTime: schedFirst || '09:00',
+        lastGameTime: '23:59',
+        lunchStart, lunchEnd,
+        date: schedDate,
+        pitchGap: schedPitchGap,
+        teamRest: null,
+        blockedSlots: [],
+      })
+
+      const divMap = {}
+      for (const { ag } of included) {
+        divMap[ag.id] = { agId: ag.id, agName: ag.name, items: [], warnings: [] }
+      }
+      for (const item of result.schedule) {
+        const meta = fixtureToAg[item.fixtureId]
+        if (!meta || !divMap[meta.agId]) continue
+        divMap[meta.agId].items.push(buildPreviewItem(item, pitchLookup, meta.fixture))
+      }
+      if (result.warnings?.length > 0) divMap[included[0].ag.id].warnings = result.warnings
+
+      setPreview({ mode: 'mix', maxDuration, groups: Object.values(divMap) })
+      return
+    }
+
+    // Sequential mode: schedule each division in order; each division's slots block the next
     const accumulated = []
-    const allPreviews = []
+    const groups = []
 
     for (const { ag, fixtures } of included) {
       const cfg = divConfig[ag.id]
@@ -113,6 +181,7 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
       if (selectedPitchIds.length === 0) continue
 
       const gameDuration = cfg.gameDuration
+      const firstGameTime = cfg.firstGameTime || schedFirst || '09:00'
 
       const mapped = fixtures.map(f => ({
         id: f.id,
@@ -123,21 +192,18 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
         round: f.round ?? null,
       }))
 
-      const blockedSlots = accumulated.filter(b => selectedPitchIds.includes(b.pitchId))
-
       const result = generateSchedule({
         fixtures: mapped,
         pitchCount: selectedPitchIds.length,
         pitchIds: selectedPitchIds,
         gameDuration,
-        firstGameTime: schedFirst || '09:00',
+        firstGameTime,
         lastGameTime: '23:59',
-        lunchStart: schedLunchEnabled ? (schedLunchStart || null) : null,
-        lunchEnd: schedLunchEnabled ? (schedLunchEnd || null) : null,
+        lunchStart, lunchEnd,
         date: schedDate,
         pitchGap: schedPitchGap,
         teamRest: ag.team_rest_minutes ?? null,
-        blockedSlots,
+        blockedSlots: accumulated.filter(b => selectedPitchIds.includes(b.pitchId)),
       })
 
       for (const item of result.schedule) {
@@ -147,27 +213,23 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
         accumulated.push({ pitchId: item.pitchId, startMins, endMins: startMins + gameDuration })
       }
 
-      const items = result.schedule.map(item => {
-        const fx = fixtures.find(f => f.id === item.fixtureId)
-        return {
-          ...item,
-          home: fx?.home_team?.name ?? fx?.home_placeholder ?? '?',
-          away: fx?.away_team?.name ?? fx?.away_placeholder ?? '?',
-          pitchLabel: pitches.find(p => p.id === item.pitchId)?.name ?? '?',
-        }
+      groups.push({
+        agId: ag.id, agName: ag.name, warnings: result.warnings,
+        items: result.schedule.map(item => {
+          const fx = fixtures.find(f => f.id === item.fixtureId)
+          return buildPreviewItem(item, pitchLookup, fx)
+        }),
       })
-
-      allPreviews.push({ agId: ag.id, agName: ag.name, items, warnings: result.warnings })
     }
 
-    setPreview(allPreviews)
+    setPreview({ mode: 'sequential', groups })
   }
 
   async function confirmSchedule() {
-    if (!preview?.length) return
+    if (!preview?.groups?.length) return
     setSaving(true)
     try {
-      const allItems = preview.flatMap(p => p.items)
+      const allItems = preview.groups.flatMap(p => p.items)
       const fixtureIds = allItems.map(i => i.fixtureId)
 
       if (fixtureIds.length > 0) {
@@ -265,8 +327,10 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
           if (!cfg) return null
           return (
             <div key={ag.id} style={{ border: '1px solid var(--color-border)', borderRadius: 'var(--radius-sm)', marginBottom: '0.5rem', overflow: 'hidden', opacity: cfg.included ? 1 : 0.65 }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem', background: 'var(--color-surface-2)', cursor: 'pointer' }}
-                onClick={() => updateDivConfig(ag.id, 'included', !cfg.included)}>
+              <div
+                style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.5rem 0.75rem', background: 'var(--color-surface-2)', cursor: 'pointer' }}
+                onClick={() => updateDivConfig(ag.id, 'included', !cfg.included)}
+              >
                 <input type="checkbox" checked={cfg.included} onChange={e => { e.stopPropagation(); updateDivConfig(ag.id, 'included', e.target.checked) }} />
                 <span style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, flex: 1 }}>{ag.name}</span>
                 <span style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)' }}>
@@ -281,6 +345,17 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
                       onChange={e => updateDivConfig(ag.id, 'gameDuration', Number(e.target.value))}
                       style={{ ...inputStyle, width: '5rem' }} />
                   </label>
+                  {!mixMode && (
+                    <label style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem', fontSize: '0.875rem' }}>
+                      {t('venueSched.divFirstGame')}
+                      <input
+                        type="text" placeholder={schedFirst || '09:00'} maxLength={5}
+                        value={cfg.firstGameTime}
+                        onChange={e => updateDivConfig(ag.id, 'firstGameTime', e.target.value)}
+                        style={{ ...inputStyle, width: '5rem' }}
+                      />
+                    </label>
+                  )}
                   <div>
                     <p style={{ fontSize: '0.875rem', marginBottom: '0.375rem' }}>{t('venueSched.pitchAssign')}</p>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.5rem' }}>
@@ -304,11 +379,39 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
           )
         })}
 
-        <div style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+        {/* Action row */}
+        <div style={{ marginTop: '1rem', marginBottom: '1rem', display: 'flex', gap: '0.75rem', alignItems: 'center', flexWrap: 'wrap' }}>
           <button className="btn-primary" onClick={runPreview}>{t('fixture.schedPreview')}</button>
+          <button
+            onClick={() => { setMixMode(m => !m); setPreview(null) }}
+            title={t('venueSched.mixHint')}
+            style={{
+              display: 'flex', alignItems: 'center', gap: '0.4rem',
+              background: mixMode ? 'rgba(240,165,0,0.18)' : 'var(--color-surface-2)',
+              border: mixMode ? '2px solid var(--color-accent)' : '1px solid var(--color-border)',
+              color: mixMode ? 'var(--color-accent)' : 'var(--color-text-muted)',
+              borderRadius: 'var(--radius-sm)', padding: mixMode ? '0.35rem 0.85rem' : '0.4rem 0.85rem',
+              cursor: 'pointer', fontWeight: 800, fontSize: '0.875rem', letterSpacing: '0.04em',
+            }}
+          >
+            {mixMode ? '✓' : '⊕'} MIX
+          </button>
+          {mixMode && (
+            <span style={{ fontSize: '0.78rem', color: 'var(--color-text-muted)', flex: 1 }}>
+              {t('venueSched.mixNote')}
+            </span>
+          )}
         </div>
 
-        {preview && preview.map(({ agId, agName, items, warnings }) => (
+        {/* MIX slot note */}
+        {preview?.mode === 'mix' && (
+          <div style={{ background: 'rgba(240,165,0,0.06)', border: '1px solid rgba(240,165,0,0.2)', borderRadius: 'var(--radius-sm)', padding: '0.4rem 0.75rem', marginBottom: '0.75rem', fontSize: '0.78rem', color: 'var(--color-text-muted)' }}>
+            {t('venueSched.mixSlotNote', { duration: preview.maxDuration })}
+          </div>
+        )}
+
+        {/* Preview tables grouped by division */}
+        {preview?.groups?.map(({ agId, agName, items, warnings }) => (
           <div key={agId} style={{ marginBottom: '1.25rem' }}>
             <p style={{ fontFamily: 'var(--font-heading)', fontWeight: 700, fontSize: '0.85rem', textTransform: 'uppercase', color: 'var(--color-accent)', marginBottom: '0.375rem' }}>
               {agName} — {items.length} {t('scheduler.fixtures')}
@@ -345,7 +448,7 @@ export default function VenueDivisionScheduler({ open, onClose, tournamentId, ve
           </div>
         ))}
 
-        {preview && preview.length > 0 && (
+        {preview?.groups?.length > 0 && (
           <div style={{ display: 'flex', gap: '0.75rem', marginBottom: '1rem' }}>
             <button className="btn-primary" onClick={confirmSchedule} disabled={saving}>
               {saving ? t('common.saving') : t('fixture.schedConfirm')}

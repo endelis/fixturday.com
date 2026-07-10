@@ -377,7 +377,11 @@
     "selectDivisions": "Select divisions to schedule",
     "noFixtures": "No fixtures found for this tournament",
     "noDivisionsSelected": "Select at least one division",
-    "pitchAssign": "Pitches"
+    "pitchAssign": "Pitches",
+    "divFirstGame": "First game",
+    "mixNote": "All divisions share pitches — games interleave for maximum efficiency",
+    "mixSlotNote": "{{duration}}min slots used for all divisions (longest game in selection)",
+    "mixHint": "Toggle MIX mode: interleave all divisions on shared pitches"
   },
   "auth": {
     "email": "Email",
