@@ -161,7 +161,7 @@ export default function Matchday() {
   const [loading, setLoading] = useState(true)
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'))
   const [filterGroup, setFilterGroup] = useState('all')
-  const [filterStatus, setFilterStatus] = useState('all')
+  const [filterStatus, setFilterStatus] = useState('pending')
   const [tournamentId, setTournamentId] = useState(null)
   const [playoffFixtures, setPlayoffFixtures] = useState([])
   const [tournamentSport, setTournamentSport] = useState('football')
@@ -336,15 +336,35 @@ export default function Matchday() {
     fixtures.map(f => f.stages?.age_groups?.name).filter(Boolean)
   )].sort()
 
+  // IDs of the 2 most recently completed fixtures — always shown in 'pending' mode for quick editing
+  const recentCompletedIds = new Set(
+    [...fixtures]
+      .filter(f => {
+        const ag = f.stages?.age_groups?.name
+        if (filterGroup !== 'all' && ag !== filterGroup) return false
+        return !!f.fixture_results?.[0] || f.status === 'completed'
+      })
+      .sort((a, b) => {
+        if (!a.kickoff_time && !b.kickoff_time) return 0
+        if (!a.kickoff_time) return 1
+        if (!b.kickoff_time) return -1
+        return new Date(b.kickoff_time) - new Date(a.kickoff_time)
+      })
+      .slice(0, 2)
+      .map(f => f.id)
+  )
+
   const filtered = fixtures.filter(f => {
     const ag = f.stages?.age_groups?.name
     const hasResult = !!f.fixture_results?.[0]
+    const isComplete = hasResult || f.status === 'completed'
     const agMatch = filterGroup === 'all' || ag === filterGroup
-    const stMatch =
-      filterStatus === 'all' ||
-      (filterStatus === 'completed' && (hasResult || f.status === 'completed')) ||
-      (filterStatus === 'pending' && !hasResult && f.status !== 'completed' && f.status !== 'postponed')
-    return agMatch && stMatch
+    if (!agMatch) return false
+    if (filterStatus === 'all') return true
+    if (filterStatus === 'completed') return isComplete
+    // 'pending' (default): all non-completed + last 2 completed for quick editing
+    if (!isComplete) return true
+    return recentCompletedIds.has(f.id)
   })
 
   const byGroup = filtered.reduce((acc, f) => {
@@ -854,15 +874,12 @@ export default function Matchday() {
                 if (shownIds.has(f.id)) return false
                 const ag = f.stages?.age_groups?.name
                 if (filterGroup !== 'all' && ag !== filterGroup) return false
-                if (filterStatus === 'completed') {
-                  const hasResult = !!f.fixture_results?.[0]
-                  return hasResult || f.status === 'completed'
-                }
-                if (filterStatus === 'pending') {
-                  const hasResult = !!f.fixture_results?.[0]
-                  return !hasResult && f.status !== 'completed' && f.status !== 'postponed'
-                }
-                return true
+                const hasResult = !!f.fixture_results?.[0]
+                const isComplete = hasResult || f.status === 'completed'
+                if (filterStatus === 'all') return true
+                if (filterStatus === 'completed') return isComplete
+                if (!isComplete) return true
+                return recentCompletedIds.has(f.id)
               })
               if (!extraPlayoff.length) return null
               const byAgPlayoff = extraPlayoff.reduce((acc, f) => {
