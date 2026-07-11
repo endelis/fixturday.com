@@ -211,8 +211,8 @@ export default function Standings() {
       const main = matches.filter(f => !is3rd(f))
       if (thirdPlace.length > 0 && main.length > 0) {
         return [
-          { roundName: resolveRoundName(main), matches: main },
           { roundName: t('playoff.thirdPlace'), matches: thirdPlace },
+          { roundName: resolveRoundName(main), matches: main },
         ]
       }
       return [{ roundName: resolveRoundName(matches), matches }]
