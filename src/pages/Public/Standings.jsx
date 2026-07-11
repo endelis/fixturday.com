@@ -202,23 +202,17 @@ export default function Standings() {
   const knockoutRoundList = Object.entries(knockoutByRound)
     .sort(([a], [b]) => Number(a) - Number(b))
     .flatMap(([, matches]) => {
-      const named = matches.filter(f => f.round_name)
-      const unnamed = matches.filter(f => !f.round_name)
-      if (named.length > 0 && unnamed.length > 0) {
-        return [
-          { roundName: resolveRoundName(named), matches: named },
-          { roundName: resolveRoundName(unnamed), matches: unnamed },
-        ]
-      }
-      // Fallback for older data where round_name was not persisted:
-      // detect the 3rd-place fixture by its placeholder text ('zaudētājs' = loser)
-      const is3rd = f => f.home_placeholder?.includes('zaudētājs') || f.away_placeholder?.includes('zaudētājs')
+      // Split 3rd place fixture from Final whenever they share the same round number,
+      // regardless of whether round_name is set on one or both.
+      const is3rd = f =>
+        f.round_name === '3rd_place' || f.round_name === '3rd Place' || f.round_name === '3rd place' ||
+        f.home_placeholder?.includes('zaudētājs') || f.away_placeholder?.includes('zaudētājs')
       const thirdPlace = matches.filter(is3rd)
-      const finals = matches.filter(f => !is3rd(f))
-      if (thirdPlace.length > 0 && finals.length > 0) {
+      const main = matches.filter(f => !is3rd(f))
+      if (thirdPlace.length > 0 && main.length > 0) {
         return [
+          { roundName: resolveRoundName(main), matches: main },
           { roundName: t('playoff.thirdPlace'), matches: thirdPlace },
-          { roundName: t('playoff.final'), matches: finals },
         ]
       }
       return [{ roundName: resolveRoundName(matches), matches }]
