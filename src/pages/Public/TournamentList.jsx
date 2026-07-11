@@ -9,21 +9,34 @@ import Footer from '../../components/Footer'
 import { useSEO } from '../../hooks/useSEO'
 
 // ── Status helpers ────────────────────────────────────────────
+function todayStr() {
+  const d = new Date()
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
+
+function allGamesDone(tournament) {
+  const fixtures = (tournament.age_groups ?? [])
+    .flatMap(ag => (ag.stages ?? []).flatMap(s => s.fixtures ?? []))
+  return fixtures.length > 0 && fixtures.every(f => f.status === 'completed')
+}
+
 function getTournamentStatus(tournament) {
-  const today = new Date()
-  today.setHours(0, 0, 0, 0)
   if (!tournament.start_date) return null
-  const start = new Date(tournament.start_date)
-  const end = tournament.end_date ? new Date(tournament.end_date) : start
+  const today = todayStr()
+  const start = tournament.start_date.slice(0, 10)
+  const end = (tournament.end_date ?? tournament.start_date).slice(0, 10)
   if (today < start) return 'upcoming'
   if (today > end) return 'finished'
-  return 'ongoing'
+  // Tournament is happening today (or we're within a multi-day window)
+  return allGamesDone(tournament) ? 'finished_today' : 'today'
 }
 
 const STATUS_CONFIG = {
-  ongoing:  { labelKey: 'tournament.status.live',     cls: 'badge-live'    },
-  upcoming: { labelKey: 'tournament.status.upcoming', cls: 'badge-warning' },
-  finished: { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
+  today:         { labelKey: 'tournament.status.today',    cls: 'badge-live'    },
+  finished_today:{ labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
+  ongoing:       { labelKey: 'tournament.status.live',     cls: 'badge-live'    },
+  upcoming:      { labelKey: 'tournament.status.upcoming', cls: 'badge-warning' },
+  finished:      { labelKey: 'tournament.status.finished', cls: 'badge-muted'   },
 }
 
 const SPORT_ICONS = { football: '⚽' }
@@ -49,7 +62,7 @@ export default function TournamentList() {
     async function load() {
       const { data, error } = await supabase
         .from('tournaments')
-        .select('id, name, slug, sport, country, start_date, end_date, logo_url, logo_path, venues(name), age_groups(id, name, registration_open)')
+        .select('id, name, slug, sport, country, start_date, end_date, logo_url, logo_path, venues(name), age_groups(id, name, registration_open, stages(fixtures(status)))')
         .eq('is_active', true)
         .order('start_date', { ascending: false })
 

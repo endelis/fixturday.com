@@ -96,7 +96,8 @@
       "live": "Live",
       "ongoing": "Ongoing",
       "upcoming": "Upcoming",
-      "finished": "Finished"
+      "finished": "Finished",
+      "today": "Today"
     },
     "noTime": "Time not set"
   },
