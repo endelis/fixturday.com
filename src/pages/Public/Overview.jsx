@@ -97,7 +97,7 @@ export default function TournamentOverviewPublic() {
   const doneCount = completedFixtures.length
   const progressPct = totalCount > 0 ? Math.round((doneCount / totalCount) * 100) : 0
   const allMatchesPlayed = totalCount > 0 && doneCount === totalCount
-  const shouldComputePodium = !!(tournamentFinished || allMatchesPlayed)
+  const shouldComputePodium = allMatchesPlayed
 
   // Live, upcoming, latest results
   const liveMatches = playableFixtures.filter(f => f.status === 'live')
