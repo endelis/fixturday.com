@@ -30,19 +30,32 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
   }, [tournament?.id])
 
   async function handleShare() {
-    const url = tournament?.slug
-      ? `https://www.fixturday.com/t/${tournament.slug}`
-      : window.location.href
-    const title = document.title
-    if (navigator.share) {
-      try { await navigator.share({ title, url }) } catch {}
-    } else {
+    const activeAg = ageGroups.find(ag => ag.id === activeAgeGroupId)
+    const divSuffix = activeAg ? ` — ${activeAg.name}` : ''
+    const title = tournament?.name ? `${tournament.name}${divSuffix}` : document.title
+    const text = tournament?.name
+      ? `Follow ${tournament.name}${divSuffix} live on Fixturday`
+      : 'Follow this tournament live on Fixturday'
+    const url = window.location.href
+    const data = { title, text, url }
+
+    // Tier 1: native OS share sheet (iOS/Android) — triggers WhatsApp, Telegram, etc.
+    if (navigator.canShare?.(data)) {
       try {
-        await navigator.clipboard.writeText(url)
-        setShareCopied(true)
-        setTimeout(() => setShareCopied(false), 2000)
-      } catch {}
+        await navigator.share(data)
+        return
+      } catch (e) {
+        if (e.name === 'AbortError') return // user dismissed the sheet — not an error
+        // share() failed for another reason, fall through to clipboard
+      }
     }
+
+    // Tier 2: clipboard (Firefox desktop, older browsers)
+    try {
+      await navigator.clipboard.writeText(url)
+      setShareCopied(true)
+      setTimeout(() => setShareCopied(false), 2000)
+    } catch {}
   }
 
   // Build a division link that preserves the current tab
