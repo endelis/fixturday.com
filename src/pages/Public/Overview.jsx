@@ -108,13 +108,20 @@ export default function TournamentOverviewPublic() {
       return new Date(b.kickoff_time) - new Date(a.kickoff_time)
     })
     .slice(0, 5)
+  // Use last completed kickoff as the cutoff so "Up Next" advances by results,
+  // not by clock — games show once the previous slot's results are posted.
+  const completedWithKickoff = completedFixtures.filter(f => f.kickoff_time)
+  const lastCompletedKickoff = completedWithKickoff.length > 0
+    ? new Date(Math.max(...completedWithKickoff.map(f => new Date(f.kickoff_time).getTime())))
+    : null
+  const upcomingCutoff = lastCompletedKickoff ?? now
   const upcomingMatches = fixtures
     .filter(f => f.status !== 'completed' && f.status !== 'live' && f.status !== 'postponed')
     .filter(f => {
       // Unresolved playoff slots: always show regardless of kickoff time
       if (!f.group_label && (f.home_placeholder || f.away_placeholder)) return true
-      // Group / fully-resolved fixtures: only show if kickoff hasn't passed
-      if (f.kickoff_time && new Date(f.kickoff_time) < now) return false
+      // Hide anything at or before the last completed slot (result-based, not clock-based)
+      if (f.kickoff_time && new Date(f.kickoff_time) <= upcomingCutoff) return false
       if (f.group_label) return !!(f.home_team?.id && f.away_team?.id)
       return !!(f.home_team?.id && f.away_team?.id)
     })
