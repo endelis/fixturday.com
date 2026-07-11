@@ -43,6 +43,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
     if (navigator.canShare?.(data)) {
       try {
         await navigator.share(data)
+        window.gtag?.('event', 'share', { method: 'native', content_type: 'tournament', item_id: tournament?.slug ?? '' })
         return
       } catch (e) {
         if (e.name === 'AbortError') return // user dismissed the sheet — not an error
@@ -55,6 +56,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
       await navigator.clipboard.writeText(url)
       setShareCopied(true)
       setTimeout(() => setShareCopied(false), 2000)
+      window.gtag?.('event', 'share', { method: 'clipboard', content_type: 'tournament', item_id: tournament?.slug ?? '' })
     } catch {}
   }
 
