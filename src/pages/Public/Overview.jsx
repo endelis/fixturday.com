@@ -216,7 +216,7 @@ export default function TournamentOverviewPublic() {
 
   return (
     <div>
-      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} showPlayoff={ag.format === 'group_knockout' || ag.format === 'knockout'} />
       <div className="container" style={{ paddingTop: '1.5rem', paddingBottom: '3rem' }}>
 
         {/* Registration CTA */}

@@ -20,54 +20,59 @@ function formatProvenance(placeholder) {
 }
 
 function BracketMatchCard({ f, result, provenanceMap = new Map() }) {
-  const homeName = f.home_team?.name ?? f.home_placeholder ?? 'TBD'
-  const awayName = f.away_team?.name ?? f.away_placeholder ?? 'TBD'
   const homeWon = result && Number(result.home_goals) > Number(result.away_goals)
   const awayWon = result && Number(result.away_goals) > Number(result.home_goals)
 
-  // Provenance: only meaningful when the team is actually assigned
-  const homeProvenance = f.home_team?.id ? provenanceMap.get(f.home_team.id) : null
-  const awayProvenance = f.away_team?.id ? provenanceMap.get(f.away_team.id) : null
+  function getSlotData(isHome) {
+    const team     = isHome ? f.home_team : f.away_team
+    const ph       = isHome ? f.home_placeholder : f.away_placeholder
+    const hasTeam  = !!team?.id
+    const won      = isHome ? homeWon : awayWon
 
-  function rowStyle(isHome) {
-    const won = isHome ? homeWon : awayWon
-    const hasTeam = isHome ? !!f.home_team?.id : !!f.away_team?.id
-    const placeholder = isHome ? f.home_placeholder : f.away_placeholder
-    if (!hasTeam) return placeholder
-      ? { color: 'var(--color-text-muted)' }
-      : { color: 'var(--color-text-muted)', fontStyle: 'italic' }
-    if (result) return won
+    // Label = origin/path shown above the team name
+    let label = null
+    if (hasTeam) {
+      // Prefer map-built provenance ("Group A · 1st"), fall back to placeholder text
+      label = provenanceMap.get(team.id) ?? formatProvenance(ph) ?? ph ?? null
+    } else {
+      // No team assigned yet — show the path placeholder as the label
+      label = ph ? (formatProvenance(ph) ?? ph) : null
+    }
+
+    // Display name (only shown when team is assigned)
+    const name = hasTeam ? (team.name ?? '?') : null
+
+    // Text style for name
+    let nameStyle = { color: 'var(--color-text)', fontWeight: 500 }
+    if (result && hasTeam) nameStyle = won
       ? { color: 'var(--color-accent)', fontWeight: 700 }
-      : { color: 'var(--color-text-muted)' }
-    return { color: 'var(--color-text)', fontWeight: 500 }
+      : { color: 'var(--color-text-muted)', fontWeight: 400 }
+
+    const goals = result && hasTeam ? (isHome ? Number(result.home_goals) : Number(result.away_goals)) : null
+    const scoreStyle = won
+      ? { fontFamily: 'var(--font-heading)', fontSize: '0.9rem', flexShrink: 0, color: 'var(--color-accent)', fontWeight: 700 }
+      : { fontFamily: 'var(--font-heading)', fontSize: '0.9rem', flexShrink: 0, color: 'var(--color-text-muted)' }
+
+    return { label, name, goals, nameStyle, scoreStyle }
   }
 
-  const scoreStyle = won => won
-    ? { fontFamily: 'var(--font-heading)', fontSize: '0.9rem', flexShrink: 0, color: 'var(--color-accent)', fontWeight: 700 }
-    : { fontFamily: 'var(--font-heading)', fontSize: '0.9rem', flexShrink: 0, color: 'var(--color-text-muted)' }
-
-  function Row({ isHome, provenance }) {
-    const name = isHome ? homeName : awayName
-    const won = isHome ? homeWon : awayWon
-    const goals = isHome
-      ? (result ? Number(result.home_goals) : null)
-      : (result ? Number(result.away_goals) : null)
-
+  function Row({ isHome }) {
+    const { label, name, goals, nameStyle, scoreStyle } = getSlotData(isHome)
     return (
-      <div style={{ padding: '0.38rem 0.6rem 0.3rem', ...(isHome ? { borderBottom: '1px solid rgba(255,255,255,0.05)' } : {}) }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' }}>
-          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.82rem', minWidth: 0, ...rowStyle(isHome) }}>
-            {name}
-          </span>
-          {goals !== null && <span style={scoreStyle(won)}>{goals}</span>}
+      <div style={{
+        padding: '0.4rem 0.6rem 0.35rem',
+        ...(isHome ? { borderBottom: '1px solid rgba(255,255,255,0.06)' } : {}),
+      }}>
+        {/* Origin / path label — small, muted, above the team name */}
+        <div style={{ fontSize: '0.6rem', color: 'rgba(136,146,164,0.7)', lineHeight: 1, marginBottom: '2px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', letterSpacing: '0.03em', textTransform: 'uppercase', minHeight: '0.65rem' }}>
+          {label ?? ''}
         </div>
-        {/* Fixed-height provenance line — always renders to keep card height consistent */}
-        <div style={{ height: '0.72rem', marginTop: '1px', overflow: 'hidden' }}>
-          {provenance && (
-            <span style={{ fontSize: '0.6rem', color: 'rgba(136,146,164,0.65)', lineHeight: 1, letterSpacing: '0.02em' }}>
-              {provenance}
-            </span>
-          )}
+        {/* Team name + score */}
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: '0.4rem' }}>
+          <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', flex: 1, fontSize: '0.85rem', minWidth: 0, ...nameStyle }}>
+            {name ?? <span style={{ color: 'rgba(136,146,164,0.35)', fontStyle: 'italic' }}>—</span>}
+          </span>
+          {goals !== null && <span style={scoreStyle}>{goals}</span>}
         </div>
       </div>
     )
@@ -81,8 +86,8 @@ function BracketMatchCard({ f, result, provenanceMap = new Map() }) {
       borderRadius: '8px',
       overflow: 'hidden',
     }}>
-      <Row isHome={true} provenance={homeProvenance} />
-      <Row isHome={false} provenance={awayProvenance} />
+      <Row isHome={true} />
+      <Row isHome={false} />
     </div>
   )
 }

@@ -442,7 +442,7 @@ export default function Schedule() {
           .sch-pitch-row { display: none; }
         }
       `}</style>
-      <PublicNav tournament={ag?.tournaments} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
+      <PublicNav tournament={ag?.tournaments} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} showPlayoff={ag?.format === 'group_knockout' || ag?.format === 'knockout'} />
       <div className="container" style={{ paddingTop: '1.75rem', paddingBottom: '3rem' }}>
 
         {/* Page header */}
