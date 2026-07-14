@@ -227,6 +227,9 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   <NavLink to={agId ? `/t/${tournament.slug}/${agId}` : `/t/${tournament.slug}`} end style={tourNavLink}>
                     {t('nav.standings')}
                   </NavLink>
+                  <NavLink to={agId ? `/t/${tournament.slug}/${agId}/teams` : `/t/${tournament.slug}`} end style={tourNavLink}>
+                    {t('nav.teams')}
+                  </NavLink>
                   <NavLink to={`/${tournament.slug}/info`} end style={tourNavLink}>
                     {t('nav.info')}
                   </NavLink>

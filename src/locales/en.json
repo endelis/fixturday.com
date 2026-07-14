@@ -27,7 +27,8 @@
     "info": "Info",
     "register": "Register",
     "openMenu": "Open menu",
-    "closeMenu": "Close menu"
+    "closeMenu": "Close menu",
+    "teams": "Teams"
   },
   "tournament": {
     "title": "Tournaments",
@@ -196,6 +197,9 @@
     "deleted": "Team deleted",
     "confirmed": "Team confirmed",
     "rejected": "Team rejected",
+    "statusConfirmed": "Confirmed",
+    "statusPending": "Pending",
+    "noTeamsPublic": "No teams registered yet.",
     "playerAdded": "Player added",
     "reject": "Reject",
     "confirmDelete": "Delete team and all its players?",

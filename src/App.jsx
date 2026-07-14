@@ -11,6 +11,7 @@ const TournamentDetail = lazy(() => import('./pages/Public/TournamentDetail'))
 const Standings       = lazy(() => import('./pages/Public/Standings'))
 const Schedule        = lazy(() => import('./pages/Public/Schedule'))
 const TeamRoster      = lazy(() => import('./pages/Public/TeamRoster'))
+const PublicTeams     = lazy(() => import('./pages/Public/Teams'))
 const Register        = lazy(() => import('./pages/Public/Register'))
 const TournamentOverviewPublic = lazy(() => import('./pages/Public/Overview'))
 const About           = lazy(() => import('./pages/Public/About'))
@@ -99,6 +100,7 @@ export default function App() {
           <Route path="/t/:slug/:ageGroup"                   element={<Standings />} />
           <Route path="/t/:slug/:ageGroup/overview"          element={<TournamentOverviewPublic />} />
           <Route path="/t/:slug/:ageGroup/fixtures"          element={<Schedule />} />
+          <Route path="/t/:slug/:ageGroup/teams"              element={<PublicTeams />} />
           <Route path="/t/:slug/:ageGroup/teams/:teamId"     element={<TeamRoster />} />
           <Route path="/t/:slug/register"                    element={<Register />} />
           <Route path="/:slug/matches/:matchId"              element={<Match />} />
