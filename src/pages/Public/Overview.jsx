@@ -501,6 +501,7 @@ export default function TournamentOverviewPublic() {
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'left', fontWeight: 500 }}>{t('standings.team')}</th>
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>P</th>
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>W</th>
+                          <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>D</th>
                           <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>L</th>
                           <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.points')}</th>
                         </tr>
@@ -514,6 +515,7 @@ export default function TournamentOverviewPublic() {
                             </td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
+                            <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.drawn}</td>
                             <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
                             <td style={{ padding: '0.4rem 0.75rem', textAlign: 'center', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{row.points}</td>
                           </tr>
@@ -540,6 +542,7 @@ export default function TournamentOverviewPublic() {
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'left', fontWeight: 500 }}>{t('standings.team')}</th>
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>P</th>
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>W</th>
+                  <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>D</th>
                   <th style={{ padding: '0.3rem 0.5rem', textAlign: 'center', fontWeight: 500 }}>L</th>
                   <th style={{ padding: '0.3rem 0.75rem', textAlign: 'center', fontWeight: 500, color: 'var(--color-accent)' }}>{t('standings.points')}</th>
                 </tr>
@@ -553,6 +556,7 @@ export default function TournamentOverviewPublic() {
                     </td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.played}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.won}</td>
+                    <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.drawn}</td>
                     <td style={{ padding: '0.4rem 0.5rem', textAlign: 'center', fontVariantNumeric: 'tabular-nums' }}>{row.lost}</td>
                     <td style={{ padding: '0.4rem 0.75rem', textAlign: 'center', fontFamily: 'var(--font-heading)', color: 'var(--color-accent)', fontVariantNumeric: 'tabular-nums' }}>{row.points}</td>
                   </tr>
