@@ -81,7 +81,7 @@ export default function PublicTeams() {
 
   return (
     <div>
-      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={false} showPlayoff={ag?.format === 'group_knockout' || ag?.format === 'knockout'} />
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={false} showPlayoff={(ag?.format === 'group_knockout' || ag?.format === 'knockout') && !['malpils-zemenu-svetku-futbola-turnirs-2026'].includes(slug)} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: '0 0 1.5rem' }}>
           {tournament.name} — {ag.name}

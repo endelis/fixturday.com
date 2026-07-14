@@ -71,6 +71,11 @@ export default function Playoff() {
   // Redirect round-robin divisions to standings (no bracket for them)
   if (!KO_FORMATS.includes(ag.format)) return <Navigate to={`/t/${slug}/${ageGroupId}`} replace />
 
+  // Bracket for this tournament was generated with a cross-seeding bug (fixed in v2);
+  // hide playoff page until data is corrected manually.
+  const BRACKET_HIDDEN = ['malpils-zemenu-svetku-futbola-turnirs-2026']
+  if (BRACKET_HIDDEN.includes(slug)) return <Navigate to={`/t/${slug}/${ageGroupId}`} replace />
+
   // Hide register button if admin closed registration or any KO game has been played
   const showRegister = !!ag.registration_open && results.length === 0
 
