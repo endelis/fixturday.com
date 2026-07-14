@@ -21,7 +21,7 @@ export default function TeamRoster() {
         supabase.from('teams').select('id, name, club, age_groups(id, name, tournament_id, tournaments(id, name, slug))').eq('id', teamId).single(),
         supabase.from('team_players').select('id, name, number').eq('team_id', teamId).order('number'),
         supabase.from('fixtures')
-          .select('id, round, kickoff_time, status, group_label, home_team_id, away_team_id, home_placeholder_label, away_placeholder_label, home_team:teams!home_team_id(id, name), away_team:teams!away_team_id(id, name), pitch:pitches(name, venues(name))')
+          .select('id, round, round_name, kickoff_time, status, group_label, home_team_id, away_team_id, home_placeholder_label, away_placeholder_label, home_team:teams!home_team_id(id, name), away_team:teams!away_team_id(id, name), pitch:pitches(name, venues(name))')
           .or(`home_team_id.eq.${teamId},away_team_id.eq.${teamId}`)
           .order('kickoff_time', { ascending: true, nullsFirst: false }),
       ])
@@ -58,6 +58,15 @@ export default function TeamRoster() {
   if (!team) return <div className="loading">{t('team.notFound')}</div>
 
   const tournament = team.age_groups?.tournaments
+
+  function resolveRoundName(rn) {
+    if (!rn) return t('standings.knockoutPhase')
+    if (rn === '3rd_place' || rn === '3rd place' || rn === '3rd Place') return t('playoff.thirdPlace')
+    if (rn === 'QF' || rn === 'Quarterfinal' || rn === 'Quarter-final') return t('playoff.quarterFinal')
+    if (rn === 'SF' || rn === 'Semifinal' || rn === 'Semi-final') return t('playoff.semiFinal')
+    if (rn === 'F' || rn === 'Final') return t('playoff.final')
+    return rn
+  }
 
   function teamName(teamId, name, placeholder) {
     if (teamId) return name ?? '?'
@@ -99,11 +108,11 @@ export default function TeamRoster() {
                     <span style={{ flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {opponent}
                     </span>
-                    {f.group_label && (
-                      <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>
-                        {t('standings.group')} {f.group_label}
-                      </span>
-                    )}
+                    <span style={{ fontSize: '0.75rem', color: 'var(--color-text-muted)', flexShrink: 0 }}>
+                      {f.group_label
+                        ? `${t('standings.group')} ${f.group_label}`
+                        : resolveRoundName(f.round_name)}
+                    </span>
                   </div>
                   {(f.kickoff_time || f.pitch) && (
                     <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '0.35rem', fontSize: '0.75rem', color: 'var(--color-text-muted)' }}>

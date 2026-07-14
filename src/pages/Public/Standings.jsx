@@ -10,7 +10,6 @@ import Footer from '../../components/Footer'
 import ClassFilter from '../../components/ClassFilter'
 import { useSEO } from '../../hooks/useSEO'
 import DoubleEliminationBracket from '../../components/DoubleEliminationBracket'
-import SingleEliminationBracket from '../../components/SingleEliminationBracket'
 
 export default function Standings() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -242,7 +241,7 @@ export default function Standings() {
 
   return (
     <div>
-      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} />
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showRegister={isRegOpen} showPlayoff={hasKnockoutFixtures} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
         {tournament.location && (
           <p style={{ margin: '0 0 0.5rem', fontSize: '0.8rem', color: 'var(--color-text-muted)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
@@ -479,11 +478,13 @@ export default function Standings() {
               )
             })}
             {hasKnockoutFixtures && (
-              <div style={{ marginTop: '2rem' }}>
-                <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
-                  {t('standings.knockoutPhase')}
-                </h2>
-                <SingleEliminationBracket knockoutFixtures={knockoutFixtures} results={results} />
+              <div style={{ marginTop: '1.5rem', padding: '0.875rem 1.25rem', background: 'rgba(240,165,0,0.06)', border: '1px solid rgba(240,165,0,0.2)', borderRadius: '8px' }}>
+                <span style={{ fontFamily: 'var(--font-heading)', fontSize: '0.82rem', color: 'var(--color-accent)', letterSpacing: '0.04em' }}>
+                  {t('standings.knockoutPhase')} →{' '}
+                  <a href={`/t/${slug}/${ageGroupId}/playoff`} style={{ color: 'var(--color-accent)', textDecoration: 'underline' }}>
+                    {t('nav.playoff')}
+                  </a>
+                </span>
               </div>
             )}
           </>

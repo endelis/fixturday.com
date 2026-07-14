@@ -28,7 +28,8 @@
     "register": "Register",
     "openMenu": "Open menu",
     "closeMenu": "Close menu",
-    "teams": "Teams"
+    "teams": "Teams",
+    "playoff": "Playoff"
   },
   "tournament": {
     "title": "Tournaments",

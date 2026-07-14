@@ -12,7 +12,7 @@ import { supabase } from '../lib/supabase'
  *   ageGroups         – sibling age groups (kept for Schedule/Standings compat)
  *   activeAgeGroupId  – active age group id (kept for Schedule/Standings compat)
  */
-export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId, showRegister = true }) {
+export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId, showRegister = true, showPlayoff = false }) {
   const { t } = useTranslation()
   const location = useLocation()
   const [open, setOpen] = useState(false)
@@ -66,6 +66,8 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
     const base = `/t/${tournament?.slug}/${ag.id}`
     if (path.endsWith('/overview')) return `${base}/overview`
     if (path.endsWith('/fixtures')) return `${base}/fixtures`
+    if (path.endsWith('/playoff')) return `${base}/playoff`
+    if (path.endsWith('/teams')) return `${base}/teams`
     return base  // standings (default) or anything else
   }
 
@@ -230,6 +232,11 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   <NavLink to={agId ? `/t/${tournament.slug}/${agId}/teams` : `/t/${tournament.slug}`} end style={tourNavLink}>
                     {t('nav.teams')}
                   </NavLink>
+                  {showPlayoff && (
+                    <NavLink to={agId ? `/t/${tournament.slug}/${agId}/playoff` : `/t/${tournament.slug}`} end style={tourNavLink}>
+                      {t('nav.playoff')}
+                    </NavLink>
+                  )}
                   <NavLink to={`/${tournament.slug}/info`} end style={tourNavLink}>
                     {t('nav.info')}
                   </NavLink>
