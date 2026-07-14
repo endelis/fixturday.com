@@ -10,6 +10,7 @@ import Footer from '../../components/Footer'
 import ClassFilter from '../../components/ClassFilter'
 import { useSEO } from '../../hooks/useSEO'
 import DoubleEliminationBracket from '../../components/DoubleEliminationBracket'
+import SingleEliminationBracket from '../../components/SingleEliminationBracket'
 
 export default function Standings() {
   const { slug, ageGroup: ageGroupId } = useParams()
@@ -482,36 +483,7 @@ export default function Standings() {
                 <h2 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.5rem', color: 'var(--color-accent)', marginBottom: '1rem' }}>
                   {t('standings.knockoutPhase')}
                 </h2>
-                {knockoutRoundList.map(({ roundName, matches }, idx) => (
-                  <div key={idx} style={{ marginBottom: '1.5rem' }}>
-                    <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.1rem', color: 'var(--color-text-muted)', marginBottom: '0.5rem' }}>
-                      {roundName}
-                    </h3>
-                    <div style={{ display: 'grid', gap: '0.5rem' }}>
-                      {matches.map(f => {
-                        const result = results.find(r => r.fixture_id === f.id)
-                        const homeName = f.home_team?.name ?? f.home_placeholder ?? '?'
-                        const awayName = f.away_team?.name ?? f.away_placeholder ?? '?'
-                        const homeWon = result && result.home_goals > result.away_goals
-                        const awayWon = result && result.away_goals > result.home_goals
-                        const scoreDisplay = result
-                          ? isSetBased
-                            ? formatBeachScore(result.sport_data)
-                            : `${result.home_goals} : ${result.away_goals}`
-                          : f.home_team ? t('fixture.vs') : '—'
-                        return (
-                          <div key={f.id} className="card" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', padding: '0.75rem 1rem', minWidth: 0 }}>
-                            <span style={{ flex: 1, minWidth: 0, textAlign: 'right', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: homeWon ? 700 : 400, color: homeWon ? 'var(--color-accent)' : 'inherit' }}>{homeName}</span>
-                            <span style={{ fontFamily: 'var(--font-heading)', fontSize: isSetBased ? '0.8rem' : '1.125rem', minWidth: isSetBased ? '8rem' : '4rem', textAlign: 'center', flexShrink: 0 }}>
-                              {scoreDisplay}
-                            </span>
-                            <span style={{ flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', fontWeight: awayWon ? 700 : 400, color: awayWon ? 'var(--color-accent)' : 'inherit' }}>{awayName}</span>
-                          </div>
-                        )
-                      })}
-                    </div>
-                  </div>
-                ))}
+                <SingleEliminationBracket knockoutFixtures={knockoutFixtures} results={results} />
               </div>
             )}
           </>
