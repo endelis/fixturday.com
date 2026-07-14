@@ -214,6 +214,10 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
               paddingTop: '0.3rem',
               paddingBottom: '0.3rem',
               alignItems: 'center',
+              overflowX: 'auto',
+              WebkitOverflowScrolling: 'touch',
+              scrollbarWidth: 'none',
+              msOverflowStyle: 'none',
             }}
           >
             {(() => {
@@ -229,7 +233,7 @@ export default function PublicNav({ tournament, ageGroups = [], activeAgeGroupId
                   <NavLink to={agId ? `/t/${tournament.slug}/${agId}` : `/t/${tournament.slug}`} end style={tourNavLink}>
                     {t('nav.standings')}
                   </NavLink>
-                  <NavLink to={agId ? `/t/${tournament.slug}/${agId}/teams` : `/t/${tournament.slug}`} end style={tourNavLink}>
+                  <NavLink to={agId ? `/t/${tournament.slug}/${agId}/teams` : `/t/${tournament.slug}`} style={tourNavLink}>
                     {t('nav.teams')}
                   </NavLink>
                   {showPlayoff && (
@@ -578,6 +582,7 @@ const tourNavLink = ({ isActive }) => ({
   padding: '0.3rem 0.7rem',
   borderRadius: 'var(--radius-sm)',
   whiteSpace: 'nowrap',
+  flexShrink: 0,
   borderBottom: isActive ? '2px solid var(--color-accent)' : '2px solid transparent',
   transition: 'color var(--transition-fast)',
 })

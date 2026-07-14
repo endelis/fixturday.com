@@ -7,6 +7,8 @@ import Footer from '../../components/Footer'
 import SingleEliminationBracket from '../../components/SingleEliminationBracket'
 import { useSEO } from '../../hooks/useSEO'
 
+const KO_FORMATS = ['group_knockout', 'knockout']
+
 export default function Playoff() {
   const { slug, ageGroup: ageGroupId } = useParams()
   const { t } = useTranslation()
@@ -24,6 +26,13 @@ export default function Playoff() {
         .eq('id', ageGroupId)
         .single()
       if (agErr || !ag) { setLoading(false); return }
+
+      // Only fetch fixtures for formats that actually have a playoff bracket
+      if (!KO_FORMATS.includes(ag.format)) {
+        setData({ ag, siblings: [], knockoutFixtures: [], results: [] })
+        setLoading(false)
+        return
+      }
 
       const [{ data: siblings }, { data: fixtures, error: fxErr }] = await Promise.all([
         supabase.from('age_groups').select('id, name').eq('tournament_id', ag.tournaments.id).order('name'),
@@ -59,9 +68,15 @@ export default function Playoff() {
   const { ag, siblings, knockoutFixtures, results } = data
   const tournament = ag.tournaments
 
+  // Redirect round-robin divisions to standings (no bracket for them)
+  if (!KO_FORMATS.includes(ag.format)) return <Navigate to={`/t/${slug}/${ageGroupId}`} replace />
+
+  // Hide register button if admin closed registration or any KO game has been played
+  const showRegister = !!ag.registration_open && results.length === 0
+
   return (
     <div>
-      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showPlayoff />
+      <PublicNav tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} showPlayoff showRegister={showRegister} />
       <div className="container" style={{ paddingTop: '2rem', paddingBottom: '3rem' }}>
         <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: 'clamp(1.2rem, 4vw, 2rem)', margin: '0 0 0.25rem' }}>
           {tournament.name} — {ag.name}
