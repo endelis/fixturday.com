@@ -386,9 +386,20 @@ export default function Matchday() {
       .eq('stage_id', f.stage_id)
     if (!stageFx) return false
 
+    const parsePH = (ph) => {
+      const m = ph?.match(/^Group ([A-Z])-(\d+)$/)
+      return m ? { isGroup: true, pos: parseInt(m[2]), group: m[1] } : null
+    }
     const roundFx = stageFx
       .filter(sf => sf.round === f.round && sf.round_name !== '3rd_place')
-      .sort((a, b) => (a.home_placeholder ?? a.id).localeCompare(b.home_placeholder ?? b.id))
+      .sort((a, b) => {
+        const pa = parsePH(a.home_placeholder)
+        const pb = parsePH(b.home_placeholder)
+        // Group placeholders: sort position-first then group (A-1, B-1, A-2, B-2)
+        // This matches the cross-seeding generator order so QF numbers line up correctly
+        if (pa && pb) return pa.pos !== pb.pos ? pa.pos - pb.pos : pa.group.localeCompare(pb.group)
+        return (a.home_placeholder ?? a.id).localeCompare(b.home_placeholder ?? b.id)
+      })
 
     const myIndex = roundFx.findIndex(sf => sf.id === f.id)
     if (myIndex === -1) return false
