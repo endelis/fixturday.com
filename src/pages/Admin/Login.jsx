@@ -38,7 +38,7 @@ export default function Login() {
     const email = document.getElementById('email')?.value;
     if (!email) { setAuthError(t('auth.enterEmailFirst')); return }
     await supabase.auth.resetPasswordForEmail(email, {
-      redirectTo: 'https://www.fixturday.com/admin/reset-password',
+      redirectTo: 'https://fixturday.com/admin/reset-password',
     });
     setAuthError(null);
     setResetInfo(t('auth.resetSent'));
