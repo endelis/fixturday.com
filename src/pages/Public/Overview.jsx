@@ -5,6 +5,7 @@ import { parseISO } from 'date-fns'
 import { supabase } from '../../lib/supabase'
 import { calculateStandings } from '../../utils/standings'
 import PublicNav from '../../components/PublicNav'
+import TournamentShareStrip from '../../components/TournamentShareStrip'
 import Footer from '../../components/Footer'
 import { formatTime, formatDate } from '../../utils/dateFormat'
 import { useSEO } from '../../hooks/useSEO'
@@ -269,6 +270,7 @@ export default function TournamentOverviewPublic() {
               <span style={{ color: 'var(--color-accent)', fontWeight: 600 }}>{ag.name}</span>
             )}
           </div>
+          <TournamentShareStrip tournament={tournament} ageGroups={siblings} activeAgeGroupId={ageGroupId} />
         </div>
 
         {/* Sponsors */}
