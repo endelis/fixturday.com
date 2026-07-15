@@ -1,5 +1,6 @@
 {
   "redirects": [
+    { "source": "/(.*)", "has": [{ "type": "host", "value": "fixturday.com" }], "destination": "https://www.fixturday.com/$1", "permanent": true },
     { "source": "/turniri",              "destination": "/tournaments",  "permanent": true },
     { "source": "/par-mums",            "destination": "/about",         "permanent": true },
     { "source": "/kontakti",            "destination": "/contact",       "permanent": true },

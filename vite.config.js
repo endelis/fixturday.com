@@ -46,22 +46,20 @@ function blogPrerenderMeta() {
       function buildHtml(template, { pageTitle, description, canonical, type = 'website', ldJson = null }) {
         let html = template
           .replace(/<title>.*?<\/title>/, `<title>${esc(pageTitle)}</title>`)
-          .replace(
-            /<meta name="description" content="[^"]*"[^>]*>/,
-            `<meta name="description" content="${esc(description)}">`
-          )
+          .replace(/<meta name="description" content="[^"]*"[^>]*>/, `<meta name="description" content="${esc(description)}">`)
+          .replace(/<meta property="og:title" content="[^"]*"[^>]*>/, `<meta property="og:title" content="${esc(pageTitle)}">`)
+          .replace(/<meta property="og:description" content="[^"]*"[^>]*>/, `<meta property="og:description" content="${esc(description)}">`)
+          .replace(/<meta property="og:url" content="[^"]*"[^>]*>/, `<meta property="og:url" content="${canonical}">`)
+          .replace(/<link rel="canonical" href="[^"]*"[^>]*>/, `<link rel="canonical" href="${canonical}">`)
+          .replace(/<meta name="twitter:title" content="[^"]*"[^>]*>/, `<meta name="twitter:title" content="${esc(pageTitle)}">`)
+          .replace(/<meta name="twitter:description" content="[^"]*"[^>]*>/, `<meta name="twitter:description" content="${esc(description)}">`)
         if (type !== 'website') {
           html = html.replace(/<meta property="og:type" content="[^"]*"[^>]*>/, `<meta property="og:type" content="${type}">`)
         }
-        const extras = [
-          `  <meta property="og:title" content="${esc(pageTitle)}">`,
-          `  <meta property="og:description" content="${esc(description)}">`,
-          `  <meta property="og:url" content="${canonical}">`,
-          `  <link rel="canonical" href="${canonical}">`,
-        ]
-        if (ldJson) extras.push(`  <script type="application/ld+json">${ldJson}</script>`)
-        extras.push('</head>')
-        return html.replace('</head>', extras.join('\n'))
+        if (ldJson) {
+          html = html.replace('</head>', `  <script type="application/ld+json">${ldJson}</script>\n</head>`)
+        }
+        return html
       }
 
       // ── Blog posts ────────────────────────────────────────────────
