@@ -17,7 +17,7 @@ export default function Register() {
 
   const password = watch('password')
 
-  async function onSubmit({ email, password, confirmPassword, firstName, lastName, phone }) {
+  async function onSubmit({ email, password, confirmPassword, firstName, lastName, phone, newsletterOptIn }) {
     if (password !== confirmPassword) {
       setAuthError(t('auth.passwordMismatch'))
       return
@@ -44,6 +44,7 @@ export default function Register() {
           first_name: firstName,
           last_name: lastName || null,
           phone: phone || null,
+          newsletter_opt_in: !!newsletterOptIn,
         },
         emailRedirectTo: 'https://www.fixturday.com/auth/confirm',
       },
@@ -146,6 +147,36 @@ export default function Register() {
               {...register('confirmPassword', { required: t('common.required') })}
             />
             {errors.confirmPassword && <span className="error-message">{errors.confirmPassword.message}</span>}
+          </div>
+
+          {/* Terms of Use — required */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', margin: '1rem 0 0.5rem' }}>
+            <input
+              type="checkbox"
+              id="termsAccepted"
+              {...register('termsAccepted', { required: t('auth.termsRequired') })}
+              style={{ marginTop: '0.2rem', flexShrink: 0, accentColor: 'var(--color-accent)', width: 15, height: 15, cursor: 'pointer' }}
+            />
+            <label htmlFor="termsAccepted" style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)', cursor: 'pointer', lineHeight: 1.45 }}>
+              {t('auth.termsAccept')}{' '}
+              <Link to="/terms-of-use" target="_blank" rel="noopener noreferrer" style={{ color: 'var(--color-accent)' }}>
+                {t('auth.termsLink')}
+              </Link>
+            </label>
+          </div>
+          {errors.termsAccepted && <span className="error-message" style={{ display: 'block', marginBottom: '0.5rem' }}>{errors.termsAccepted.message}</span>}
+
+          {/* Newsletter opt-in — optional */}
+          <div style={{ display: 'flex', alignItems: 'flex-start', gap: '0.6rem', margin: '0.4rem 0 1rem' }}>
+            <input
+              type="checkbox"
+              id="newsletterOptIn"
+              {...register('newsletterOptIn')}
+              style={{ marginTop: '0.2rem', flexShrink: 0, accentColor: 'var(--color-accent)', width: 15, height: 15, cursor: 'pointer' }}
+            />
+            <label htmlFor="newsletterOptIn" style={{ fontSize: '0.84rem', color: 'var(--color-text-muted)', cursor: 'pointer', lineHeight: 1.45 }}>
+              {t('auth.newsletterSubscribe')}
+            </label>
           </div>
 
           <Turnstile onVerify={handleVerify} />
