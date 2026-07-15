@@ -14,18 +14,26 @@ export default function ResetPassword() {
   const { register, handleSubmit, watch, formState: { errors, isSubmitting } } = useForm()
 
   useEffect(() => {
+    let settled = false
+    const resolve = () => { if (!settled) { settled = true; setReady(true) } }
+    const fail = (msg) => { if (!settled) { settled = true; setPageError(msg) } }
+
+    // Register listener FIRST — Supabase processes the hash asynchronously so
+    // this is guaranteed to be in place before PASSWORD_RECOVERY fires
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
+      if (event === 'PASSWORD_RECOVERY') resolve()
+    })
+
+    // Also handle ?code= in URL (non-PKCE OTP code, e.g. from older email links)
     const code = new URLSearchParams(window.location.search).get('code')
     if (code) {
       supabase.auth.exchangeCodeForSession(code).then(({ error }) => {
-        if (error) setPageError(t('auth.resetLinkExpired'))
-        else setReady(true)
+        if (error) fail(t('auth.resetLinkExpired'))
+        else resolve()
       })
-    } else {
-      const { data: { subscription } } = supabase.auth.onAuthStateChange((event) => {
-        if (event === 'PASSWORD_RECOVERY') setReady(true)
-      })
-      return () => subscription.unsubscribe()
     }
+
+    return () => subscription.unsubscribe()
   }, [t])
 
   async function onSubmit({ password }) {
