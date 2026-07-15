@@ -12,6 +12,7 @@ export default function Login() {
   const { t } = useTranslation();
   const { register, handleSubmit, formState: { errors } } = useForm();
   const [authError, setAuthError] = useState(null);
+  const [resetInfo, setResetInfo] = useState(null);
   const [submitting, setSubmitting] = useState(false);
 
   useEffect(() => {
@@ -36,9 +37,11 @@ export default function Login() {
   async function handleForgotPassword() {
     const email = document.getElementById('email')?.value;
     if (!email) { setAuthError(t('auth.enterEmailFirst')); return }
-    await supabase.auth.resetPasswordForEmail(email);
+    await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: 'https://www.fixturday.com/admin/reset-password',
+    });
     setAuthError(null);
-    alert(t('auth.resetSent'));
+    setResetInfo(t('auth.resetSent'));
   }
 
   return (
@@ -77,9 +80,8 @@ export default function Login() {
             />
           </div>
 
-          {authError && (
-            <p className="error-message">{authError}</p>
-          )}
+          {authError && <p className="error-message">{authError}</p>}
+          {resetInfo && <p style={{ textAlign: 'center', color: 'var(--color-success)', fontSize: '0.85rem', marginTop: '0.5rem' }}>{resetInfo}</p>}
 
           <button
             type="submit"

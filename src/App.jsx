@@ -41,6 +41,7 @@ const AuthConfirm     = lazy(() => import('./pages/Public/AuthConfirm'))
 // ── Admin pages ───────────────────────────────────────────────────
 const Login          = lazy(() => import('./pages/Admin/Login'))
 const AdminRegister  = lazy(() => import('./pages/Admin/Register'))
+const ResetPassword  = lazy(() => import('./pages/Admin/ResetPassword'))
 const Dashboard      = lazy(() => import('./pages/Admin/Dashboard'))
 const TournamentNew  = lazy(() => import('./pages/Admin/Tournaments/New'))
 const TournamentEdit = lazy(() => import('./pages/Admin/Tournaments/Edit'))
@@ -111,7 +112,8 @@ export default function App() {
           <Route path="/:slug/registration"                  element={<Registration />} />
 
           {/* Admin: top-level */}
-          <Route path="/auth/confirm"   element={<AuthConfirm />} />
+          <Route path="/auth/confirm"         element={<AuthConfirm />} />
+          <Route path="/admin/reset-password" element={<ResetPassword />} />
           <Route path="/admin"          element={<Login />} />
           <Route path="/admin/register" element={<AdminRegister />} />
           <Route path="/admin/dashboard"
