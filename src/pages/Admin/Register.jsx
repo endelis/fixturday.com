@@ -50,6 +50,15 @@ export default function Register() {
       },
     })
     if (error) { setAuthError(error.message); return }
+
+    if (newsletterOptIn) {
+      fetch('/api/subscribe-newsletter', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email, firstName, lastName: lastName || '' }),
+      }).catch(() => {})
+    }
+
     toast(t('auth.registerSuccess'))
     navigate('/admin/dashboard', { replace: true })
   }
