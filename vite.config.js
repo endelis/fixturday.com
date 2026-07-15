@@ -16,6 +16,30 @@ const STATIC_PAGES = [
     title: 'How to Organize a Sports Tournament',
     description: 'Step-by-step guide to organizing any sports tournament with Fixturday. Create your schedule, manage teams, run match day, and track results — all free.',
   },
+  {
+    path: '/football-tournament-software',
+    title: 'Football Tournament Software — Free & Online',
+    description: 'Free football tournament software. Auto-generate fixtures, track live standings, run online registration. Round-robin, knockout, and group stage formats.',
+    noSuffix: true,
+  },
+  {
+    path: '/free-tournament-software',
+    title: 'Free Tournament Management Software — No Credit Card',
+    description: 'Free tournament management software for any sport. Unlimited tournaments, auto-generated schedules, live standings. No credit card required.',
+    noSuffix: true,
+  },
+  {
+    path: '/tournament-bracket-generator',
+    title: 'Tournament Bracket Generator — Free, Online, Any Sport',
+    description: 'Free tournament bracket generator. Knockout, round-robin, and group stage formats. Instant brackets for 4 to 64+ teams with live result updates.',
+    noSuffix: true,
+  },
+  {
+    path: '/beach-volleyball-tournament-software',
+    title: 'Beach Volleyball Tournament Software — Free & Online',
+    description: 'Free beach volleyball tournament software. Double elimination brackets, FIVB scoring rules built in, live standings with set and point ratio. Free to start.',
+    noSuffix: true,
+  },
 ]
 
 function blogPrerenderMeta() {
