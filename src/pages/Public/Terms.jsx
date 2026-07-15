@@ -17,7 +17,6 @@ export default function Terms() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>
       <PublicNav />
 
-      {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
         padding: '4.5rem 1.5rem 3rem',
         textAlign: 'center',
@@ -47,7 +46,7 @@ export default function Terms() {
             {t('footer.terms')}
           </h1>
           <p style={{ fontSize: '0.8125rem', color: '#8fa3bc', margin: 0 }}>
-            {t('legal.updated')}
+            Last updated: 15 July 2026
           </p>
         </div>
       </section>
@@ -55,99 +54,105 @@ export default function Terms() {
       <main style={{ flex: 1, padding: '3rem 1.5rem 5rem' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
 
-          <Section title="1. Pakalpojuma apraksts">
+          <Section title="1. Service Description">
             <p style={body}>
-              Fixturday ir sporta turnīru pārvaldības platforma, kas ļauj organizēt turnīrus, reģistrēt
-              komandas, veidot spēļu grafiku un sekot līdzi rezultātiem. Platforma pieejama fiziskām un
-              juridiskām personām bez maksas.
+              Fixturday is a web-based sports tournament management platform that allows you to create
+              tournaments, register teams, generate fixtures, and track results in real time. The platform
+              is available free of charge to individuals and organisations.
             </p>
             <p style={body}>
-              Pakalpojuma sniedzējs: <strong>Silvestrs Endelis</strong>,{' '}
+              Service provider: <strong>Silvestrs Endelis</strong>,{' '}
               <a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>.
             </p>
           </Section>
 
-          <Section title="2. Reģistrācija un konts">
+          <Section title="2. Account Registration">
             <p style={body}>
-              Lai izmantotu administrācijas funkcijas, nepieciešams izveidot kontu ar derīgu e-pasta adresi.
-              Jūs esat atbildīgi par:
+              To access admin features you must register an account using a valid email address and password.
+              By registering you confirm that you have read and accepted these Terms of Use. You are responsible for:
             </p>
             <ul style={list}>
-              <li>Sava konta drošību un piekļuves datiem;</li>
-              <li>Visām darbībām, kas veiktas, izmantojot jūsu kontu;</li>
-              <li>Savlaicīgu paziņošanu par neatļautu piekļuvi (<a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>).</li>
+              <li>Keeping your login credentials secure and confidential;</li>
+              <li>All activity carried out under your account;</li>
+              <li>Notifying us promptly of any unauthorised access at <a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>.</li>
             </ul>
           </Section>
 
-          <Section title="3. Pieļaujamā izmantošana">
-            <p style={body}>Lietojot Fixturday, jūs apņematies:</p>
+          <Section title="3. Acceptable Use">
+            <p style={body}>By using Fixturday you agree to:</p>
             <ul style={list}>
-              <li>Sniegt patiesu un precīzu informāciju reģistrējoties un veidojot turnīrus;</li>
-              <li>Neizmantot platformu pretlikumīgiem vai krāpnieciskiem mērķiem;</li>
-              <li>Netraucēt citu lietotāju darbību vai platformas tehnisko infrastruktūru;</li>
-              <li>Neaugšupielādēt saturu, kas pārkāpj trešo pušu intelektuālā īpašuma tiesības.</li>
+              <li>Provide accurate and truthful information when registering and creating tournaments;</li>
+              <li>Not use the platform for unlawful, fraudulent, or harmful purposes;</li>
+              <li>Not disrupt other users or the platform's technical infrastructure;</li>
+              <li>Not upload content that infringes third-party intellectual property rights.</li>
             </ul>
             <p style={body}>
-              Pārzinis patur tiesības apturēt vai dzēst kontus, kas pārkāpj šos noteikumus, bez iepriekšēja
-              brīdinājuma.
+              We reserve the right to suspend or delete accounts that violate these terms without prior notice.
             </p>
           </Section>
 
-          <Section title="4. Intelektuālais īpašums">
+          <Section title="4. Newsletter">
             <p style={body}>
-              Fixturday platformas dizains, kods un saturs (izņemot lietotāju augšupielādēto saturu) ir
-              Silvestrs Endelis intelektuālais īpašums. Bez rakstiskas atļaujas ir aizliegts kopēt,
-              izplatīt vai izmantot platformas elementus.
-            </p>
-            <p style={body}>
-              Jūsu augšupielādētais saturs (turnīru logotipi, pielikumi u.c.) paliek jūsu īpašums.
-              Augšupielādējot saturu, jūs piešķirat Fixturday tiesības to attēlot un uzglabāt pakalpojuma
-              sniegšanas nolūkos.
+              During registration you may opt in to the Fixturday newsletter. Subscription is entirely
+              optional and you can unsubscribe at any time by clicking the unsubscribe link in any
+              newsletter email. We use EmailOctopus to manage newsletter subscriptions. We will never
+              share your email address with third parties for marketing purposes.
             </p>
           </Section>
 
-          <Section title="5. Pakalpojuma pieejamība">
+          <Section title="5. Intellectual Property">
             <p style={body}>
-              Fixturday tiek sniegts "kā tas ir" bez garantijām par nepārtrauktu pieejamību.
-              Plānota un neplānota tehniskā apkope var īslaicīgi ierobežot piekļuvi.
-              Par plānotiem darbiem centīsimies informēt laikus.
+              The Fixturday platform design, source code, and content (excluding user-uploaded content)
+              are the intellectual property of Silvestrs Endelis. Copying, distributing, or using
+              platform elements without written permission is prohibited.
+            </p>
+            <p style={body}>
+              Content you upload (tournament logos, team names, player data, etc.) remains your property.
+              By uploading it you grant Fixturday a limited licence to display and store it for the
+              purpose of providing the service.
             </p>
           </Section>
 
-          <Section title="6. Atbildības ierobežojums">
+          <Section title="6. Service Availability">
             <p style={body}>
-              Silvestrs Endelis neatbild par:
+              Fixturday is provided "as is" with no guarantees of uninterrupted availability.
+              Planned and unplanned maintenance may temporarily limit access. We will endeavour to
+              notify users of planned downtime in advance.
             </p>
+          </Section>
+
+          <Section title="7. Limitation of Liability">
+            <p style={body}>Silvestrs Endelis is not liable for:</p>
             <ul style={list}>
-              <li>Datu zaudēšanu vai bojājumiem tehniskas kļūmes, kiberuzbrukuma vai nepārvaramas varas rezultātā;</li>
-              <li>Turnīra organizācijas sekām, tai skaitā strīdiem starp dalībniekiem;</li>
-              <li>Trešo pušu (Supabase, Vercel u.c.) pakalpojumu pieejamību vai darbību;</li>
-              <li>Zaudējumiem, kas rodas no neatļautas piekļuves jūsu kontam.</li>
+              <li>Data loss or damage caused by technical failure, cyber attack, or force majeure;</li>
+              <li>Disputes between tournament participants or organisational outcomes;</li>
+              <li>Availability or performance of third-party services (Supabase, Vercel, Resend, etc.);</li>
+              <li>Loss arising from unauthorised access to your account.</li>
             </ul>
             <p style={body}>
-              Atbildība visos gadījumos ir ierobežota līdz faktiskajiem tiešajiem zaudējumiem.
+              Liability is in all cases limited to actual direct damages.
             </p>
           </Section>
 
-          <Section title="7. Izmaiņas noteikumos">
+          <Section title="8. Changes to These Terms">
             <p style={body}>
-              Par būtiskām izmaiņām lietošanas noteikumos paziņosim reģistrētajiem lietotājiem e-pastā
-              vismaz <strong>30 dienas</strong> pirms izmaiņu stāšanās spēkā. Turpinot lietot pakalpojumu
-              pēc paziņojuma, jūs piekrītat jaunajiem noteikumiem.
+              We will notify registered users of material changes to these Terms by email at least{' '}
+              <strong>30 days</strong> before they take effect. Continued use of the service after
+              the notice period constitutes acceptance of the updated Terms.
             </p>
           </Section>
 
-          <Section title="8. Piemērojamais likums un strīdu risināšana">
+          <Section title="9. Governing Law">
             <p style={body}>
-              Šie noteikumi ir sastādīti saskaņā ar <strong>Latvijas Republikas</strong> spēkā esošajiem
-              tiesību aktiem. Strīdi, kas rodas saistībā ar šo noteikumu interpretāciju vai izpildi,
-              risināmi Latvijas Republikas tiesās saskaņā ar Latvijas tiesību normām.
+              These Terms are governed by the laws of the <strong>Republic of Latvia</strong>.
+              Any disputes arising from these Terms shall be resolved in Latvian courts in accordance
+              with Latvian law.
             </p>
           </Section>
 
-          <Section title="9. Kontaktinformācija">
+          <Section title="10. Contact">
             <p style={body}>
-              Jautājumu vai iebildumu gadījumā sazinieties:{' '}
+              Questions or concerns:{' '}
               <a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>
             </p>
           </Section>
@@ -169,13 +174,6 @@ function Section({ title, children }) {
   )
 }
 
-const h1 = {
-  fontFamily: "'Barlow Condensed', sans-serif",
-  fontSize: 'clamp(2rem, 5vw, 3rem)',
-  fontWeight: 700,
-  color: '#ffffff',
-  marginBottom: '0.35rem',
-}
 const h2 = {
   fontFamily: "'Barlow Condensed', sans-serif",
   fontSize: '1.35rem',
@@ -184,11 +182,6 @@ const h2 = {
   marginBottom: '0.75rem',
   paddingBottom: '0.4rem',
   borderBottom: '1px solid rgba(240,165,0,0.2)',
-}
-const meta = {
-  color: 'var(--color-text-muted)',
-  fontSize: '0.8rem',
-  marginBottom: '2.5rem',
 }
 const body = {
   color: 'var(--color-text-muted)',

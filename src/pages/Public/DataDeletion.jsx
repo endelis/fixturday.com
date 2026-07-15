@@ -138,7 +138,7 @@ export default function DataDeletion() {
             <p style={{ color: 'var(--color-text-muted)', fontSize: '0.8rem', lineHeight: 1.6 }}>
               {t('legal.dataDeletionOrEmail')}{' '}
               <a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>
-              {' '}ar tēmu &ldquo;{t('legal.dataDeletionEmailSubject')}&rdquo;.
+              {' '}with subject &ldquo;{t('legal.dataDeletionEmailSubject')}&rdquo;.
               Sūdzības var iesniegt:{' '}
               <a href="https://www.dvi.gov.lv" target="_blank" rel="noopener noreferrer" style={link}>
                 Datu valsts inspekcija

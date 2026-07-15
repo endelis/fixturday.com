@@ -29,7 +29,6 @@ export default function Cookies() {
     <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100vh', background: '#0a1628' }}>
       <PublicNav />
 
-      {/* ── Hero ──────────────────────────────────────────────── */}
       <section style={{
         padding: '4.5rem 1.5rem 3rem',
         textAlign: 'center',
@@ -59,7 +58,7 @@ export default function Cookies() {
             {t('footer.cookies')}
           </h1>
           <p style={{ fontSize: '0.8125rem', color: '#8fa3bc', margin: 0 }}>
-            {t('legal.updated')}
+            Last updated: 15 July 2026
           </p>
         </div>
       </section>
@@ -67,79 +66,85 @@ export default function Cookies() {
       <main style={{ flex: 1, padding: '3rem 1.5rem 5rem' }}>
         <div style={{ maxWidth: '800px', margin: '0 auto' }}>
 
-          <Section title="1. Kas ir sīkdatnes">
+          <Section title="1. What Are Cookies">
             <p style={body}>
-              Sīkdatnes (cookies) ir nelielas teksta datnes, ko jūsu pārlūkprogramma saglabā jūsu ierīcē,
-              kad apmeklējat tīmekļa vietni. Tās ļauj vietnei atcerēties jūsu preferences un nodrošināt
-              netraucētu pakalpojuma darbību.
+              Cookies are small text files stored on your device by your browser when you visit a website.
+              They allow the site to remember your preferences and ensure the service works correctly.
             </p>
           </Section>
 
-          <Section title="2. Mūsu izmantotās sīkdatnes">
+          <Section title="2. Cookies We Use">
             <div style={{ overflowX: 'auto' }}>
               <table style={tableStyle}>
                 <thead>
                   <tr>
-                    <Th>Sīkdatne</Th>
-                    <Th>Mērķis</Th>
-                    <Th>Veids</Th>
-                    <Th>Termiņš</Th>
+                    <Th>Cookie</Th>
+                    <Th>Purpose</Th>
+                    <Th>Type</Th>
+                    <Th>Duration</Th>
                   </tr>
                 </thead>
                 <tbody>
                   <tr>
-                    <Td><code style={code}>sb-auth-token</code></Td>
-                    <Td>Lietotāja autentifikācija (pieteikšanās sesija)</Td>
-                    <Td>Funkcionālā</Td>
-                    <Td>Sesija</Td>
+                    <Td><code style={code}>sb-*</code></Td>
+                    <Td>User authentication (login session)</Td>
+                    <Td>Functional</Td>
+                    <Td>Session</Td>
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
-                    <Td><code style={code}>fixturday_wizard_*</code></Td>
-                    <Td>Lietotāja saskarnes preferences (iestatīšanas vednis)</Td>
-                    <Td>Funkcionālā</Td>
-                    <Td>1 gads</Td>
+                    <Td><code style={code}>fixturday_cookie_consent</code></Td>
+                    <Td>Your cookie consent choice</Td>
+                    <Td>Functional</Td>
+                    <Td>1 year</Td>
                   </tr>
                   <tr>
-                    <Td><code style={code}>fixturday_cookie_consent</code></Td>
-                    <Td>Jūsu sīkdatņu piekrišanas izvēle</Td>
-                    <Td>Funkcionālā</Td>
-                    <Td>1 gads</Td>
+                    <Td><code style={code}>fixturday_wizard_*</code></Td>
+                    <Td>UI preferences (setup wizard state)</Td>
+                    <Td>Functional</Td>
+                    <Td>1 year</Td>
                   </tr>
                   <tr style={{ background: 'rgba(255,255,255,0.02)' }}>
                     <Td><code style={code}>va_*</code></Td>
-                    <Td>Vercel Analytics — anonīmi apmeklējumu dati</Td>
-                    <Td>Analītiskā</Td>
-                    <Td>1 gads</Td>
+                    <Td>Vercel Analytics — anonymous visit data</Td>
+                    <Td>Analytical</Td>
+                    <Td>1 year</Td>
+                  </tr>
+                  <tr>
+                    <Td><code style={code}>_ga, _gid</code></Td>
+                    <Td>Google Analytics (GA4) — anonymous usage analytics</Td>
+                    <Td>Analytical</Td>
+                    <Td>2 years / 24 h</Td>
                   </tr>
                 </tbody>
               </table>
             </div>
           </Section>
 
-          <Section title="3. Funkcionālās sīkdatnes">
+          <Section title="3. Functional Cookies">
             <p style={body}>
-              Funkcionālās sīkdatnes ir nepieciešamas platformas pamatdarbībai — autentifikācijai,
-              sesijas uzturēšanai un UI preferences saglabāšanai. Bez tām pakalpojums nevar darboties
-              korekti. No šīm sīkdatnēm nav iespējams atteikties, turpinot lietot Fixturday.
+              Functional cookies are essential for the platform to operate — they manage authentication,
+              maintain your session, and remember UI preferences. These cookies cannot be disabled while
+              you continue to use Fixturday.
             </p>
           </Section>
 
-          <Section title="4. Analītiskās sīkdatnes">
+          <Section title="4. Analytical Cookies">
             <p style={body}>
-              Vercel Analytics apkopo anonīmus datus par lapas apmeklējumiem un navigāciju, lai mēs
-              varētu uzlabot pakalpojumu. Šie dati <strong>neidentificē</strong> konkrētu personu un
-              netiek kopīgoti ar trešajām pusēm reklāmas nolūkos.
+              Analytical cookies (Vercel Analytics and Google Analytics GA4) collect anonymous data
+              about page visits and navigation to help us improve the service. This data{' '}
+              <strong>does not identify</strong> individual users and is not shared with third parties
+              for advertising purposes.
             </p>
             <p style={body}>
-              No analītiskajām sīkdatnēm varat atteikties zemāk vai pārlūkprogrammas iestatījumos.
+              You can opt out of analytical cookies below or in your browser settings.
             </p>
           </Section>
 
-          <Section title="5. Jūsu preferences">
+          <Section title="5. Your Preferences">
             <p style={body}>
-              Pašreizējā izvēle:{' '}
+              Current setting:{' '}
               <strong style={{ color: 'var(--color-accent)' }}>
-                {current === 'all' ? 'Pieņemtas visas' : current === 'functional' ? 'Tikai funkcionālās' : 'Nav izvēlēts'}
+                {current === 'all' ? 'All accepted' : current === 'functional' ? 'Functional only' : 'Not set'}
               </strong>
             </p>
             <div style={{ display: 'flex', gap: '0.75rem', flexWrap: 'wrap', marginTop: '0.75rem' }}>
@@ -152,7 +157,7 @@ export default function Cookies() {
                   cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'var(--font-body)',
                 }}
               >
-                Tikai funkcionālās
+                Functional only
               </button>
               <button
                 onClick={() => setConsent('all')}
@@ -164,28 +169,27 @@ export default function Cookies() {
                   cursor: 'pointer', fontSize: '0.875rem', fontFamily: 'var(--font-body)',
                 }}
               >
-                Pieņemt visas
+                Accept all
               </button>
             </div>
           </Section>
 
-          <Section title="6. Kā pārvaldīt sīkdatnes pārlūkā">
+          <Section title="6. Managing Cookies in Your Browser">
             <p style={body}>
-              Lielākā daļa pārlūkprogrammu ļauj pārvaldīt vai dzēst sīkdatnes iestatījumos.
-              Ņemiet vērā — funkcionālo sīkdatņu dzēšana var traucēt pieteikšanos un citas
-              platformas pamatfunkcijas.
+              Most browsers allow you to manage or delete cookies in settings.
+              Note that deleting functional cookies may disrupt login and other core platform features.
             </p>
             <ul style={list}>
-              <li><strong>Chrome:</strong> Iestatījumi → Konfidencialitāte un drošība → Sīkfaili</li>
-              <li><strong>Firefox:</strong> Iestatījumi → Privātums un drošība → Sīkdatnes</li>
-              <li><strong>Safari:</strong> Preferences → Konfidencialitāte → Pārvaldīt datus</li>
-              <li><strong>Edge:</strong> Iestatījumi → Sīkfaili un vietnes atļaujas</li>
+              <li><strong>Chrome:</strong> Settings → Privacy and security → Cookies</li>
+              <li><strong>Firefox:</strong> Settings → Privacy & Security → Cookies</li>
+              <li><strong>Safari:</strong> Preferences → Privacy → Manage Website Data</li>
+              <li><strong>Edge:</strong> Settings → Cookies and site permissions</li>
             </ul>
           </Section>
 
-          <Section title="7. Kontakts">
+          <Section title="7. Contact">
             <p style={body}>
-              Jautājumu gadījumā:{' '}
+              Questions about our cookie use:{' '}
               <a href="mailto:mail@endelis.co" style={link}>mail@endelis.co</a>
             </p>
           </Section>
@@ -233,9 +237,7 @@ function Td({ children }) {
   )
 }
 
-const h1 = { fontFamily: "'Barlow Condensed', sans-serif", fontSize: 'clamp(2rem, 5vw, 3rem)', fontWeight: 700, color: '#ffffff', marginBottom: '0.35rem' }
 const h2 = { fontFamily: "'Barlow Condensed', sans-serif", fontSize: '1.35rem', fontWeight: 700, color: 'var(--color-accent)', marginBottom: '0.75rem', paddingBottom: '0.4rem', borderBottom: '1px solid rgba(240,165,0,0.2)' }
-const meta = { color: 'var(--color-text-muted)', fontSize: '0.8rem', marginBottom: '2.5rem' }
 const body = { color: 'var(--color-text-muted)', fontSize: '0.9375rem', lineHeight: 1.7, marginBottom: '0.75rem' }
 const list = { color: 'var(--color-text-muted)', fontSize: '0.9375rem', lineHeight: 1.7, paddingLeft: '1.5rem', margin: '0.5rem 0', display: 'flex', flexDirection: 'column', gap: '0.4rem' }
 const link = { color: 'var(--color-accent)', textDecoration: 'underline' }
