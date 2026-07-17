@@ -27,7 +27,7 @@ import { generateMultiTierKnockout } from './multiTierKnockout'
  *  - < 4 teams → falls back to single round-robin group
  *  - Uneven split → extra teams go to earlier groups (groups[0] gets the remainder)
  */
-export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, tiersConfig = null, bracketSeeding = 'cross') {
+export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, tiersConfig = null, bracketSeeding = 'cross', includeConsolation = false) {
   if (!teams || teams.length < 2) return { groups: [], allFixtures: [], groupFixtures: [], knockoutFixtures: [] }
 
   // Clamp group count to a sensible value
@@ -81,7 +81,7 @@ export function generateGroupStage(teams, groupsCount = 2, teamsAdvancing = 2, t
         groups: groups.map(g => ({ groupLabel: g.name, teams: g.teams })),
         tiersConfig,
       })
-    : generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams, bracketSeeding)
+    : generateKnockoutPlaceholders(actualCount, teamsAdvancing, totalPlayoffTeams, bracketSeeding, includeConsolation)
 
   // Shift every playoff fixture's round number past the last group round.
   const knockoutFixtures = rawKnockoutFixtures.map(f => ({
@@ -132,7 +132,7 @@ function buildPlaceholders(groupsCount, teamsAdvancing, bracketSeeding) {
   return placeholders
 }
 
-function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams, bracketSeeding = 'cross') {
+function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffTeams, bracketSeeding = 'cross', includeConsolation = false) {
   if (totalPlayoffTeams < 2) return []
 
   const placeholders = buildPlaceholders(groupsCount, teamsAdvancing, bracketSeeding)
@@ -173,6 +173,56 @@ function generateKnockoutPlaceholders(groupsCount, teamsAdvancing, totalPlayoffT
         home_placeholder: `${prevRoundName}${2 * i + 1} Winner`,
         away_placeholder: `${prevRoundName}${2 * i + 2} Winner`,
         round_name: isFinal ? 'Final' : null,
+      })
+    }
+  }
+
+  // Consolation bracket: 5th–8th place games for bottom-finishing teams from each group.
+  // Designed for the typical 2-group tournament (e.g. LRF U10/U12/U14 format).
+  // Consolation positions: teamsAdvancing+1 through teamsAdvancing*2 from each group.
+  if (includeConsolation && numRounds >= 2 && groupsCount >= 2) {
+    const startPos = teamsAdvancing + 1
+    const endPos = teamsAdvancing * 2
+
+    // Cross seeding: position-first [A-3, B-3, A-4, B-4]
+    const consolPH = []
+    for (let pos = startPos; pos <= endPos; pos++)
+      for (let g = 0; g < groupsCount; g++)
+        consolPH.push(`Group ${String.fromCharCode(65 + g)}-${pos}`)
+
+    const consolTotal = nextPowerOf2(consolPH.length)
+    while (consolPH.length < consolTotal) consolPH.push(null)
+    const consolHalf = consolTotal / 2
+    const consolNumRounds = Math.log2(consolTotal)
+
+    // Consolation semi-finals at round 1 (same round as main SFs)
+    for (let i = 0; i < consolHalf; i++) {
+      fixtures.push({
+        homeTeamId: null, awayTeamId: null, round: 1, group: null,
+        home_placeholder: consolPH[i],
+        away_placeholder: consolPH[consolTotal - 1 - i],
+        round_name: null,
+      })
+    }
+
+    if (consolNumRounds >= 2) {
+      // 7th place (losers) and 5th place (winners) at same round as main Final
+      fixtures.push({
+        homeTeamId: null, awayTeamId: null, round: numRounds, group: null,
+        home_placeholder: 'CSF1 Loser', away_placeholder: 'CSF2 Loser',
+        round_name: '7th_place',
+      })
+      fixtures.push({
+        homeTeamId: null, awayTeamId: null, round: numRounds, group: null,
+        home_placeholder: 'CSF1 Winner', away_placeholder: 'CSF2 Winner',
+        round_name: '5th_place',
+      })
+    } else {
+      // Only 2 consolation teams → direct 5th place game
+      fixtures.push({
+        homeTeamId: null, awayTeamId: null, round: numRounds, group: null,
+        home_placeholder: consolPH[0], away_placeholder: consolPH[consolTotal - 1],
+        round_name: '5th_place',
       })
     }
   }

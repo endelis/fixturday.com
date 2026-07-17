@@ -279,6 +279,7 @@
     "needMoreTeams": "At least 2 confirmed teams required.",
     "generating": "Generating...",
     "generated": "Fixtures generated!",
+    "consolationBracket": "Include consolation bracket (5th–8th place)",
     "noPitchesWarning": "No pitches configured. Add pitches in Venues.",
     "pitchSelect": "Pitch...",
     "noFixtures": "No fixtures.",
