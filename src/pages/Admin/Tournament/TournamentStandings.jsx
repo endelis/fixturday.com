@@ -98,6 +98,7 @@ const tdCStyle = { ...tdStyle, textAlign: 'center' }
 
 function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
   const isBvb = sport === 'beach_volleyball' || sport === 'catch_serve'
+  const isRugby = sport === 'rugby'
   return (
     <div style={{ overflowX: 'auto' }}>
       <table className={isBvb ? undefined : 'standings-table'} style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem', tableLayout: 'fixed', minWidth: isBvb ? 560 : 440 }}>
@@ -128,11 +129,11 @@ function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
               </>
             ) : (
               <>
-                <th style={thCStyle}>{t('standings.drawn')}</th>
+                {!isRugby && <th style={thCStyle}>{t('standings.drawn')}</th>}
                 <th style={thCStyle}>{t('standings.lost')}</th>
-                <th style={thCStyle}>{t('standings.gf')}</th>
-                <th style={thCStyle}>{t('standings.ga')}</th>
-                <th style={thCStyle}>{t('standings.gd')}</th>
+                <th style={thCStyle}>{isRugby ? t('standings.tf') : t('standings.gf')}</th>
+                <th style={thCStyle}>{isRugby ? t('standings.ta') : t('standings.ga')}</th>
+                <th style={thCStyle}>{isRugby ? t('standings.td') : t('standings.gd')}</th>
                 <th style={{ ...thCStyle, color: 'var(--color-accent)', fontWeight: 700 }}>{t('standings.points')}</th>
               </>
             )}
@@ -170,7 +171,7 @@ function StandingsTable({ rows, advancingCount, t, sport = 'football' }) {
                 </>
               ) : (
                 <>
-                  <td style={tdCStyle}>{row.drawn}</td>
+                  {!isRugby && <td style={tdCStyle}>{row.drawn}</td>}
                   <td style={tdCStyle}>{row.lost}</td>
                   <td style={tdCStyle}>{row.gf}</td>
                   <td style={tdCStyle}>{row.ga}</td>

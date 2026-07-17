@@ -135,6 +135,7 @@ export default function Standings() {
   const tournament = ag.tournaments
   const tournamentSport = tournament.sport ?? 'football'
   const isSetBased = tournamentSport === 'beach_volleyball' || tournamentSport === 'catch_serve'
+  const isRugby = tournamentSport === 'rugby'
   const rugbyOpts = { rugbyPointsSystem: ag.rugby_points_system ?? '4_2_1' }
   const standings = calculateStandings(teams, fixtures, results, tournamentSport, rugbyOpts)
 
@@ -412,7 +413,7 @@ export default function Standings() {
                           {isSetBased ? (
                             <><th title="Lost">{t('standings.lost')}</th><th title="Sets Won">{t('standings.setsWon')}</th><th title="Sets Lost">{t('standings.setsAgainst')}</th><th title="Set Ratio (SW÷SL)">{t('standings.setRatio')}</th><th title="Points Won">{t('standings.pointsWon')}</th><th title="Points Lost">{t('standings.pointsAgainst')}</th><th title="Point Ratio (PW÷PL)">{t('standings.pointRatio')}</th><th title="Match Points">{t('standings.points')}</th></>
                           ) : (
-                            <><th>{t('standings.drawn')}</th><th>{t('standings.lost')}</th><th>{t('standings.gf')}</th><th>{t('standings.ga')}</th><th>{t('standings.gd')}</th><th>{t('standings.points')}</th></>
+                            <>{!isRugby && <th>{t('standings.drawn')}</th>}<th>{t('standings.lost')}</th><th>{isRugby ? t('standings.tf') : t('standings.gf')}</th><th>{isRugby ? t('standings.ta') : t('standings.ga')}</th><th>{isRugby ? t('standings.td') : t('standings.gd')}</th><th>{t('standings.points')}</th></>
                           )}
                         </tr>
                       </thead>
@@ -450,7 +451,7 @@ export default function Standings() {
                                 </>
                               ) : (
                                 <>
-                                  <td>{row.drawn}</td>
+                                  {!isRugby && <td>{row.drawn}</td>}
                                   <td>{row.lost}</td>
                                   <td>{row.gf}</td>
                                   <td>{row.ga}</td>
