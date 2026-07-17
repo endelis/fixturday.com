@@ -387,6 +387,7 @@ function calculateRugbyStandings(teams, fixtures, results, pointsSystem = '4_2_1
 
     const hg = Number(result.home_goals) || 0;
     const ag = Number(result.away_goals) || 0;
+    const isTD = result.sport_data?.technical_defeat === true;
 
     homeStats.played += 1;
     awayStats.played += 1;
@@ -397,10 +398,10 @@ function calculateRugbyStandings(teams, fixtures, results, pointsSystem = '4_2_1
 
     if (hg > ag) {
       homeStats.won    += 1; homeStats.points += winPts;
-      awayStats.lost   += 1; awayStats.points += lossPts;
+      awayStats.lost   += 1; awayStats.points += (isTD ? 0 : lossPts);
     } else if (ag > hg) {
       awayStats.won    += 1; awayStats.points += winPts;
-      homeStats.lost   += 1; homeStats.points += lossPts;
+      homeStats.lost   += 1; homeStats.points += (isTD ? 0 : lossPts);
     } else {
       homeStats.drawn  += 1; homeStats.points += drawPts;
       awayStats.drawn  += 1; awayStats.points += drawPts;
@@ -449,13 +450,14 @@ function rugbyHeadToHead(teamAId, teamBId, completedFixtures, resultMap, winPts,
 
     const hg = Number(result.home_goals) || 0;
     const ag = Number(result.away_goals) || 0;
+    const isTD = result.sport_data?.technical_defeat === true;
 
     if (hg > ag) {
-      if (fixture.home_team_id === teamAId) { ptsA += winPts; ptsB += lossPts; }
-      else { ptsB += winPts; ptsA += lossPts; }
+      if (fixture.home_team_id === teamAId) { ptsA += winPts; ptsB += (isTD ? 0 : lossPts); }
+      else { ptsB += winPts; ptsA += (isTD ? 0 : lossPts); }
     } else if (ag > hg) {
-      if (fixture.away_team_id === teamAId) { ptsA += winPts; ptsB += lossPts; }
-      else { ptsB += winPts; ptsA += lossPts; }
+      if (fixture.away_team_id === teamAId) { ptsA += winPts; ptsB += (isTD ? 0 : lossPts); }
+      else { ptsB += winPts; ptsA += (isTD ? 0 : lossPts); }
     } else {
       ptsA += drawPts;
       ptsB += drawPts;

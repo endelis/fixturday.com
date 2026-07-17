@@ -524,8 +524,8 @@ export default function Matchday() {
           return statusErr
         }
 
-        // Football — guard against unknown sports falling through
-        if (fSport !== 'football') return null
+        // Football / rugby — guard against unknown sports falling through
+        if (fSport !== 'football' && fSport !== 'rugby') return null
         if (!hasExisting && !dirty.has(f.id)) return null
         const score = scores[f.id] ?? { home: 0, away: 0 }
         const { error: resErr } = hasExisting
@@ -547,6 +547,23 @@ export default function Matchday() {
     if (failed.length > 0) toast(t('common.error'), 'error')
     else toast(t('matchday.allSaved'))
     setSavingAll(false)
+    load()
+  }
+
+  async function saveTechnicalDefeat(f, loser) {
+    setSaving(prev => ({ ...prev, [f.id]: true }))
+    const hasExisting = !!f.fixture_results?.[0]
+    const homeGoals = loser === 'home' ? 0 : 30
+    const awayGoals = loser === 'home' ? 30 : 0
+    const payload = { home_goals: homeGoals, away_goals: awayGoals, sport_data: { technical_defeat: true } }
+    const { error: resErr } = hasExisting
+      ? await supabase.from('fixture_results').update(payload).eq('fixture_id', f.id)
+      : await supabase.from('fixture_results').insert({ fixture_id: f.id, ...payload })
+    if (resErr) { toast(`${t('common.error')}: ${resErr.message}`, 'error'); setSaving(prev => ({ ...prev, [f.id]: false })); return }
+    const { error: statusErr } = await supabase.from('fixtures').update({ status: 'completed' }).eq('id', f.id)
+    if (statusErr) toast(`${t('common.error')}: ${statusErr.message}`, 'error')
+    else toast(t('common.saved'))
+    setSaving(prev => ({ ...prev, [f.id]: false }))
     load()
   }
 
@@ -718,6 +735,16 @@ export default function Matchday() {
               <button className="btn-primary" style={{ width: '100%' }} onClick={() => saveScore(f)} disabled={saving[f.id]}>
                 {saving[f.id] ? t('common.saving') : hasResult ? t('matchday.updateBtn') : t('matchday.saveBtn')}
               </button>
+            )}
+            {!isPostponed && tournamentSport === 'rugby' && (
+              <div style={{ display: 'flex', gap: '0.5rem', marginTop: '0.25rem' }}>
+                <button className="btn-secondary btn-sm" style={{ flex: 1, fontSize: '0.78rem' }} onClick={() => saveTechnicalDefeat(f, 'home')} disabled={saving[f.id]}>
+                  {f.home_team?.name} — {t('matchday.techDefeat')}
+                </button>
+                <button className="btn-secondary btn-sm" style={{ flex: 1, fontSize: '0.78rem' }} onClick={() => saveTechnicalDefeat(f, 'away')} disabled={saving[f.id]}>
+                  {f.away_team?.name} — {t('matchday.techDefeat')}
+                </button>
+              </div>
             )}
           </div>
         )}
