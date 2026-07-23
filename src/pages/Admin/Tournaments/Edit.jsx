@@ -225,14 +225,13 @@ export default function TournamentEdit() {
     const email = inviteEmail.trim().toLowerCase()
     if (!email) return
     setInviting(true)
-    const { data, error } = await supabase
-      .from('tournament_members')
-      .insert({ tournament_id: id, invited_email: email })
-      .select().single()
-    if (error) {
-      toast(error.code === '23505' ? t('collaborators.alreadyInvited') : t('common.error'), 'error')
+    const { data, error } = await supabase.functions.invoke('invite-collaborator', {
+      body: { tournament_id: id, email },
+    })
+    if (error || data?.error) {
+      toast(data?.error === 'already_invited' ? t('collaborators.alreadyInvited') : t('common.error'), 'error')
     } else {
-      setMembers(prev => [...prev, data])
+      setMembers(prev => [...prev, data.member])
       setInviteEmail('')
       toast(t('collaborators.invited'))
     }
