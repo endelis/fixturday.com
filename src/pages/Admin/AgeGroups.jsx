@@ -47,6 +47,7 @@ export default function AgeGroups() {
     setValue('groups_count', ag.groups_count ?? 2)
     setValue('playoff_depth', ag.playoff_depth ?? 'sf')
     setValue('bracket_seeding', ag.bracket_seeding ?? 'cross')
+    setValue('consolation_bracket', ag.consolation_bracket ?? false)
     setValue('registration_open', ag.registration_open)
     setValue('auto_approve', ag.auto_approve ?? false)
     setValue('cs_set_target', String(ag.cs_set_target ?? 15))
@@ -114,6 +115,7 @@ export default function AgeGroups() {
       groups_count: groupsCount,
       playoff_depth: playoffDepth,
       bracket_seeding: isGroupKnockout ? (values.bracket_seeding ?? 'cross') : null,
+      consolation_bracket: isGroupKnockout ? !!values.consolation_bracket : false,
       teams_advancing: teamsAdvancing,
       cs_set_target: Number(values.cs_set_target ?? 15),
       rugby_points_system: values.rugby_points_system ?? '4_2_1',
@@ -437,6 +439,12 @@ function AgeGroupForm({ register, handleSubmit, errors, isSubmitting, watchedFor
       )}
 
       <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+        {isGroupKnockout && (
+          <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+            <input type="checkbox" id="consolation_bracket" {...register('consolation_bracket')} />
+            <label htmlFor="consolation_bracket">{t('fixture.consolationBracket')}</label>
+          </div>
+        )}
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
           <input type="checkbox" id="reg_open" {...register('registration_open')} />
           <label htmlFor="reg_open">{t('ageGroup.registrationOpen')}</label>

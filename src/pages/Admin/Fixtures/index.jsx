@@ -22,7 +22,6 @@ export default function Fixtures() {
   const [loading, setLoading] = useState(true)
   const [generating, setGenerating] = useState(false)
   const [schedulerOpen, setSchedulerOpen] = useState(false)
-  const [consolationBracket, setConsolationBracket] = useState(false)
 
   async function load() {
     const [agRes, tmRes, stRes, fxRes] = await Promise.all([
@@ -79,7 +78,7 @@ export default function Fixtures() {
       const { data: groupStage, error: gsError } = await supabase.from('stages').insert({ age_group_id: ageGroupId, name: t('fixture.stageGroupStage'), type: 'group_stage', sequence: stageOffset + 1 }).select().single()
       if (gsError) { toast(t('common.error'), 'error'); setGenerating(false); return }
 
-      const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing, null, bracketSeeding, consolationBracket)
+      const { groupFixtures, knockoutFixtures } = generateGroupStage(teams, groupsCount, teamsAdvancing, null, bracketSeeding, ageGroup.consolation_bracket ?? false)
       const groupRows = groupFixtures.map(f => ({ stage_id: groupStage.id, home_team_id: f.homeTeamId, away_team_id: f.awayTeamId, round: f.round, group_label: f.group ?? null, round_name: null, status: 'scheduled' }))
       const { error: gfError } = await supabase.from('fixtures').insert(groupRows)
       if (gfError) { toast(t('common.error'), 'error'); setGenerating(false); return }
@@ -154,12 +153,6 @@ export default function Fixtures() {
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
           <h1 style={{ fontFamily: 'var(--font-heading)', fontSize: '2rem' }}>{t('fixture.title')} — {ageGroup?.name}</h1>
           <div style={{ display: 'flex', gap: '0.75rem' }}>
-            {fixtures.length === 0 && ageGroup?.format === 'group_knockout' && (
-              <label style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.88rem', color: 'var(--color-muted)', cursor: 'pointer' }}>
-                <input type="checkbox" checked={consolationBracket} onChange={e => setConsolationBracket(e.target.checked)} />
-                {t('fixture.consolationBracket')}
-              </label>
-            )}
             {fixtures.length === 0 && (
               <button className="btn-primary" onClick={() => generateFixtures()} disabled={generating}>
                 {generating ? t('fixture.generating') : `⚡ ${t('fixture.generate')}`}
