@@ -38,6 +38,10 @@ export default function TournamentEdit() {
   const [attachments, setAttachments] = useState([])
   const [attachUploading, setAttachUploading] = useState(false)
   const fileInputRef = useRef(null)
+  const [ownerId, setOwnerId] = useState(null)
+  const [members, setMembers] = useState([])
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviting, setInviting] = useState(false)
   const [sponsors, setSponsors] = useState([])
   const [sponsorsLabel, setSponsorsLabel] = useState('')
   const [localEdits, setLocalEdits] = useState({})
@@ -53,10 +57,15 @@ export default function TournamentEdit() {
   useEffect(() => {
     if (authLoading || !user) return
     async function load() {
-      const { data, error } = await supabase.from('tournaments').select('*').eq('id', id).single()
+      const [{ data, error }, { data: memberData }] = await Promise.all([
+        supabase.from('tournaments').select('*').eq('id', id).single(),
+        supabase.from('tournament_members').select('*').eq('tournament_id', id).order('created_at'),
+      ])
       if (error) { toast(t('common.error'), 'error'); setLoading(false); return }
+      setMembers(memberData ?? [])
       if (data) {
-        const { attachments: att, logo_url, logo_path, sport: sp, ...rest } = data
+        const { attachments: att, logo_url, logo_path, sport: sp, owner_id: ownId, ...rest } = data
+        setOwnerId(ownId)
         reset({
           ...rest,
           start_date: isoToDisplay(data.start_date),
@@ -209,6 +218,31 @@ export default function TournamentEdit() {
   async function saveSponsorLabel() {
     const { error } = await supabase.from('tournaments').update({ sponsors_label: sponsorsLabel.trim() || null }).eq('id', id)
     if (error) { toast(t('common.error'), 'error'); return }
+    toast(t('common.saved'))
+  }
+
+  async function handleInvite() {
+    const email = inviteEmail.trim().toLowerCase()
+    if (!email) return
+    setInviting(true)
+    const { data, error } = await supabase
+      .from('tournament_members')
+      .insert({ tournament_id: id, invited_email: email })
+      .select().single()
+    if (error) {
+      toast(error.code === '23505' ? t('collaborators.alreadyInvited') : t('common.error'), 'error')
+    } else {
+      setMembers(prev => [...prev, data])
+      setInviteEmail('')
+      toast(t('collaborators.invited'))
+    }
+    setInviting(false)
+  }
+
+  async function handleRemoveMember(memberId) {
+    const { error } = await supabase.from('tournament_members').delete().eq('id', memberId)
+    if (error) { toast(t('common.error'), 'error'); return }
+    setMembers(prev => prev.filter(m => m.id !== memberId))
     toast(t('common.saved'))
   }
 
@@ -541,6 +575,69 @@ export default function TournamentEdit() {
             Fill in name / website, then click the logo area to upload. A new row appears after each is added.
           </div>
         </div>
+
+        {/* Collaborators — owner only */}
+        {ownerId === user?.id && (
+          <div style={{ marginTop: '2rem', borderTop: '1px solid rgba(255,255,255,0.08)', paddingTop: '1.5rem' }}>
+            <h3 style={{ fontFamily: 'var(--font-heading)', fontSize: '1.25rem', margin: '0 0 0.25rem' }}>
+              {t('collaborators.title')}
+            </h3>
+            <p style={{ fontSize: '0.8rem', color: 'var(--color-text-muted)', margin: '0 0 1rem' }}>
+              {t('collaborators.emailNote')}
+            </p>
+
+            <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1rem' }}>
+              <input
+                type="email"
+                placeholder={t('collaborators.emailPlaceholder')}
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                onKeyDown={e => e.key === 'Enter' && (e.preventDefault(), handleInvite())}
+                style={{ flex: 1 }}
+              />
+              <button
+                type="button"
+                className="btn-primary btn-sm"
+                onClick={handleInvite}
+                disabled={inviting || !inviteEmail.trim()}
+              >
+                {inviting ? t('collaborators.inviting') : t('collaborators.invite')}
+              </button>
+            </div>
+
+            {members.length === 0 ? (
+              <p style={{ fontSize: '0.85rem', color: 'var(--color-text-muted)' }}>{t('collaborators.noMembers')}</p>
+            ) : (
+              <div style={{ display: 'grid', gap: '0.5rem' }}>
+                {members.map(m => (
+                  <div
+                    key={m.id}
+                    className="card"
+                    style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '0.65rem 1rem' }}
+                  >
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                      <span style={{ fontSize: '0.875rem' }}>{m.invited_email}</span>
+                      <span className={`badge ${m.user_id ? 'badge-success' : 'badge-muted'}`} style={{ fontSize: '0.7rem' }}>
+                        {m.user_id ? t('collaborators.statusActive') : t('collaborators.statusPending')}
+                      </span>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => handleRemoveMember(m.id)}
+                      style={{
+                        background: 'none', border: '1px solid var(--color-danger)',
+                        color: 'var(--color-danger)', borderRadius: '4px',
+                        cursor: 'pointer', fontSize: '0.78rem', padding: '0.2rem 0.5rem',
+                      }}
+                    >
+                      {t('collaborators.remove')}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
 
       </div>
     </div>

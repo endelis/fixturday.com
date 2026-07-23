@@ -543,7 +543,21 @@
     "duplicate": "Duplicate",
     "duplicating": "Duplicating...",
     "duplicateSuccess": "Tournament duplicated",
-    "duplicateError": "Error duplicating tournament"
+    "duplicateError": "Error duplicating tournament",
+    "shared": "Shared with me"
+  },
+  "collaborators": {
+    "title": "Collaborators",
+    "emailPlaceholder": "Email address",
+    "invite": "Invite",
+    "inviting": "Inviting...",
+    "invited": "Invitation saved",
+    "alreadyInvited": "This email is already a collaborator",
+    "remove": "Remove",
+    "statusActive": "Active",
+    "statusPending": "Pending registration",
+    "noMembers": "No collaborators added yet.",
+    "emailNote": "Collaborators get full edit access. If they're not registered yet, they'll get access automatically when they sign up with this email."
   },
   "workspace": {
     "navOverview": "Overview",

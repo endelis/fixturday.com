@@ -20,12 +20,11 @@ export default function Dashboard() {
     if (!user) return
     async function load() {
       try {
-        let query = supabase
+        // RLS handles access: owners see their own, members see shared, super admins see all
+        const { data, error } = await supabase
           .from('tournaments')
           .select('*, age_groups(id, teams(id, status), stages(id, fixtures(id)))')
           .order('created_at', { ascending: false })
-        if (!isSuperAdmin) query = query.eq('owner_id', user.id)
-        const { data, error } = await query
         if (error) throw error
         setTournaments(data ?? [])
       } catch {
@@ -247,6 +246,9 @@ export default function Dashboard() {
                           <strong style={{ fontFamily: 'var(--font-heading)', fontSize: '1.4rem', letterSpacing: '0.01em' }}>
                             {tourney.name}
                           </strong>
+                          {tourney.owner_id !== user?.id && (
+                            <span className="badge badge-muted" style={{ fontSize: '0.7rem' }}>{t('dashboard.shared')}</span>
+                          )}
                           <ChevronRight size={16} style={{ color: 'var(--color-text-muted)', flexShrink: 0 }} />
                         </div>
                         {(startDate || endDate) && (
@@ -291,22 +293,26 @@ export default function Dashboard() {
                           <Printer size={13} />
                           {t('dashboard.print')}
                         </button>
-                        <button
-                          className="btn-secondary btn-sm"
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
-                          disabled={!!duplicating[tourney.id]}
-                          onClick={e => handleDuplicate(e, tourney)}
-                        >
-                          <Copy size={13} />
-                          {duplicating[tourney.id] ? t('dashboard.duplicating') : t('dashboard.duplicate')}
-                        </button>
-                        <button
-                          className="btn-sm"
-                          style={{ background: 'transparent', border: '1px solid var(--color-danger)', color: 'var(--color-danger)', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
-                          onClick={e => handleDelete(e, tourney)}
-                        >
-                          {t('dashboard.delete')}
-                        </button>
+                        {tourney.owner_id === user?.id && (
+                          <>
+                            <button
+                              className="btn-secondary btn-sm"
+                              style={{ display: 'inline-flex', alignItems: 'center', gap: '0.3rem' }}
+                              disabled={!!duplicating[tourney.id]}
+                              onClick={e => handleDuplicate(e, tourney)}
+                            >
+                              <Copy size={13} />
+                              {duplicating[tourney.id] ? t('dashboard.duplicating') : t('dashboard.duplicate')}
+                            </button>
+                            <button
+                              className="btn-sm"
+                              style={{ background: 'transparent', border: '1px solid var(--color-danger)', color: 'var(--color-danger)', cursor: 'pointer', borderRadius: 'var(--radius-sm)' }}
+                              onClick={e => handleDelete(e, tourney)}
+                            >
+                              {t('dashboard.delete')}
+                            </button>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>
